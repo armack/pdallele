@@ -1,3 +1,8 @@
+#' @importFrom dplyr %>%
+#' @importFrom ggplot2 %+replace%
+#' @importFrom rlang .data
+NULL
+
 ########## Bar Plot Functions ##########
 
 ########## Donut Plot Functions ##########
@@ -21,26 +26,26 @@ donut_plot <- function(.data, fill = allele_markdown, counts = alleles,
                        count_label = "Alleles", legend_title = "**Allele**",
                        labels = TRUE, total = TRUE, palette = NULL){
   .donut_data <- .data %>%
-    mutate(y_proportion = {{counts}} / sum({{counts}})) %>%
-    mutate(y_position = 1 - cumsum(y_proportion) + 0.5 * y_proportion) %>%
-    mutate(y_label =
+    dplyr::mutate(y_proportion = {{counts}} / sum({{counts}})) %>%
+    dplyr::mutate(y_position = 1 - cumsum(y_proportion) + 0.5 * y_proportion) %>%
+    dplyr::mutate(y_label =
              paste0({{counts}}, " ", count_label, "\n (",
                     format(round(100 * {{counts}} / sum({{counts}}), digits = 1), nsmall = 1),
                     "%)")) %>%
-    mutate(group_label = if_else(is.na(group_total), NA_character_,
+    dplyr::mutate(group_label = dplyr::if_else(is.na(group_total), NA_character_,
                                  paste0(group_total,"<br />", count_label)))
 
-  plot <- ggplot(.donut_data, aes(y = y_proportion)) +
+  plot <- ggplot(.donut_data, ggplot2::aes(y = .data$y_proportion)) +
     theme_donut() +
-    geom_col(aes(fill = {{fill}}, x = 2)) +
-    coord_polar(theta = "y") +
-    xlim(0, 4) +
-    labs(fill = legend_title)
+    ggplot2::geom_col(ggplot2::aes(fill = {{fill}}, x = 2)) +
+    ggplot2::coord_polar(theta = "y") +
+    ggplot2::xlim(0, 4) +
+    ggplot2::labs(fill = legend_title)
 
   # Add labels for each arc
   if (labels){
     plot <- plot + ggrepel::geom_label_repel(
-      aes(x = 2.5, y = y_position, label = y_label), min.segment.length = 0,
+      ggplot2::aes(x = 2.5, y = .data$y_position, label = .data$y_label), min.segment.length = 0,
       nudge_x = 1.25, force = 2, force_pull = 0, max.overlaps = 200
     )
   }
@@ -48,7 +53,7 @@ donut_plot <- function(.data, fill = allele_markdown, counts = alleles,
   # Add center total label
   if(total){
     plot <- plot +
-      ggtext::geom_richtext(aes(label = group_label, x = 0, y = 0),
+      ggtext::geom_richtext(ggplot2::aes(label = .data$group_label, x = 0, y = 0),
                             fill = NA, label.colour = NA, na.rm = TRUE)
   }
 
@@ -96,22 +101,22 @@ donut_plot_panel <- function(.data, fill = allele_markdown, counts = alleles, fa
                              count_label = "Alleles", legend_title = "**Allele**",
                              total = TRUE, palette = NULL, nrow = NULL, ncol = NULL){
   .donut_data <- .data %>%
-    group_by( {{facet}} ) %>%
-    mutate(y_proportion = alleles / sum(alleles)) %>%
-    mutate(group_label = if_else(is.na(group_total), NA_character_,
+    dplyr::group_by( {{facet}} ) %>%
+    dplyr::mutate(y_proportion = alleles / sum(alleles)) %>%
+    dplyr::mutate(group_label = dplyr::if_else(is.na(group_total), NA_character_,
                                  paste0(group_total,"<br />", count_label)))
 
-  plot <- ggplot(.donut_data, aes(y = y_proportion)) +
+  plot <- ggplot2::ggplot(.donut_data, ggplot2::aes(y = .data$y_proportion)) +
     theme_donut() +
-    geom_col(aes(fill = {{fill}}, x = 2)) +
-    coord_polar(theta = "y") +
-    xlim(0, 2.5) +
-    labs(fill = legend_title) +
-    facet_wrap(facets = vars( {{facet}} ), nrow = nrow, ncol = ncol)
+    ggplot2::geom_col(ggplot2::aes(fill = {{fill}}, x = 2)) +
+    ggplot2::coord_polar(theta = "y") +
+    ggplot2::xlim(0, 2.5) +
+    ggplot2::labs(fill = legend_title) +
+    ggplot2::facet_wrap(facets = vars( {{facet}} ), nrow = nrow, ncol = ncol)
 
   if(total){
     plot <- plot +
-      ggtext::geom_richtext(aes(label = group_label, x = 0, y = 0),
+      ggtext::geom_richtext(ggplot2::aes(label = .data$group_label, x = 0, y = 0),
                             fill = NA, label.colour = NA, na.rm = TRUE)
   }
 
@@ -172,45 +177,45 @@ heatmap_data <- function(.data, count = allele_markdown, group, n = 5, facet,
   has_facets <- !rlang::quo_is_missing(facet_var)
 
   .complete <- .data %>%
-    ungroup() %>%
-    { if(has_facets) group_by(., {{facet}}) else . } %>%
-    {if(na.rm) drop_na(., c({{count}}, {{group}},
-                            if(has_facets) any_of(rlang::as_name(facet_var)) else NULL)) else . } %>%
-    mutate(total_isolates = length(unique(biosample))) %>%
-    group_by({{group}}, .add = TRUE) %>%
-    mutate(group_isolates = length(unique(biosample))) %>%
-    select(c({{count}}, {{group}}, group_isolates, total_isolates,
-             if(has_facets) any_of(rlang::as_name(facet_var)) else NULL)) %>%
-    group_by({{count}}, .add = TRUE) %>%
-    mutate(group_count = n(), group_prop = group_count/group_isolates) %>%
-    ungroup({{group}}) %>%
-    mutate(total_count = n(), total_prop = total_count/total_isolates) %>%
-    group_by({{group}}, .add = TRUE) %>%
-    slice_head() %>%
-    ungroup({{count}}) %>%
-    mutate(group_rank = dense_rank((desc(group_count)))) %>%
-    ungroup({{group}}) %>%
-    mutate(total_rank = dense_rank((desc(total_count)))) %>%
-    {if(identical(by_group, TRUE)) filter(., {{count}} %in% pull(filter(., group_rank <= n), {{count}}))
-      else filter(., {{count}} %in% pull(filter(., total_rank <= n), {{count}})) } %>%
-    group_by({{count}}, .add = TRUE) %>%
-    mutate(group_sort = length(unique({{group}})) / mean(group_rank)) %>%
-    mutate(total_sort =  mean(total_rank)) %>%
-    ungroup() %>%
-    {if(identical(by_group, TRUE)) mutate(., {{count}} := fct_reorder({{count}}, group_sort, .desc = F))
-      else mutate(., {{count}} := fct_reorder({{count}}, total_sort, .desc = T)) }
+    dplyr::ungroup() %>%
+    { if(has_facets) dplyr::group_by(., {{facet}}) else . } %>%
+    {if(na.rm) tidyr::drop_na(., c({{count}}, {{group}},
+                            if(has_facets) dplyr::any_of(rlang::as_name(facet_var)) else NULL)) else . } %>%
+    dplyr::mutate(total_isolates = length(unique(biosample))) %>%
+    dplyr::group_by({{group}}, .add = TRUE) %>%
+    dplyr::mutate(group_isolates = length(unique(biosample))) %>%
+    dplyr::select(c({{count}}, {{group}}, group_isolates, total_isolates,
+             if(has_facets) dplyr::any_of(rlang::as_name(facet_var)) else NULL)) %>%
+    dplyr:: group_by({{count}}, .add = TRUE) %>%
+    dplyr::mutate(group_count = n(), group_prop = group_count/group_isolates) %>%
+    dplyr::ungroup({{group}}) %>%
+    dplyr::mutate(total_count = n(), total_prop = total_count/total_isolates) %>%
+    dplyr::group_by({{group}}, .add = TRUE) %>%
+    dplyr::slice_head() %>%
+    dplyr::ungroup({{count}}) %>%
+    dplyr::mutate(group_rank = dplyr::dense_rank((desc(group_count)))) %>%
+    dplyr::ungroup({{group}}) %>%
+    dplyr::mutate(total_rank = dplyr::dense_rank((desc(total_count)))) %>%
+    {if(identical(by_group, TRUE)) dplyr::filter(., {{count}} %in% dplyr::pull(filter(., group_rank <= n), {{count}}))
+      else dplyr::filter(., {{count}} %in% dplyr::pull(filter(., total_rank <= n), {{count}})) } %>%
+    dplyr::group_by({{count}}, .add = TRUE) %>%
+    dplyr::mutate(group_sort = length(unique({{group}})) / mean(group_rank)) %>%
+    dplyr::mutate(total_sort =  mean(total_rank)) %>%
+    dplyr::ungroup() %>%
+    {if(identical(by_group, TRUE)) dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, group_sort, .desc = F))
+      else dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, total_sort, .desc = T)) }
 
   if(has_facets){
     levels <- .complete %>%
-      select({{count}}, {{facet}}) %>%
+      dplyr::select({{count}}, {{facet}}) %>%
       relevel_numeric({{facet}}) %>%
-      arrange(desc({{facet}}), {{count}}) %>%
-      distinct({{count}}) %>%
-      pull({{count}}) %>%
+      dplyr::arrange(dplyr::desc({{facet}}), {{count}}) %>%
+      dplyr::distinct({{count}}) %>%
+      dplyr::pull({{count}}) %>%
       as.character()
 
     .complete <- .complete %>%
-      mutate({{count}} := fct_relevel({{count}}, levels))
+      dplyr::mutate({{count}} := forcats::fct_relevel({{count}}, levels))
   }
 
   return(.complete)
@@ -270,31 +275,31 @@ heatmap_plot <- function(.data, count = allele_markdown, group, facet,
   has_facets <- !rlang::quo_is_missing(rlang::enquo(facet))
 
   if(wide)
-    .data <- mutate(.data, {{count}} := fct_rev({{count}}))
+    .data <- dplyr::mutate(.data, {{count}} := forcats::fct_rev({{count}}))
 
   if(!wide)
-    .start <- ggplot(.data, aes(x = {{group}}, y = {{count}}))
+    .start <- ggplot2::ggplot(.data, ggplot2::aes(x = {{group}}, y = {{count}}))
   else
-    .start <- ggplot(.data, aes(x = {{count}}, y = {{group}}))
+    .start <- ggplot2::ggplot(.data, ggplot2::aes(x = {{count}}, y = {{group}}))
 
   .plot <- .start  +
     theme_heatmap() %+replace%
-    theme(text = element_text(size = text_size)) +
-    geom_point(aes(color = group_prop, size = group_rank), show.legend = TRUE) +
+    ggplot2::theme(text = ggplot2::element_text(size = text_size)) +
+    ggplot2::geom_point(ggplot2::aes(color = .data$group_prop, size = .data$group_rank), show.legend = TRUE) +
     viridis::scale_color_viridis(option = option, trans = "log", breaks = prop_breaks,
                                  labels = prob_labels, limits = prop_limits) +
-    scale_size(range = rank_range, limits = rank_limits, breaks = rank_breaks) +
-    labs(size = rank, color = prop) +
-    guides(color = guide_colorbar(barheight = prop_barheight, order = 2),
-           size = guide_legend(order = 1))
+    ggplot2::scale_size(range = rank_range, limits = rank_limits, breaks = rank_breaks) +
+    ggplot2::labs(size = rank, color = prop) +
+    ggplot2:: guides(color = ggplot2::guide_colorbar(barheight = prop_barheight, order = 2),
+           size = ggplot2::guide_legend(order = 1))
 
   if(has_facets){
     if(!wide)
       .plot <- .plot +
-        facet_grid(rows = vars({{facet}}), scales = "free_y", space = "free_y")
+        ggplot2::facet_grid(rows = vars({{facet}}), scales = "free_y", space = "free_y")
     else
       .plot <- .plot +
-        facet_grid(cols = vars({{facet}}), scales = "free_x", space = "free_x")
+        ggplot2::facet_grid(cols = vars({{facet}}), scales = "free_x", space = "free_x")
   }
 
   return(.plot)

@@ -2,6 +2,8 @@
 
 export(new_top_n_across_groups)
 import(dplyr)
+importFrom(dplyr,"%>%")
 importFrom(forcats,fct_expand)
 importFrom(forcats,fct_relevel)
 importFrom(forcats,fct_reorder)
+importFrom(ggplot2,"%+replace%")

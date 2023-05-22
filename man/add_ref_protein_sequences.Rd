@@ -12,7 +12,7 @@ add_ref_protein_sequences(.data, path = ref_protein_path)
 \item{path}{path to a TSV containing accession number/sequence pairs}
 }
 \description{
-Add column "protein_sequence" to a tibble by left_join() on "protein"
+Add column "protein_sequence" to a tibble by dplyr::left_join() on "protein"
 (containing accession numbers)
 }
 \details{

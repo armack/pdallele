@@ -1,3 +1,6 @@
+#' @importFrom dplyr %>%
+NULL
+
 # Where should NA go? TRUE at the end, FALSE at the beginning, NA dropped.
 ########## Flow and Piping ##########
 
@@ -36,14 +39,14 @@ count_by_column <- function(.data, ..., isolates = FALSE, sort = TRUE,
                             name = "n", na_last = TRUE){
 
   .complete <- .data %>%
-    {if (isolates) distinct(., biosample, .keep_all = TRUE) else . } %>%
-    count(..., name = name) %>%
-    {if(sort) mutate(., across(c(...), ~fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
-        arrange(., across(c(...))) else . } %>%
-    {if(identical(na_last, TRUE)) arrange(., across(c(...), ~ is.na(.)))
-      else if(identical(na_last, FALSE)) arrange(., across(c(...), ~ !is.na(.)))
-      else if(is.na(na_last)) drop_na(., ...)
-      else arrange(., across(c(...), ~ is.na(.))) %>%
+    {if (isolates) dplyr::distinct(., biosample, .keep_all = TRUE) else . } %>%
+    dplyr::count(..., name = name) %>%
+    {if(sort) dplyr::mutate(., dplyr::across(c(...), ~forcats::fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
+        dplyr::arrange(., dplyr::across(c(...))) else . } %>%
+    {if(identical(na_last, TRUE)) dplyr::arrange(., dplyr::across(c(...), ~ is.na(.)))
+      else if(identical(na_last, FALSE)) dplyr::arrange(., dplyr::across(c(...), ~ !is.na(.)))
+      else if(is.na(na_last)) tidyr::drop_na(., ...)
+      else dplyr::arrange(., dplyr::across(c(...), ~ is.na(.))) %>%
         pipe_inform(., "Invalid `na_last` provided. Defaulted to TRUE.") }
 
   return(.complete)
@@ -94,8 +97,8 @@ count_isolates <- function(.data, ..., sort = TRUE, na_last = TRUE){
 relevel_numeric <- function(.data, ...) {
 
   .complete <- .data %>%
-    mutate(across(c(...), ~fct_relevel(., ~ str_sort(., numeric = TRUE)))) %>%
-    arrange(...)
+    dplyr::mutate(dplyr::across(c(...), ~forcats::fct_relevel(., ~ stringr::str_sort(., numeric = TRUE)))) %>%
+    dplyr::arrange(...)
 
   return(.complete)
 }
@@ -115,10 +118,10 @@ relevel_numeric <- function(.data, ...) {
 relevel_first_last <- function(.data, ..., first = NULL, last = NULL, na_last = TRUE){
 
   .complete <- .data %>%
-    mutate(across(c(...), ~fct_expand(., cur_column(), first, last))) %>%
-    mutate(across(c(...), ~fct_relevel(., first, after = 0))) %>%
-    mutate(across(c(...), ~fct_relevel(., last, after = Inf))) %>%
-    arrange(...) %>%
+    dplyr::mutate(dplyr::across(c(...), ~forcats::fct_expand(., cur_column(), first, last))) %>%
+    dplyr::mutate(dplyr::across(c(...), ~forcats::fct_relevel(., first, after = 0))) %>%
+    dplyr::mutate(dplyr::across(c(...), ~forcats::fct_relevel(., last, after = Inf))) %>%
+    dplyr::arrange(...) %>%
     .resolve_na_last(..., na_last = na_last)
 
   return(.complete)
@@ -134,7 +137,7 @@ relevel_first_last <- function(.data, ..., first = NULL, last = NULL, na_last = 
 #' #' @param .data A data frame or tibble
 remove_assigned_bla <- function(.data){
   .complete <- .data %>%
-    filter(!(grepl("bla", allele, ignore.case = TRUE) & grepl("-", allele)))
+    dplyr::filter(!(grepl("bla", allele, ignore.case = TRUE) & grepl("-", allele)))
 
   return(.complete)
 }
@@ -147,7 +150,7 @@ remove_assigned_bla <- function(.data){
 #' @param .data A data frame or tibble
 remove_unassigned_bla <- function(.data){
   .complete <- .data %>%
-    filter(!(grepl("bla", allele, ignore.case = TRUE) & !grepl("-", allele)))
+    dplyr::filter(!(grepl("bla", allele, ignore.case = TRUE) & !grepl("-", allele)))
 
   return(.complete)
 }
@@ -163,7 +166,7 @@ remove_unassigned_bla <- function(.data){
 filter_attribute <- function(.data, attribute, string){
 
   .complete <- .data %>%
-    filter(grepl(string, {{attribute}}, ignore.case = TRUE ))
+    dplyr::filter(grepl(string, {{attribute}}, ignore.case = TRUE ))
 
   return(.complete)
 }
@@ -175,9 +178,9 @@ filter_attribute <- function(.data, attribute, string){
 determine_exclusive_alleles <- function(.data, ...){
 
   .complete <- .data %>%
-    group_by(allele) %>%
-    filter(length(unique( !!!rlang::enquos(...) )) == 1) %>%
-    ungroup()
+    dplyr::group_by(allele) %>%
+    dplyr::filter(length(unique( !!!rlang::enquos(...) )) == 1) %>%
+    dplyr::ungroup()
 
   return(.complete)
 }
@@ -189,9 +192,9 @@ determine_exclusive_alleles <- function(.data, ...){
 determine_shared_alleles <- function(.data, ...){
 
   .complete <- .data %>%
-    group_by(allele) %>%
-    filter(length(unique( !!!rlang::enquos(...) )) > 1) %>%
-    ungroup()
+    dplyr::group_by(allele) %>%
+    dplyr::filter(length(unique( !!!rlang::enquos(...) )) > 1) %>%
+    dplyr::ungroup()
 
   return(.complete)
 }
@@ -205,10 +208,10 @@ determine_shared_alleles <- function(.data, ...){
 #'        determining groups
 determine_combinations <- function(.data, filter_terms = NULL){
   .combos <- .data %>%
-    {if (!is.null(filter))  filter(., grepl(paste(filter_terms, collapse = "|"), allele, ignore.case = TRUE )) else .} %>%
-    group_by(biosample) %>%
-    filter(length(unique(allele)) > 1) %>%
-    summarize(combo = paste(allele, collapse = ", "), .groups = "drop")
+    {if (!is.null(filter))  dplyr::filter(., grepl(paste(filter_terms, collapse = "|"), allele, ignore.case = TRUE )) else .} %>%
+    dplyr::group_by(biosample) %>%
+    dplyr::filter(length(unique(allele)) > 1) %>%
+    dplyr::summarize(combo = paste(allele, collapse = ", "), .groups = "drop")
 
   .complete <- .data %>%
     inner_join(.combos, by = "biosample")
@@ -227,16 +230,16 @@ determine_combinations <- function(.data, filter_terms = NULL){
 possible_unique_proteins_mbe <- function(.data){
   accessions_assigned <- .data %>%
     remove_unassigned_bla() %>%
-    group_by(allele) %>%
-    slice_head() %>%
-    ungroup() %>%
-    distinct(protein) %>%
-    pull()
+    dplyr::group_by(allele) %>%
+    dplyr::slice_head() %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(protein) %>%
+    dplyr::pull()
 
   accessions_unassigned <- .data %>%
     remove_assigned_bla() %>%
-    distinct(protein) %>%
-    pull()
+    dplyr::distinct(protein) %>%
+    dplyr::pull()
 
   accessions <- c(accessions_assigned, accessions_unassigned)
 
@@ -260,7 +263,7 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
     stop("Please ensure 'values' is an integer vector.")
   }
   quantiles <- values %>%
-    quantile(probs = seq(from = 0, to = 1, length.out = groups + 1), type = 1)
+    stats::quantile(probs = seq(from = 0, to = 1, length.out = groups + 1), type = 1)
 
   value_boundaries <- vector(mode = "integer", length = length(quantiles) )
   value_boundaries[1] = quantiles[[1]]
@@ -270,15 +273,15 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
     threshold = length(values) / groups
     test_value <- quantiles[[i]]
 
-    tibble <- tibble(values) %>%
-      filter(values >= last_value)
+    tibble <- tibble::tibble(values) %>%
+      dplyr::filter(values >= last_value)
 
-    include <- tibble %>%
-      filter(values <= test_value ) %>%
+    include <- tibble::tibble %>%
+      dplyr::filter(values <= test_value ) %>%
       nrow()
 
-    exclude <- tibble %>%
-      filter(values < test_value ) %>%
+    exclude <- tibble::tibble %>%
+      tibble::filter(values < test_value ) %>%
       nrow()
 
     if(abs(threshold - include) < abs(threshold - exclude) ){
@@ -313,15 +316,15 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
 #'        determine_nearly_equal_integer_groups_lt()
 
 categorize_integer_groups <- function(tibble, source_col, label_col, label_sep = " - ", groups, split = NULL){
-  source_col = sym(source_col)
-  label_col = sym(label_col)
+  source_col = rlang::sym(source_col)
+  label_col = rlang::sym(label_col)
 
   if( is.null(split) ){
-    bounds <- tibble %>%
-      drop_na(!!source_col) %>%
-      group_by(biosample) %>%
-      filter(row_number() == 1) %>%
-      pull(!!source_col) %>%
+    bounds <- tibble::tibble %>%
+      tidyr::drop_na(!!source_col) %>%
+      dplyr::group_by(biosample) %>%
+      dplyr::filter(row_number() == 1) %>%
+      dplyr::pull(!!source_col) %>%
       determine_nearly_equal_integer_groups_lt(groups)
   }
 
@@ -331,7 +334,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
   bounds_conditions <- paste(source_col," >= ",lower_bounds," & ",source_col," < ",upper_bounds," ~ ","'",bounds_labels,"'",sep="")
 
   tibble %>%
-    mutate(!!label_col := case_when(!!!rlang::parse_exprs(bounds_conditions))) %>%
+    dplyr::mutate(!!label_col := dplyr::case_when(!!!rlang::parse_exprs(bounds_conditions))) %>%
     return()
 }
 
@@ -348,10 +351,10 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
 
   .complete <- .data %>%
 
-    {if(identical(na_last, TRUE)) arrange(., across(c(...), ~ is.na(.)))
-      else if(identical(na_last, FALSE)) arrange(., across(c(...), ~ !is.na(.)))
-      else if(is.na(na_last)) drop_na(., ...)
-      else arrange(., across(c(...), ~ is.na(.))) %>%
+    {if(identical(na_last, TRUE)) dplyr::arrange(., dplyr::across(c(...), ~ is.na(.)))
+      else if(identical(na_last, FALSE)) dplyr::arrange(., dplyr::across(c(...), ~ !is.na(.)))
+      else if(is.na(na_last)) tidyr::drop_na(., ...)
+      else dplyr::arrange(., dplyr::across(c(...), ~ is.na(.))) %>%
         pipe_inform(., "Invalid `na_last` provided. Defaulted to TRUE.") }
 
   return(.complete)
@@ -378,7 +381,7 @@ separate_rows_sequential <- function(.data, ..., sep = "[^[:alnum:].]+", convert
   .modified <- .data
 
   for(name in names(vars)){
-    .modified <- separate_rows(.modified, any_of(name), sep = sep, convert = convert)
+    .modified <- tidyr::separate_rows(.modified, any_of(name), sep = sep, convert = convert)
   }
 
   return(.modified)
