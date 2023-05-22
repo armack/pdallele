@@ -10,3 +10,28 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports:
+  bigrquery,
+  countrycode,
+  dbplyr,
+  dplyr,
+  forcats,
+  ggplot2,
+  ggrepel,
+  ggtext,
+  ggthemes,
+  lubridate,
+  maps,
+  progress,
+  purrr,
+  RCurl,
+  readr,
+  rentrez,
+  rlang,
+  stringi,
+  stringr,
+  tibble,
+  tidyr,
+  tidyselect,
+  viridis,
+  xml2
