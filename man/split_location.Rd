@@ -4,10 +4,10 @@
 \alias{split_location}
 \title{Splits location into location_broad (country) and location_detail (city/area)}
 \usage{
-split_location(.data)
+split_location(data)
 }
 \arguments{
-\item{.data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble}
 }
 \description{
 Splits INSDC/BioSample geo_loc_name style country:detailed_location format

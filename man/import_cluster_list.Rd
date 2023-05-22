@@ -4,7 +4,7 @@
 \alias{import_cluster_list}
 \title{Import and Add NCBI Pathogen Detection SNP Cluster Data}
 \usage{
-import_cluster_list(.data, path)
+import_cluster_list(data, path)
 }
 \arguments{
 \item{path}{Path to an NCBI Pathogen Detection

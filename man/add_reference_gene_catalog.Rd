@@ -2,12 +2,12 @@
 % Please edit documentation in R/import_cleanup.R
 \name{add_reference_gene_catalog}
 \alias{add_reference_gene_catalog}
-\title{Add Reference Gene Catalog information to .data by allele}
+\title{Add Reference Gene Catalog information to \code{data} by allele}
 \usage{
-add_reference_gene_catalog(.data, path = refgene_path)
+add_reference_gene_catalog(data, path)
 }
 \arguments{
-\item{.data}{A dataframe or tibble to add to}
+\item{data}{A dataframe or tibble to add to}
 
 \item{path}{Path to an NCBI ReferenceGeneCatalog.txt file}
 }

@@ -4,10 +4,10 @@
 \alias{parse_year}
 \title{Add year parsed from collection_date}
 \usage{
-parse_year(.data)
+parse_year(data)
 }
 \arguments{
-\item{.data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble}
 }
 \description{
 Add year parsed from collection_date

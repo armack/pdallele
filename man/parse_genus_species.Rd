@@ -4,7 +4,7 @@
 \alias{parse_genus_species}
 \title{Parse scientific_name to genus and species}
 \usage{
-parse_genus_species(.data)
+parse_genus_species(data)
 }
 \arguments{
 \item{path}{Path to an NCBI Isolates Browser

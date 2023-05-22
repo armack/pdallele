@@ -4,10 +4,10 @@
 \alias{possible_unique_proteins_mbe}
 \title{Determine all possible unique proteins present in an MicroBIGG-E dataset}
 \usage{
-possible_unique_proteins_mbe(.data)
+possible_unique_proteins_mbe(data)
 }
 \arguments{
-\item{.data}{a tibble or dataframe containing MicroBIGG-E data}
+\item{data}{a tibble or dataframe containing MicroBIGG-E data}
 }
 \description{
 Combines a single accession number for each distinct, assigned allele with

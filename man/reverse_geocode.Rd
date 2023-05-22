@@ -4,10 +4,10 @@
 \alias{reverse_geocode}
 \title{Reverse geocode "lat_lon" to countries and use to fill in missing "location"}
 \usage{
-reverse_geocode(.data)
+reverse_geocode(data)
 }
 \arguments{
-\item{.data}{A dataframe or tibble to modify}
+\item{data}{A dataframe or tibble to modify}
 }
 \description{
 Reverse geocode "lat_lon" to countries and use to fill in missing "location"

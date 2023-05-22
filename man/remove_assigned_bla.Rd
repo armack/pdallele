@@ -4,12 +4,12 @@
 \alias{remove_assigned_bla}
 \title{Remove assigned bla alleles}
 \usage{
-remove_assigned_bla(.data)
+remove_assigned_bla(data)
 }
 \description{
-Filter .data to remove unassigned bla alleles
+Filter data to remove unassigned bla alleles
 (i.e. those without an allele number)
 }
 \details{
-#' @param .data A data frame or tibble
+#' @param data A data frame or tibble
 }

@@ -4,12 +4,12 @@
 \alias{remove_unassigned_bla}
 \title{Remove unassigned bla alleles}
 \usage{
-remove_unassigned_bla(.data)
+remove_unassigned_bla(data)
 }
 \arguments{
-\item{.data}{A data frame or tibble}
+\item{data}{A data frame or tibble}
 }
 \description{
-Filter .data to remove unassigned bla alleles
+Filter data to remove unassigned bla alleles
 (i.e. those with an allele number)
 }

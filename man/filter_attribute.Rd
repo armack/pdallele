@@ -4,10 +4,10 @@
 \alias{filter_attribute}
 \title{Filter attribute column by string}
 \usage{
-filter_attribute(.data, attribute, string)
+filter_attribute(data, attribute, string)
 }
 \arguments{
-\item{.data}{A data frame or tibble}
+\item{data}{A data frame or tibble}
 
 \item{attribute}{\if{html}{\out{<data-masking>}} column to filter}
 

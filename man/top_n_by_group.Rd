@@ -6,7 +6,7 @@
 into \code{other}}
 \usage{
 top_n_by_group(
-  .data,
+  data,
   ...,
   count = alleles,
   n = 10,
@@ -17,7 +17,7 @@ top_n_by_group(
 )
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} columns of labels to be ranked}
 

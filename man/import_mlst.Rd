@@ -4,7 +4,7 @@
 \alias{import_mlst}
 \title{Import and Add MLST Data}
 \usage{
-import_mlst(.data, path)
+import_mlst(data, path)
 }
 \arguments{
 \item{path}{Path to a (reprocessed) MLST CSV file}

@@ -4,10 +4,10 @@
 \alias{parse_mbe_oxa_family}
 \title{Determines OXA family from MBE data and adds a 'family' column}
 \usage{
-parse_mbe_oxa_family(.data, by = "allele")
+parse_mbe_oxa_family(data, by = "allele")
 }
 \arguments{
-\item{.data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble}
 
 \item{by}{passed to left_join as a join by command; the column(s) to match in the join}
 

@@ -4,10 +4,10 @@
 \alias{parse_bla_formatting}
 \title{Properly format  bla gene/allele names per ASM Journals guidelines}
 \usage{
-parse_bla_formatting(.data)
+parse_bla_formatting(data)
 }
 \arguments{
-\item{.data}{A dataframe or tibble with an 'allele' and 'gene' column}
+\item{data}{A dataframe or tibble with an 'allele' and 'gene' column}
 }
 \description{
 Add formatting for proper display of bla allele names in both markdown (used

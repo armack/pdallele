@@ -1,6 +1,6 @@
 #' @importFrom dplyr %>%
 #' @importFrom ggplot2 %+replace%
-#' @importFrom rlang .data
+#' @importFrom rlang .data :=
 NULL
 
 ########## Bar Plot Functions ##########

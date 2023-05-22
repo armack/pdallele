@@ -4,10 +4,10 @@
 \alias{.resolve_na_last}
 \title{Process na_last arguments}
 \usage{
-.resolve_na_last(.data, ..., na_last)
+.resolve_na_last(data, ..., na_last)
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} columns to reorder NAs}
 

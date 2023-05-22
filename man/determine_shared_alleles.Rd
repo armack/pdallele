@@ -4,10 +4,10 @@
 \alias{determine_shared_alleles}
 \title{Filter alleles shared between multiple combinations of columns}
 \usage{
-determine_shared_alleles(.data, ...)
+determine_shared_alleles(data, ...)
 }
 \arguments{
-\item{.data}{A data frame or tibble}
+\item{data}{A data frame or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} cols to find alleles shared among different values}
 }

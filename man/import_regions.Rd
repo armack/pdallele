@@ -4,10 +4,10 @@
 \alias{import_regions}
 \title{Adds Region information based on a file and the location_broad column}
 \usage{
-import_regions(.data, path = "regions.csv")
+import_regions(data, path = "regions.csv")
 }
 \arguments{
-\item{.data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble}
 
 \item{path}{path to a csv/tsv file containing columns 'country' and 'region'}
 }

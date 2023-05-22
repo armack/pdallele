@@ -4,10 +4,10 @@
 \alias{na_if_tibble_chr}
 \title{Replace character vector values with NA across all character columns}
 \usage{
-na_if_tibble_chr(.data, terms)
+na_if_tibble_chr(data, terms)
 }
 \arguments{
-\item{.data}{A dataframe or tibble to modify}
+\item{data}{A dataframe or tibble to modify}
 
 \item{terms}{A character vector to replace values with NA_character_}
 }

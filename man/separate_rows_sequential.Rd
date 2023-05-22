@@ -4,10 +4,10 @@
 \alias{separate_rows_sequential}
 \title{Apply separate_rows sequentially by column}
 \usage{
-separate_rows_sequential(.data, ..., sep = "[^[:alnum:].]+", convert = FALSE)
+separate_rows_sequential(data, ..., sep = "[^[:alnum:].]+", convert = FALSE)
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{...}{\if{html}{\out{<tidy-select>}} columns to apply separate_rows to}
 

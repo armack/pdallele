@@ -1,5 +1,6 @@
 #' @importFrom forcats fct_expand fct_relevel fct_reorder
 #' @import dplyr
+#' @importFrom rlang :=
 NULL
 #' Keep the `n` highest (or lowest) `count` rows in each group across all
 #' groups and combine the rest into `other`
@@ -10,7 +11,7 @@ NULL
 #' Note that no tie-breaking is performed. In the event of a tie for the nth
 #' row, the first row by arrange() is kept.
 #'
-#' @param .data a dataframe or tibble
+#' @param data a dataframe or tibble
 #' @param ... <data-masking> columns of labels to be ranked
 #' @param count column of values (typically counts) to rank
 #' @param n number of rows to keep per group (all other values will be collapsed
@@ -21,14 +22,14 @@ NULL
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveld in alphanumeric order?
 #' @export
-new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
+new_top_n_across_groups <- function(data, ..., count = alleles, n = 10,
                                     desc = TRUE, other = "Other",
                                     relevel = "name", other_pos = "last"){
   dots <- rlang::enquos(...)
 
   if(...length() < 1){
     stop("Must provide column names in `...`")
-  }else if(!all(unlist(map(dots, rlang::as_name)) %in% names(.data))){
+  }else if(!all(unlist(purrr::map(dots, rlang::as_name)) %in% names(data))){
     stop("Please ensure values given in `...` are valid column names.")
   }
 
@@ -40,7 +41,7 @@ new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
     rlang::inform("Invalid `other_pos` provided. No releveling performed.")
   }
 
-  .complete <- .data %>%
+  .complete <- data %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     mutate(top = if_else(row_number() <= n, paste(!!!dots), NA_character_)) %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
@@ -71,7 +72,7 @@ new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
 #' Note that no tie-breaking is performed. In the event of a tie for the nth
 #' row, the first row by arrange() is kept.
 #'
-#' @param .data a dataframe or tibble
+#' @param data a dataframe or tibble
 #' @param ... <data-masking> columns of labels to be ranked
 #' @param count column of values (typically counts) to rank
 #' @param n number of rows to keep per group (all other values will be collapsed
@@ -82,14 +83,14 @@ new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveled in alphanumeric order?
 #'
-top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
+top_n_by_group <- function(data, ..., count = alleles, n = 10, desc = TRUE,
                            other = "Other", relevel = "name",
                            other_pos = "last"){
   dots <- rlang::enquos(...)
 
   if(...length() < 1){
     stop("Must provide column names in `...`")
-  }else if(!all(unlist(map(dots, rlang::as_name)) %in% names(.data))){
+  }else if(!all(unlist(purrr::map(dots, rlang::as_name)) %in% names(data))){
     stop("Please ensure values given in `...` are valid column names.")
   }
 
@@ -101,7 +102,7 @@ top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
     rlang::inform("Invalid `other_pos` provided. No releveling performed.")
   }
 
-  .complete <- .data %>%
+  .complete <- data %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
@@ -130,7 +131,7 @@ top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
 #' Note that no tie-breaking is performed. In the event of a tie for the nth
 #' row, the first row by arrange() is kept.
 #'
-#' @param .data a dataframe or tibble
+#' @param data a dataframe or tibble
 #' @param ... <data-masking> columns of labels to be ranked
 #' @param count column of values (typically counts) to rank
 #' @param n number of rows to keep per group (all other values will be collapsed
@@ -141,14 +142,14 @@ top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveled in alphanumeric order?
 #'
-top_n_overall <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
+top_n_overall <- function(data, ..., count = alleles, n = 10, desc = TRUE,
                           other = "Other", relevel = "name",
                           other_pos = "last"){
   dots <- rlang::enquos(...)
 
   if(...length() < 1){
     stop("Must provide column names in `...`")
-  }else if(!all(unlist(map(dots, rlang::as_name)) %in% names(.data))){
+  }else if(!all(unlist(purrr::map(dots, rlang::as_name)) %in% names(data))){
     stop("Please ensure values given in `...` are valid column names.")
   }
 
@@ -160,7 +161,7 @@ top_n_overall <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
     rlang::inform("Invalid `other_pos` provided. No releveling performed.")
   }
 
-  .top_values <- .data %>%
+  .top_values <- data %>%
     group_by(...) %>%
     summarize(total = sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc(total)) else arrange(., total)} %>%
@@ -168,7 +169,7 @@ top_n_overall <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
     mutate(concat = paste0(!!!dots)) %>%
     pull(concat)
 
-  .complete <- .data %>%
+  .complete <- data %>%
     mutate(concat = paste0(!!!dots)) %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%

@@ -4,10 +4,10 @@
 \alias{pipe_warn}
 \title{Pass data along the pipeline and rlang::warn()}
 \usage{
-pipe_warn(.data, ...)
+pipe_warn(data, ...)
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{...}{parameters to pass to warn()}
 }

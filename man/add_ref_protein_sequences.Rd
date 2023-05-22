@@ -4,10 +4,10 @@
 \alias{add_ref_protein_sequences}
 \title{Add reference protein sequences}
 \usage{
-add_ref_protein_sequences(.data, path = ref_protein_path)
+add_ref_protein_sequences(data, path = ref_protein_path)
 }
 \arguments{
-\item{.data}{a data table or tibble with a "protein" column of accession numbers}
+\item{data}{a data table or tibble with a "protein" column of accession numbers}
 
 \item{path}{path to a TSV containing accession number/sequence pairs}
 }

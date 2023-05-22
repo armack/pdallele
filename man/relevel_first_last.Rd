@@ -4,10 +4,10 @@
 \alias{relevel_first_last}
 \title{Relevel to first/last position and sort}
 \usage{
-relevel_first_last(.data, ..., first = NULL, last = NULL, na_last = TRUE)
+relevel_first_last(data, ..., first = NULL, last = NULL, na_last = TRUE)
 }
 \arguments{
-\item{.data}{A data frame or tibble}
+\item{data}{A data frame or tibble}
 
 \item{...}{\if{html}{\out{<data masking>}} columns to reorder}
 

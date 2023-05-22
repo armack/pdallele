@@ -142,8 +142,8 @@ parse_mlst_profiles <- function(.calls, .profiles){
       TRUE ~ "new_st"
     )) %>%
     dplyr::group_by(Genome) %>%
-    dplyr::mutate(ST = dplyr::na_if(paste0(stringr::str_sort(na.omit(unique(ST)), numeric = TRUE), collapse = ";"), "")) %>%
-    dplyr::mutate(errors = dplyr::na_if(paste0(na.omit(unique(error)), collapse = ";"), "")) %>%
+    dplyr::mutate(ST = dplyr::na_if(paste0(stringr::str_sort(stats::na.omit(unique(ST)), numeric = TRUE), collapse = ";"), "")) %>%
+    dplyr::mutate(errors = dplyr::na_if(paste0(stats::na.omit(unique(error)), collapse = ";"), "")) %>%
     dplyr::mutate(row = row_number()) %>%
     dplyr::ungroup() %>%
     dplyr::select(Genome, ST, errors) %>%
@@ -176,16 +176,16 @@ download_mlst_profile <- function(path, url){
 #' @param path location of FastMLST csv output file
 #' @param save should the re-parsed file be saved?
 reparse_mlst <- function(path, save = TRUE){
-  raw_mlst <- readr::read.csv(path)
+  raw_mlst <- utils::read.csv(path)
   mlst <- process_mlst(raw_mlst)
 
   pubmlst <- pubmlst_listing() %>%
-    dplyr::mutate(Scheme = map_chr(species, fastmlst_scheme))
+    dplyr::mutate(Scheme = purrr::map_chr(species, fastmlst_scheme))
 
   current_schema <- raw_mlst %>%
     dplyr::left_join(pubmlst, by = "Scheme") %>%
     dplyr::distinct(Scheme, url) %>%
-    dplyr::drop_na()
+    tidyr::drop_na()
 
   Scheme <- current_schema %>%
     dplyr::pull(Scheme)
@@ -199,14 +199,14 @@ reparse_mlst <- function(path, save = TRUE){
   if(!file.exists(profile_path))
     download_mlst_profile(profile_path, url)
 
-  profiles <- read.delim(profile_path, na.strings = "", colClasses = "character")
+  profiles <- utils::read.delim(profile_path, na.strings = "", colClasses = "character")
 
   fixed <- raw_mlst %>%
     parse_mlst_profiles(profiles) %>%
     dplyr::mutate(ST = dplyr::case_when(is.na(ST) ~ NA_character_, TRUE ~ paste0("ST", ST)))
 
   if(save){
-    write.csv(fixed, file = reparsed_path, row.names = FALSE)
+    utils::write.csv(fixed, file = reparsed_path, row.names = FALSE)
     message(paste0("Saved re-parsed ",
                    tools::file_path_sans_ext(path)," to `",
                    reparsed_path, "`"))
@@ -242,7 +242,7 @@ process_mlst <- function(mlst){
 #' @param id character vector of NCBI protein accession numbers
 #' @param n how many sequences should be downloaded in a single request?
 download_protein_sequences <- function(id, n = 100){
-  .data <- tibble::tibble(protein = character(), protein_sequence = character())
+  data <- tibble::tibble(protein = character(), protein_sequence = character())
   progress <- progress::progress_bar$new(format = "Downloaded :current of :total sequence sets :bar :percent (Elapsed: :elapsedfull, Remaining: :eta)",
                                          total = ceiling(length(id) / n), show_after = 0)
   progress$tick(0)
@@ -262,11 +262,11 @@ download_protein_sequences <- function(id, n = 100){
       xml2::xml_find_all("//TSeqSet/TSeq/TSeq_sequence") %>%
       xml2::xml_text()
 
-    .data <- dplyr::add_row(.data, protein = accn, protein_sequence = seq)
+    data <- dplyr::add_row(data, protein = accn, protein_sequence = seq)
 
     progress$tick()
   }
-  return(.data)
+  return(data)
 }
 
 #' Download (and save) all Reference Gene Catalog protein sequences from NCBI
@@ -279,7 +279,7 @@ download_protein_sequences <- function(id, n = 100){
 download_reference_gene_catalog_proteins <- function(path = refgene_path,
                                                      file = "reference_proteins.tsv"){
   accessions <- import_reference_gene_catalog(path) %>%
-    dplyr::drop_na(protein) %>%
+    tidyr::drop_na(protein) %>%
     dplyr::pull(protein)
 
   .sequences <- download_protein_sequences(accessions)

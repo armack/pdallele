@@ -4,10 +4,10 @@
 \alias{determine_exclusive_alleles}
 \title{Filter alleles exclusive to only a single combination of columns}
 \usage{
-determine_exclusive_alleles(.data, ...)
+determine_exclusive_alleles(data, ...)
 }
 \arguments{
-\item{.data}{A data frame or tibble}
+\item{data}{A data frame or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} cols to find alleles unique to different values}
 }

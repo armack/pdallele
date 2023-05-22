@@ -4,10 +4,10 @@
 \alias{relevel_numeric}
 \title{Relevel factors in human readable order and sort columns}
 \usage{
-relevel_numeric(.data, ...)
+relevel_numeric(data, ...)
 }
 \arguments{
-\item{.data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} cols to relevel alphanumerically}
 }

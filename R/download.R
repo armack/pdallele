@@ -178,7 +178,7 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
       xml2::xml_find_all("/IPGReportSet/IPGReport")
     if(length(xml_ipg_report) > 0){
       ipg_additional <- xml_ipg_report %>%
-        map(
+        purrr::map(
           ~tibble::tibble(
             ipg = as.integer(xml2::xml_attr(.x, "ipg")),
             ipg_accession = xml2::xml_find_first(.x, "Product") %>%
@@ -276,7 +276,7 @@ download_microbigge_bq <- function(billing = gcp_billing, path, taxgroup, scinam
 select_ftp_organism <- function(url = ftp_results_base){
   organism_list <- get_organisms(url = url) %>%
     dplyr::pull(organism)
-  organism <- organism_list[menu(stringr::str_replace_all(organism_list, "_", " "),
+  organism <- organism_list[utils::menu(stringr::str_replace_all(organism_list, "_", " "),
                                  title = "Select an Organism Group")]
 
   return(organism)
@@ -290,7 +290,7 @@ select_ftp_organism <- function(url = ftp_results_base){
 select_ftp_version <- function(url = ftp_results_base, organism){
   version_list <- get_versions(url = url, organism = organism) %>%
     dplyr::pull(version)
-  version <- version_list[menu(stringr::str_replace_all(version_list, "_", " "),
+  version <- version_list[utils::menu(stringr::str_replace_all(version_list, "_", " "),
                                title = "Select a version. Higher numbers are newer.")]
 
   return(version)
@@ -303,7 +303,7 @@ select_ftp_version <- function(url = ftp_results_base, organism){
 select_ftp_refgene <- function(url = ftp_refgene_base){
   version_list <- get_refgene_catalogs(url = url) %>%
     dplyr::pull(version)
-  version <- version_list[menu(stringr::str_replace_all(version_list, "_", " "),
+  version <- version_list[utils::menu(stringr::str_replace_all(version_list, "_", " "),
                                title = "Select a version. The newest is reccomended.")]
 
   return(version)

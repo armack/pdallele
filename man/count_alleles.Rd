@@ -4,10 +4,10 @@
 \alias{count_alleles}
 \title{Count Alleles by Columns}
 \usage{
-count_alleles(.data, ..., sort = TRUE, name = "alleles", na_last = TRUE)
+count_alleles(data, ..., sort = TRUE, name = "alleles", na_last = TRUE)
 }
 \arguments{
-\item{.data}{A data frame or tibble.}
+\item{data}{A data frame or tibble.}
 
 \item{...}{\if{html}{\out{<data masking>}} columns to group by.}
 

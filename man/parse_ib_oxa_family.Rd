@@ -4,10 +4,10 @@
 \alias{parse_ib_oxa_family}
 \title{Add oxa_family parsed from name (originally from Reference Gene Catalog file)}
 \usage{
-parse_ib_oxa_family(.data)
+parse_ib_oxa_family(data)
 }
 \arguments{
-\item{.data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble}
 }
 \description{
 Also adds markdown and math formatted oxa_family columns

@@ -4,10 +4,10 @@
 \alias{separate_genotypes}
 \title{Separate genotypes (amr, stress, vir) by row to allele and allele_type}
 \usage{
-separate_genotypes(.data, include = "amr")
+separate_genotypes(data, include = "amr")
 }
 \arguments{
-\item{.data}{A dataframe or tibble with genotype columns (amr, stress, vir)}
+\item{data}{A dataframe or tibble with genotype columns (amr, stress, vir)}
 }
 \description{
 Uses separate_rows to separate genotype columns (amr, stress, vir) originally

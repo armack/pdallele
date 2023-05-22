@@ -4,10 +4,10 @@
 \alias{pipe_inform}
 \title{Pass data along the pipeline and rlang::inform()}
 \usage{
-pipe_inform(.data, ...)
+pipe_inform(data, ...)
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{...}{parameters to pass to inform()}
 }

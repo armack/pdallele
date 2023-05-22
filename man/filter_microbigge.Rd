@@ -5,14 +5,14 @@
 \title{Filter imported MBE data to remove less "reliable" protein calls}
 \usage{
 filter_microbigge(
-  .data,
+  data,
   min_coverage = 100,
   min_identity = 90,
   remove = remove_mbe_allele_types
 )
 }
 \arguments{
-\item{.data}{a data tabel or tibble}
+\item{data}{a data tabel or tibble}
 
 \item{coverage}{integer minimum percent coverage to keep}
 

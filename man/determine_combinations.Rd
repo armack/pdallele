@@ -5,10 +5,10 @@
 \title{Add \code{combo} column of combinations of \code{allele} present in each \code{biosample}
 and filter out biosamples with only a single allele}
 \usage{
-determine_combinations(.data, filter_terms = NULL)
+determine_combinations(data, filter_terms = NULL)
 }
 \arguments{
-\item{.data}{a data frame or tibble}
+\item{data}{a data frame or tibble}
 
 \item{filter_terms}{character vector of terms to filter alleles before
 determining groups}

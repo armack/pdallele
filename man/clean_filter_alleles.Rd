@@ -5,13 +5,13 @@
 \title{Clean and filter allele listings}
 \usage{
 clean_filter_alleles(
-  .data,
+  data,
   filter = filter_alleles,
   remove = remove_allele_types
 )
 }
 \arguments{
-\item{.data}{A dataframe or tibble with an allele column}
+\item{data}{A dataframe or tibble with an allele column}
 
 \item{filter}{A character vector of gene names to keep. Uses grepl(). Partial
 matches are kept. Vector is collapsed with "|" (or operator).}

@@ -5,7 +5,7 @@
 \title{Count by Columns}
 \usage{
 count_by_column(
-  .data,
+  data,
   ...,
   isolates = FALSE,
   sort = TRUE,
@@ -14,7 +14,7 @@ count_by_column(
 )
 }
 \arguments{
-\item{.data}{A data frame or tibble.}
+\item{data}{A data frame or tibble.}
 
 \item{...}{\if{html}{\out{<data masking>}} columns to group by.}
 
