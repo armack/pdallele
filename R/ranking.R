@@ -1,12 +1,15 @@
+#' @importFrom forcats fct_expand fct_relevel fct_reorder
+#' @import dplyr
+NULL
 #' Keep the `n` highest (or lowest) `count` rows in each group across all
 #' groups and combine the rest into `other`
-#' 
+#'
 #' This function keeps the "top n" in each group across all groups. See the
 #' companion function top_n_by_group() to keep the "top n" in each group.
-#'  
+#'
 #' Note that no tie-breaking is performed. In the event of a tie for the nth
 #' row, the first row by arrange() is kept.
-#' 
+#'
 #' @param .data a dataframe or tibble
 #' @param ... <data-masking> columns of labels to be ranked
 #' @param count column of values (typically counts) to rank
@@ -17,26 +20,26 @@
 #' @param other character label for the "other" group
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveld in alphanumeric order?
-#' 
+#' @export
 new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
                                     desc = TRUE, other = "Other",
                                     relevel = "name", other_pos = "last"){
-  dots <- enquos(...)
-  
+  dots <- rlang::enquos(...)
+
   if(...length() < 1){
     stop("Must provide column names in `...`")
   }else if(!all(unlist(map(dots, rlang::as_name)) %in% names(.data))){
     stop("Please ensure values given in `...` are valid column names.")
   }
-  
+
   if(!(relevel %in% c("name","count","none"))){
     rlang::inform("Invalid `relevel` provided. No releveling performed.")
   }
-  
+
   if(!(other_pos %in% c("drop","first","last","none"))){
     rlang::inform("Invalid `other_pos` provided. No releveling performed.")
   }
-  
+
   .complete <- .data %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     mutate(top = if_else(row_number() <= n, paste(!!!dots), NA_character_)) %>%
@@ -55,19 +58,19 @@ new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
       else if(identical(other_pos, "drop")) filter(., !grepl(other, !!!dots))
       else .} %>%
     arrange(...)
-  
+
   return(.complete)
 }
 
 #' Keep the `n` highest (or lowest) `count` rows by group and combine the rest
 #' into `other`
-#' 
+#'
 #' This function keeps the "top n" with each group. See the companion function
 #' top_n_across_groups() to keep the "top n" in each group across all groups.
-#'  
+#'
 #' Note that no tie-breaking is performed. In the event of a tie for the nth
 #' row, the first row by arrange() is kept.
-#' 
+#'
 #' @param .data a dataframe or tibble
 #' @param ... <data-masking> columns of labels to be ranked
 #' @param count column of values (typically counts) to rank
@@ -78,22 +81,22 @@ new_top_n_across_groups <- function(.data, ..., count = alleles, n = 10,
 #' @param other character label for the "other" group
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveled in alphanumeric order?
-#' 
+#'
 top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
                            other = "Other", relevel = "name",
                            other_pos = "last"){
-  dots <- enquos(...)
-  
+  dots <- rlang::enquos(...)
+
   if(...length() < 1){
     stop("Must provide column names in `...`")
   }else if(!all(unlist(map(dots, rlang::as_name)) %in% names(.data))){
     stop("Please ensure values given in `...` are valid column names.")
   }
-  
+
   if(!(relevel %in% c("name","count","none"))){
     rlang::inform("Invalid `relevel` provided. No releveling performed.")
   }
-  
+
   if(!(other_pos %in% c("drop","first","last","none"))){
     rlang::inform("Invalid `other_pos` provided. No releveling performed.")
   }
@@ -114,19 +117,19 @@ top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
       else if(identical(other_pos, "drop")) filter(., !grepl(other, !!!dots))
       else .} %>%
     arrange(...)
-  
+
   return(.complete)
 }
 
 #' Keep the `n` highest (or lowest) `count` rows overall for each group and
 #' combine the rest into `other`
-#' 
+#'
 #' This function keeps the "top n" overall for each group. See the companion function
 #' top_n_across_groups() to keep the "top n" in each group across all groups.
-#'  
+#'
 #' Note that no tie-breaking is performed. In the event of a tie for the nth
 #' row, the first row by arrange() is kept.
-#' 
+#'
 #' @param .data a dataframe or tibble
 #' @param ... <data-masking> columns of labels to be ranked
 #' @param count column of values (typically counts) to rank
@@ -137,26 +140,26 @@ top_n_by_group <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
 #' @param other character label for the "other" group
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveled in alphanumeric order?
-#' 
+#'
 top_n_overall <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
                           other = "Other", relevel = "name",
                           other_pos = "last"){
-  dots <- enquos(...)
-  
+  dots <- rlang::enquos(...)
+
   if(...length() < 1){
     stop("Must provide column names in `...`")
   }else if(!all(unlist(map(dots, rlang::as_name)) %in% names(.data))){
     stop("Please ensure values given in `...` are valid column names.")
   }
-  
+
   if(!(relevel %in% c("name","count","none"))){
     rlang::inform("Invalid `relevel` provided. No releveling performed.")
   }
-  
+
   if(!(other_pos %in% c("drop","first","last","none"))){
     rlang::inform("Invalid `other_pos` provided. No releveling performed.")
   }
-  
+
   .top_values <- .data %>%
     group_by(...) %>%
     summarize(total = sum({{count}}), .groups = "drop") %>%
@@ -164,7 +167,7 @@ top_n_overall <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
     filter(row_number() <= n) %>%
     mutate(concat = paste0(!!!dots)) %>%
     pull(concat)
-  
+
   .complete <- .data %>%
     mutate(concat = paste0(!!!dots)) %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
@@ -181,6 +184,6 @@ top_n_overall <- function(.data, ..., count = alleles, n = 10, desc = TRUE,
       else if(identical(other_pos, "drop")) filter(., !grepl(other, !!!dots))
       else .} %>%
     arrange(...)
-  
+
   return(.complete)
 }
