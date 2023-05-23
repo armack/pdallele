@@ -4,7 +4,7 @@
 \alias{get_organisms}
 \title{List Available Organisms (FTP)}
 \usage{
-get_organisms(url = ftp_results_base)
+get_organisms(url)
 }
 \arguments{
 \item{url}{path to NCBI Pathogeen Detection FTP "Results" directory}

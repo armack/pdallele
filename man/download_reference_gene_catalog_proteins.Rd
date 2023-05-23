@@ -4,10 +4,7 @@
 \alias{download_reference_gene_catalog_proteins}
 \title{Download (and save) all Reference Gene Catalog protein sequences from NCBI}
 \usage{
-download_reference_gene_catalog_proteins(
-  path = refgene_path,
-  file = "reference_proteins.tsv"
-)
+download_reference_gene_catalog_proteins(path, file = "reference_proteins.tsv")
 }
 \arguments{
 \item{path}{path to an NCBI ReferenceGeneCatalog.txt file}

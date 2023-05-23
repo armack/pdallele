@@ -14,17 +14,17 @@ unclear_species_string <- "Unclear or Unknown"
 #' @param path Path to an NCBI Isolates Browser
 #'             PDG_accession.version.metadata.tsv file
 
-import_isolates_browser_metadata <- function(path = isolates_path) {
+import_isolates_browser_metadata <- function(path) {
   data <- readr::read_tsv(path, quote="", na = character(), show_col_types = FALSE)
 
   .complete <- data %>%
     dplyr::select(biosample = "biosample_acc", assembly = "asm_acc", pdt = "target_acc",
-           bioproject = "bioproject_acc", bioproject_center, collection_date,
-           sample_type = "epi_type", location = "geo_loc_name", host, host_disease,
-           source_type, isolation_source, lat_lon, scientific_name,
-           species_taxid, organism_taxid = "taxid", amr = "AMR_genotypes",
+           bioproject = "bioproject_acc", "bioproject_center", "collection_date",
+           sample_type = "epi_type", location = "geo_loc_name", "host", "host_disease",
+           "source_type", "isolation_source", "lat_lon", "scientific_name",
+           "species_taxid", organism_taxid = "taxid", amr = "AMR_genotypes",
            stress = "stress_genotypes", vir = "virulence_genotypes",
-           refgene_db_version ) %>%
+           "refgene_db_version" ) %>%
     dplyr::mutate(across(everything(), ~stringr::str_replace_all(.x, '"', "")))
 
     return(.complete)
@@ -56,17 +56,18 @@ na_if_tibble_chr <- function(data, terms) {
 #' https://www.ncbi.nlm.nih.gov/biosample/docs/organism/
 #' And https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html
 #'
+#' @param data A dataframe or tibble
 #' @param path Path to an NCBI Isolates Browser
 #'             PDG_accession.version.metadata.tsv file
-parse_genus_species <- function(data) {
+parse_genus_species <- function(data, path) {
 
   .complete <- data %>%
-    dplyr::mutate(species = stringr::str_extract(scientific_name, "^[^ ]* [^ ]*")) %>%
-    dplyr::mutate(species_markdown = paste0("*", species ,"*")) %>%
-    dplyr::mutate(species_math = paste0("italic(", species ,")")) %>%
-    dplyr::mutate(genus = stringr::str_extract(scientific_name, "^[^ ]*")) %>%
-    dplyr::mutate(genus_markdown = paste0("*", genus ,"*")) %>%
-    dplyr::mutate(genus_math = paste0("italic(", genus ,")"))
+    dplyr::mutate(species = stringr::str_extract(.data$scientific_name, "^[^ ]* [^ ]*")) %>%
+    dplyr::mutate(species_markdown = paste0("*", .data$species ,"*")) %>%
+    dplyr::mutate(species_math = paste0("italic(", .data$species ,")")) %>%
+    dplyr::mutate(genus = stringr::str_extract(.data$scientific_name, "^[^ ]*")) %>%
+    dplyr::mutate(genus_markdown = paste0("*", .data$genus ,"*")) %>%
+    dplyr::mutate(genus_math = paste0("italic(", .data$genus ,")"))
 
   return(.complete)
 }
@@ -79,20 +80,20 @@ reverse_geocode <- function(data){
 
   .partial <- data %>%
     dplyr::mutate(location = dplyr::if_else(grepl("/",location), NA_character_, location)) %>%
-    tidyr::extract(lat_lon, into=c("lat","lat_dir","lon", "lon_dir"), regex="(\\d*\\.?\\d*) ([[:alpha:]]) (\\d*\\.?\\d*) ([[:alpha:]])",remove=FALSE, convert = TRUE) %>%
-    dplyr::mutate(lat = dplyr::case_when(lat_dir == "N" ~ lat, lat_dir == "S" ~ -lat)) %>%
-    dplyr::mutate(lon = dplyr::case_when(lon_dir == "E" ~ lon, lon_dir == "W" ~ -lon)) %>%
-    dplyr::select(-lat_lon,-lat_dir,-lon_dir)
+    tidyr::extract("lat_lon", into=c("lat","lat_dir","lon", "lon_dir"), regex="(\\d*\\.?\\d*) ([[:alpha:]]) (\\d*\\.?\\d*) ([[:alpha:]])",remove=FALSE, convert = TRUE) %>%
+    dplyr::mutate(lat = dplyr::case_when(lat_dir == "N" ~ .data$lat, lat_dir == "S" ~ -.data$lat)) %>%
+    dplyr::mutate(lon = dplyr::case_when(lon_dir == "E" ~ .data$lon, lon_dir == "W" ~ -.data$lon)) %>%
+    dplyr::select(-"lat_lon", -"lat_dir", -"lon_dir")
 
   geocode_countries <- .partial %>%
-    dplyr::distinct(lat,lon) %>%
+    dplyr::distinct("lat","lon") %>%
     tidyr::drop_na() %>%
-    dplyr::mutate(geocode_loc = maps::map.where(database = "world", lon, lat))
+    dplyr::mutate(geocode_loc = maps::map.where(database = "world", .data$lon, .data$lat))
 
   .complete <- .partial %>%
     dplyr::left_join(geocode_countries, by = c("lat", "lon")) %>%
-    dplyr::mutate(location = dplyr::coalesce(location,geocode_loc)) %>%
-    dplyr::select(-geocode_loc)
+    dplyr::mutate(location = dplyr::coalesce("location", "geocode_loc")) %>%
+    dplyr::select(-"geocode_loc")
 
   return(.complete)
 }
@@ -110,7 +111,7 @@ split_location <- function(data) {
   .complete <- data %>%
     tidyr::separate(location, into = c("location_broad", "location_detail"), sep = ":",
              extra = "merge", fill = "right", remove = FALSE) %>%
-    dplyr::mutate(location_detail = stringr::str_trim(location_detail, side = "left"))
+    dplyr::mutate(location_detail = stringr::str_trim(.data$location_detail, side = "left"))
 
   return(.complete)
 }
@@ -127,15 +128,15 @@ split_location <- function(data) {
 #'
 #' @param data A dataframe or tibble
 #' @param path path to a csv/tsv file containing columns 'country' and 'region'
-import_regions <- function(data, path = "regions.csv") {
+import_regions <- function(data, path) {
   if(is.null(path)) return(data)
 
   regions <- readr::read_csv(file = path, show_col_types = FALSE)
 
-  country_list <- dplyr::distinct(data,location_broad)
+  country_list <- dplyr::distinct(data, "location_broad")
 
   standardized_countries <- country_list %>%
-    dplyr::mutate(std_country = countrycode::countryname(location_broad,
+    dplyr::mutate(std_country = countrycode::countryname(.data$location_broad,
                                                   destination = "country.name.en")) %>%
     dplyr::left_join(regions, by = c("std_country" = "country")) %>%
     tidyr::drop_na()
@@ -149,6 +150,7 @@ import_regions <- function(data, path = "regions.csv") {
 
 #' Import and Add NCBI Pathogen Detection SNP Cluster Data
 #'
+#' @param data A dataframe or tibble
 #' @param path Path to an NCBI Pathogen Detection
 #' PDG_accession.version.reference_target.cluster_list.tsv file
 
@@ -156,7 +158,7 @@ import_cluster_list <- function(data, path) {
   if(missing(path) | is.null(path)) return(data)
 
   .clusters <- readr::read_tsv(file = path, show_col_types = FALSE) %>%
-    dplyr::select(pds = PDS_acc, biosample = biosample_acc)
+    dplyr::select(pds = "PDS_acc", biosample = "biosample_acc")
 
   .complete <- data %>%
     dplyr::left_join(.clusters, by = "biosample", multiple = "any")
@@ -166,13 +168,14 @@ import_cluster_list <- function(data, path) {
 
 #' Import and Add MLST Data
 #'
+#' @param data A dataframe or tibble
 #' @param path Path to a (reprocessed) MLST CSV file
 
 import_mlst <- function(data, path) {
   if(missing(path) | is.null(path)) return(data)
 
   .mlst <- readr::read_csv(file = path, show_col_types = FALSE) %>%
-    dplyr::select(mlst = ST, mlst_errors = errors, assembly)
+    dplyr::select(mlst = "ST", mlst_errors = "errors", "assembly")
 
   .complete <- data %>%
     dplyr::left_join(.mlst, by = "assembly", multiple = "any")
@@ -190,16 +193,18 @@ import_mlst <- function(data, path) {
 #'                   see description of clean_filter_alleles() for details
 #'
 #' @param data A dataframe or tibble with genotype columns (amr, stress, vir)
+#' @param include Which types of alleles (`amr`, `stress`, `vir`) should be kept?
+#' This is a regex - separate multiple valeus with `|`
 
 separate_genotypes <- function(data, include = "amr"){
 
   .complete <- data %>%
     tidyr::pivot_longer(any_of(c("amr", "stress","vir")), names_to = "allele_type",
                  values_to = "allele") %>%
-    dplyr::filter(grepl(paste(include, collapse = "|"), allele_type)) %>%
-    tidyr::drop_na(allele) %>%
-    tidyr::separate_rows(allele, sep = ",") %>%
-    tidyr::separate(allele, into = c("allele","allele_quality"), sep = "=", fill = "right")
+    dplyr::filter(grepl(paste(include, collapse = "|"), .data$allele_type)) %>%
+    tidyr::drop_na("allele") %>%
+    tidyr::separate_rows("allele", sep = ",") %>%
+    tidyr::separate("allele", into = c("allele","allele_quality"), sep = "=", fill = "right")
 
   return(.complete)
 }
@@ -222,12 +227,12 @@ separate_genotypes <- function(data, include = "amr"){
 #'   matches are kept. Vector is collapsed with "|" (or operator).
 #' @param remove A character vector of allele_quality values to remove
 
-clean_filter_alleles <- function(data, filter = filter_alleles, remove = remove_allele_types) {
+clean_filter_alleles <- function(data, filter, remove) {
 
   .complete <- data %>%
-    dplyr::filter(grepl(paste(filter, collapse = "|"), gene)) %>%
-    dplyr::filter(!grepl(paste(remove, collapse = "|"), allele_quality)) %>%
-    dplyr::distinct(biosample, allele, .keep_all = TRUE)
+    dplyr::filter(grepl(paste(filter, collapse = "|"), .data$gene)) %>%
+    dplyr::filter(!grepl(paste(remove, collapse = "|"), .data$allele_quality)) %>%
+    dplyr::distinct("biosample", "allele", .keep_all = TRUE)
 
   return(.complete)
 }
@@ -237,12 +242,12 @@ clean_filter_alleles <- function(data, filter = filter_alleles, remove = remove_
 #' Imports Reference Gene Catalog, renames columns, and removes unneeded data
 #'
 #' @param path Path to an NCBI ReferenceGeneCatalog.txt file
-import_reference_gene_catalog <- function(path = refgene_path){
-  .rgc <- readr::read_tsv(refgene_path, show_col_types = FALSE) %>%
-    dplyr::select(allele, gene = "gene_family", name = "product_name", type, subtype,
-           class, subclass, protein = "refseq_protein_accession",
-           nucleotide = "refseq_nucleotide_accession", blacklisted_taxa,
-           whitelisted_taxa)
+import_reference_gene_catalog <- function(path){
+  .rgc <- readr::read_tsv(path, show_col_types = FALSE) %>%
+    dplyr::select("allele", gene = "gene_family", name = "product_name", "type", "subtype",
+           "class", "subclass", protein = "refseq_protein_accession",
+           nucleotide = "refseq_nucleotide_accession", "blacklisted_taxa",
+           "whitelisted_taxa")
 
   return(.rgc)
 }
@@ -261,15 +266,15 @@ add_reference_gene_catalog <- function(data, path) {
   if(is.null(path)) return(data)
 
   .rgc <- import_reference_gene_catalog(path) %>%
-    dplyr::mutate(whitelisted_taxa = stringr::str_replace(whitelisted_taxa, "_", " "))
+    dplyr::mutate(whitelisted_taxa = stringr::str_replace(.data$whitelisted_taxa, "_", " "))
 
   .complete <- dplyr::left_join(data, .rgc, by = "allele", multiple = "all") %>%
-    dplyr::filter(dplyr::case_when(is.na(whitelisted_taxa) ~ TRUE,
+    dplyr::filter(dplyr::case_when(is.na(.data$whitelisted_taxa) ~ TRUE,
                      whitelisted_taxa == genus ~ TRUE,
                      whitelisted_taxa == species ~ TRUE,
                      TRUE ~ FALSE)) %>%
-    dplyr::select(-whitelisted_taxa) %>%
-    dplyr::mutate(gene = dplyr::coalesce(gene, allele))
+    dplyr::select(-"whitelisted_taxa") %>%
+    dplyr::mutate(gene = dplyr::coalesce("gene", "allele"))
 
   return(.complete)
 }
@@ -287,10 +292,10 @@ add_reference_gene_catalog <- function(data, path) {
 parse_bla_formatting <- function(data) {
 
   .complete <- data %>%
-    dplyr::mutate(allele_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", allele, perl = TRUE) ) %>%
-    dplyr::mutate(allele_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", allele, perl = TRUE) ) %>%
-    dplyr::mutate(gene_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", gene, perl = TRUE) ) %>%
-    dplyr::mutate(gene_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", gene, perl = TRUE) )
+    dplyr::mutate(allele_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$allele, perl = TRUE) ) %>%
+    dplyr::mutate(allele_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$allele, perl = TRUE) ) %>%
+    dplyr::mutate(gene_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$gene, perl = TRUE) ) %>%
+    dplyr::mutate(gene_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$gene, perl = TRUE) )
 
   return(.complete)
 }
@@ -307,17 +312,17 @@ parse_ib_oxa_family <- function(data) {
   if(!any(grepl("OXA", data$allele))){return(data)}
 
   .oxa_families <- data %>%
-    dplyr::distinct(allele, name) %>%
-    dplyr::filter(grepl("OXA-", allele, ignore.case = TRUE)) %>%
+    dplyr::distinct("allele", "name") %>%
+    dplyr::filter(grepl("OXA-", .data$allele, ignore.case = TRUE)) %>%
     dplyr::mutate(oxa_family = dplyr::case_when(
-      grepl('family', name) ~ paste0("bla",stringr::str_extract(name, "OXA-\\d+?(?= family)")),
-      TRUE ~ paste0("bla",stringr::str_extract(name, "OXA-\\d+"))
+      grepl('family', .data$name) ~ paste0("bla",stringr::str_extract(.data$name, "OXA-\\d+?(?= family)")),
+      TRUE ~ paste0("bla",stringr::str_extract(.data$name, "OXA-\\d+"))
     )) %>%
     dplyr::mutate(oxa_family_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>",
-                                     oxa_family, perl = TRUE) ) %>%
+                                     .data$oxa_family, perl = TRUE) ) %>%
     dplyr::mutate(oxa_family_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]",
-                                 oxa_family, perl = TRUE) ) %>%
-    dplyr::select(-name)
+                                 .data$oxa_family, perl = TRUE) ) %>%
+    dplyr::select(-"name")
 
   .complete <- dplyr::left_join(data, .oxa_families, by = "allele")
 
@@ -330,9 +335,9 @@ parse_ib_oxa_family <- function(data) {
 
 parse_year <- function(data) {
   .complete <- data %>%
-    dplyr::mutate(year = sub("\\d{4}/(\\d{4})", "\\1", collection_date)) %>%
-    dplyr::mutate(year = sub("^.*?(\\d{4}).*?$", "\\1", year)) %>%
-    dplyr::mutate(across(year, as.integer))
+    dplyr::mutate(year = sub("\\d{4}/(\\d{4})", "\\1", .data$collection_date)) %>%
+    dplyr::mutate(year = sub("^.*?(\\d{4}).*?$", "\\1", .data$year)) %>%
+    dplyr::mutate(across("year", as.integer))
 
   return(.complete)
 }
@@ -352,24 +357,26 @@ parse_year <- function(data) {
 #'                        even when multiple genotypes exist?
 
 filter_pds <- function(data, ignore_genotype = FALSE){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
+
   cluster_biosamples <- data %>%
-    dplyr::select(biosample, pds, allele) %>%
-    tidyr::drop_na(pds) %>%
-    dplyr::group_by(biosample) %>%
-    dplyr::mutate(combo = paste(allele, collapse = ",")) %>%
-    dplyr::group_by(pds) %>%
-    {if(!ignore_genotype) dplyr::group_by(., combo, .add = TRUE) else .} %>%
-    dplyr::arrange(biosample) %>%
+    dplyr::select("biosample", "pds", "allele") %>%
+    tidyr::drop_na("pds") %>%
+    dplyr::group_by("biosample") %>%
+    dplyr::mutate(combo = paste(.data$allele, collapse = ",")) %>%
+    dplyr::group_by("pds") %>%
+    {if(!ignore_genotype) dplyr::group_by(., "combo", .add = TRUE) else .} %>%
+    dplyr::arrange("biosample") %>%
     dplyr::slice_head() %>%
-    dplyr::pull(biosample)
+    dplyr::pull("biosample")
 
   noncluster_biosamples <- data %>%
-    dplyr::filter(is.na(pds)) %>%
-    dplyr::pull(biosample) %>%
+    dplyr::filter(is.na("pds")) %>%
+    dplyr::pull("biosample") %>%
     unique()
 
   .complete <- data %>%
-    dplyr::filter(biosample %in% c(cluster_biosamples,noncluster_biosamples))
+    dplyr::filter(.data$biosample %in% c(cluster_biosamples,noncluster_biosamples))
 
   return(.complete)
 }
@@ -390,7 +397,7 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #'
 #' @param path Path to an NCBI MicroBIGG-E csv/tsv file.
 
-import_microbigge <- function(path = mbe_path){
+import_microbigge <- function(path){
   .complete <- readr::read_tsv(file = path, na = "", show_col_types = FALSE) %>%
     dplyr::select(protein = "protein_acc", biosample = "biosample_acc", assembly = "asm_acc",
            allele = "element_symbol", long_name = "element_name", method = "amr_method",
@@ -412,16 +419,17 @@ import_microbigge <- function(path = mbe_path){
 #' ********** THIS REALLY NEEDS TO BE REVISITED **********
 #'
 #' @param data a data tabel or tibble
-#' @param coverage integer minimum percent coverage to keep
-#' @param identity integer minimum percent identity to keep
-filter_microbigge <- function(data, min_coverage = 100, min_identity = 90,
-                       remove = remove_mbe_allele_types) {
-
+#' @param min_coverage integer minimum percent coverage to keep
+#' @param min_identity integer minimum percent identity to keep
+#' @param remove regex string of `method` to remove
+filter_microbigge <- function(data, min_coverage = 100, min_identity = 90, remove) {
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
+  remove_missing <- missing(remove)
   .complete <- data %>%
-    tidyr::drop_na(protein) %>%
-    dplyr::filter(!grepl(paste(remove, collapse = "|"), method)) %>%
-    dplyr::filter(coverage >= min_coverage) %>%
-    dplyr::filter(identity >= min_identity)
+    tidyr::drop_na("protein") %>%
+    {if(!remove_missing) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
+    dplyr::filter("coverage" >= min_coverage) %>%
+    dplyr::filter("coverage" >= min_identity)
 
   return(.complete)
 }
@@ -429,7 +437,6 @@ filter_microbigge <- function(data, min_coverage = 100, min_identity = 90,
 #' Determines OXA family from MBE data and adds a 'family' column
 #'
 #' @param data A dataframe or tibble
-#' @param .refgene A dataframe or timble imported from an NCBI ReferenceGeneCatalog file
 #' @param by passed to left_join as a join by command; the column(s) to match in the join
 
 parse_mbe_oxa_family <- function(data, by = "allele") {
@@ -442,7 +449,7 @@ parse_mbe_oxa_family <- function(data, by = "allele") {
       grepl('family', ipg_name) ~ stringr::str_extract(ipg_name, "OXA-\\d+?(?= family)"),
       TRUE ~ stringr::str_extract(ipg_name, "OXA-\\d+")
     )) %>%
-    dplyr::mutate(family = dplyr::coalesce(ipg_family, mbe_family))
+    dplyr::mutate(family = dplyr::coalesce("ipg_family", "mbe_family"))
 
   return(.complete)
 }
@@ -457,24 +464,24 @@ parse_mbe_oxa_family <- function(data, by = "allele") {
 #'
 #' @param data a data table or tibble
 #' @param path path to an NCBI IPG csv/tsv file
-import_ipg <- function(data, path = ipg_path){
+import_ipg <- function(data, path){
   if(is.null(path)) return(data)
 
   .ipg <- readr::read_tsv(file = path, show_col_types = FALSE)
 
   mbe_proteins <- data %>%
-    dplyr::pull(protein) %>%
+    dplyr::pull("protein") %>%
     unique()
 
   mbe_to_ipg <- .ipg %>%
-    dplyr::select(ipg_uid = Id, accession = Protein) %>%
-    dplyr::filter(accession %in% mbe_proteins) %>%
-    dplyr::distinct(accession, .keep_all = TRUE)
+    dplyr::select(ipg_uid = "Id", accession = "Protein") %>%
+    dplyr::filter(.data$accession %in% mbe_proteins) %>%
+    dplyr::distinct("accession", .keep_all = TRUE)
 
   ipg_uid_accession_name <- .ipg %>%
-    dplyr::group_by(Id) %>%
-    dplyr::arrange(!grepl("REFSEQ", Source)) %>%
-    dplyr::select(ipg_uid = Id, ipg_accession = Protein, ipg_name = `Protein Name`) %>%
+    dplyr::group_by("Id") %>%
+    dplyr::arrange(!grepl("REFSEQ", .data$Source)) %>%
+    dplyr::select(ipg_uid = "Id", ipg_accession = "Protein", ipg_name = "Protein Name") %>%
     dplyr::slice_head()
 
   .complete <- data %>%
@@ -494,7 +501,7 @@ import_ipg <- function(data, path = ipg_path){
 #'
 #' @param data a data table or tibble with a "protein" column of accession numbers
 #' @param path path to a TSV containing accession number/sequence pairs
-add_ref_protein_sequences <- function(data, path = ref_protein_path){
+add_ref_protein_sequences <- function(data, path){
   if(is.null(path)) return(data)
 
   .complete <- data %>%

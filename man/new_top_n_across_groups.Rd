@@ -8,7 +8,7 @@ groups and combine the rest into \code{other}}
 new_top_n_across_groups(
   data,
   ...,
-  count = alleles,
+  count,
   n = 10,
   desc = TRUE,
   other = "Other",

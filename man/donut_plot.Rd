@@ -5,9 +5,9 @@
 \title{Generates a panel of donut plots of \code{fill} and \code{counts}}
 \usage{
 donut_plot(
-  .data,
-  fill = allele_markdown,
-  counts = alleles,
+  data,
+  fill,
+  counts,
   count_label = "Alleles",
   legend_title = "**Allele**",
   labels = TRUE,
@@ -16,7 +16,7 @@ donut_plot(
 )
 }
 \arguments{
-\item{.data}{a data table or tibble}
+\item{data}{a data table or tibble}
 
 \item{fill}{column containing levels/labels (e.g. alleles names) (rich text)}
 

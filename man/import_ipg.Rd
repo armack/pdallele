@@ -5,7 +5,7 @@
 \title{Import NCBI Identical Protein Groups data and add accession numbers and names
 to MBE data}
 \usage{
-import_ipg(data, path = ipg_path)
+import_ipg(data, path)
 }
 \arguments{
 \item{data}{a data table or tibble}

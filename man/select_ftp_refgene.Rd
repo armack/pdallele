@@ -5,7 +5,7 @@
 \title{Interactively select a ReferenceGeneCatalog version from the NCBI Pathogen
 Detection FTP directory}
 \usage{
-select_ftp_refgene(url = ftp_refgene_base)
+select_ftp_refgene(url)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP Reference Gene Catalog directory}

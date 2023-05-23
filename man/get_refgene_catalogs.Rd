@@ -4,7 +4,7 @@
 \alias{get_refgene_catalogs}
 \title{List available ReferenceGeneCatalog versions (FTP)}
 \usage{
-get_refgene_catalogs(url = ftp_refgene_base)
+get_refgene_catalogs(url)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP Reference Gene Catalog directory}

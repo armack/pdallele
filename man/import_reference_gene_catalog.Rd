@@ -4,7 +4,7 @@
 \alias{import_reference_gene_catalog}
 \title{Import Reference Gene Catalog to tibble}
 \usage{
-import_reference_gene_catalog(path = refgene_path)
+import_reference_gene_catalog(path)
 }
 \arguments{
 \item{path}{Path to an NCBI ReferenceGeneCatalog.txt file}

@@ -5,7 +5,7 @@
 \title{Interactively select an accession.version for a given organism from the NCBI
 Pathogen Detection FTP directory}
 \usage{
-select_ftp_version(url = ftp_results_base, organism)
+select_ftp_version(url, organism)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP "Results" directory}

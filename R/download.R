@@ -1,11 +1,12 @@
 ########## FTP Listings ##########
 #' @importFrom dplyr %>%
+#' @importFrom data.table %like%
 NULL
 
 #' List Available Organisms (FTP)
 #'
 #' @param url path to NCBI Pathogeen Detection FTP "Results" directory
-get_organisms <- function(url = ftp_results_base){
+get_organisms <- function(url){
   raw_rows <- RCurl::getURL(url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
     stringr::str_split("\n") %>%
     unlist() %>%
@@ -26,7 +27,7 @@ get_organisms <- function(url = ftp_results_base){
 #'
 #' @param url path to NCBI Pathogen Detection FTP "Results" directory
 #' @param organism name of a valid organism/organism group
-get_versions <- function(url = ftp_results_base, organism){
+get_versions <- function(url, organism){
   organism_url <- paste0(url, organism, "/")
   raw_rows <- RCurl::getURL(organism_url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
     stringr::str_split("\n") %>%
@@ -39,7 +40,7 @@ get_versions <- function(url = ftp_results_base, organism){
     stringr::str_extract("(?<=modify\\=)\\d+(?=;)") %>%
     lubridate::ymd_hms(tz = "UTC")
   version_list <- tibble::tibble(version, updated) %>%
-    dplyr::arrange(str_rank(version, numeric = TRUE))
+    dplyr::arrange(stringr::str_rank(version, numeric = TRUE))
 
   return(version_list)
 }
@@ -49,7 +50,7 @@ get_versions <- function(url = ftp_results_base, organism){
 #' @param url path to NCBI Pathogen Detection FTP "Results" directory
 #' @param organism name of a valid organism/organism group
 #' @param version a valid PDG accession.version
-check_complete_pdg_version <- function(url = ftp_results_base, organism, version){
+check_complete_pdg_version <- function(url, organism, version){
   version_url <- paste0(url, organism, "/", version, "/", version, ".final.descriptor.xml")
 
   .complete <- xml2::read_xml(version_url) %>%
@@ -64,7 +65,7 @@ check_complete_pdg_version <- function(url = ftp_results_base, organism, version
 #' List available ReferenceGeneCatalog versions (FTP)
 #'
 #' @param url path to NCBI Pathogen Detection FTP Reference Gene Catalog directory
-get_refgene_catalogs <- function(url = ftp_refgene_base){
+get_refgene_catalogs <- function(url){
   raw_rows <- RCurl::getURL(url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
     stringr::str_split("\n") %>%
     unlist() %>%
@@ -89,7 +90,7 @@ get_refgene_catalogs <- function(url = ftp_refgene_base){
 #' @param organism name of a valid organism/organism group
 #' @param version a valid PDG accession.version
 #' @param path directory to save downloaded files to
-download_metadata_clusters <- function(url = ftp_results_base, organism, version, path){
+download_metadata_clusters <- function(url, organism, version, path){
   url_base <- paste0(url, organism, "/", version, "/")
   url_descriptor <- paste0(url_base, version, ".final.descriptor.xml")
   url_metadata <- paste0(url_base, "AMR/", version, ".amr.metadata.tsv")
@@ -132,7 +133,7 @@ download_metadata_clusters <- function(url = ftp_results_base, organism, version
 #' @param url path to NCBI Pathogen Detection FTP Reference Gene Catalog directory
 #' @param version a valid Reference Gene Catalog version number
 #' @param path directory to save downloaded files to
-download_refgene_catalog <- function(url = ftp_refgene_base, version, path){
+download_refgene_catalog <- function(url, version, path){
   url_complete <- file.path(url, version, "ReferenceGeneCatalog.txt")
 
   ensure_directory(path)
@@ -189,7 +190,7 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
                           xml2::xml_attr("accver"))
           )) %>%
         purrr::list_rbind() %>%
-        dplyr::filter(protein %in% accessions) %>%
+        dplyr::filter(.data$protein %in% accessions) %>%
         dplyr::distinct()
 
       .ipg_data <- dplyr::bind_rows(.ipg_data, ipg_additional)
@@ -200,7 +201,7 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
   }
 
   table_path <- file.path(path, "ipg.tsv")
-  write_tsv(.ipg_data, file = table_path)
+  readr::write_tsv(.ipg_data, file = table_path)
 
   log <- file(file.path(path,"DatasetDetails.txt"), open="a")
   write(paste0(Sys.time(), ' - Queried data on ', nrow(.ipg_data),
@@ -219,18 +220,20 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
 #' Note that taxgroup, sciname, and element all use SQL syntax for queries. Use
 #' '%' as a wildcard rather than '*'.
 #'
-#' @param gcp_billing GCP project identifier for billing/usage tracking
+#' @param billing GCP project identifier for billing/usage tracking
 #' @param path directory to save downloaded files to
 #' @param taxgroup an NCBI Pathogen Detection organism group to filter by
 #' @param sciname scientific name of the organism of interest to filter by
 #' @param element name of a gene/allele to filter by
 #' @param debug should the query be previewed rather than executed?
-download_microbigge_bq <- function(billing = gcp_billing, path, taxgroup, sciname, element, debug = FALSE){
+download_microbigge_bq <- function(billing, path, taxgroup, sciname, element, debug = FALSE){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
+
   bq_con <- bigrquery::dbConnect(
     bigrquery::bigquery(),
     project = "ncbi-pathogen-detect",
     dataset = "pdbrowser",
-    billing = gcp_billing
+    billing
   )
 
   taxgroup_missing <- missing(taxgroup)
@@ -241,16 +244,16 @@ download_microbigge_bq <- function(billing = gcp_billing, path, taxgroup, scinam
 
   mbe_data <- bq_con %>%
     tbl("microbigge") %>%
-    {if(!taxgroup_missing) filter(., taxgroup_name %like% taxgroup) else . } %>%
-    {if(!sciname_missing) filter(., scientific_name %like% sciname) else . } %>%
-    {if(!element_missing) filter(., element_symbol %like% element) else . } %>%
+    {if(!taxgroup_missing) filter(., .data$taxgroup_name %like% taxgroup) else . } %>%
+    {if(!sciname_missing) filter(., .data$scientific_name %like% sciname) else . } %>%
+    {if(!element_missing) filter(., .data$element_symbol %like% element) else . } %>%
     {if (debug) show_query(.) else collect(.) }
 
   sql_query <- bq_con %>%
     tbl("microbigge") %>%
-    {if(!taxgroup_missing) dplyr::filter(., taxgroup_name %like% taxgroup) else . } %>%
-    {if(!sciname_missing) dplyr::filter(., scientific_name %like% sciname) else . } %>%
-    {if(!element_missing) dplyr::filter(., element_symbol %like% element) else . } %>%
+    {if(!taxgroup_missing) dplyr::filter(., .data$taxgroup_name %like% taxgroup) else . } %>%
+    {if(!sciname_missing) dplyr::filter(., .data$scientific_name %like% sciname) else . } %>%
+    {if(!element_missing) dplyr::filter(., .data$element_symbol %like% element) else . } %>%
     dbplyr::sql_render() %>%
     stringr::str_replace_all("\n", " ") %>%
     stringr::str_replace_all("   ", " ") %>%
@@ -264,7 +267,7 @@ download_microbigge_bq <- function(billing = gcp_billing, path, taxgroup, scinam
                  basename(table_path)), file = log, append = TRUE)
     close(log)
     message(paste0("Successfully downloaded ", nrow(mbe_data), " rows covering ",
-                   nrow(distinct(mbe_data, biosample_acc)), " isolates."))
+                   nrow(dplyr::distinct(mbe_data, "biosample_acc")), " isolates."))
   }
 }
 
@@ -273,7 +276,7 @@ download_microbigge_bq <- function(billing = gcp_billing, path, taxgroup, scinam
 #' Interactively select an organism from the NCBI Pathogen Detection FTP directory
 #'
 #' @param url path to NCBI Pathogen Detection FTP "Results" directory
-select_ftp_organism <- function(url = ftp_results_base){
+select_ftp_organism <- function(url){
   organism_list <- get_organisms(url = url) %>%
     dplyr::pull(organism)
   organism <- organism_list[utils::menu(stringr::str_replace_all(organism_list, "_", " "),
@@ -287,7 +290,7 @@ select_ftp_organism <- function(url = ftp_results_base){
 #'
 #' @param url path to NCBI Pathogen Detection FTP "Results" directory
 #' @param organism name of a valid organism/organism group
-select_ftp_version <- function(url = ftp_results_base, organism){
+select_ftp_version <- function(url, organism){
   version_list <- get_versions(url = url, organism = organism) %>%
     dplyr::pull(version)
   version <- version_list[utils::menu(stringr::str_replace_all(version_list, "_", " "),
@@ -300,7 +303,7 @@ select_ftp_version <- function(url = ftp_results_base, organism){
 #' Detection FTP directory
 #'
 #' @param url path to NCBI Pathogen Detection FTP Reference Gene Catalog directory
-select_ftp_refgene <- function(url = ftp_refgene_base){
+select_ftp_refgene <- function(url){
   version_list <- get_refgene_catalogs(url = url) %>%
     dplyr::pull(version)
   version <- version_list[utils::menu(stringr::str_replace_all(version_list, "_", " "),

@@ -13,6 +13,8 @@ count_alleles(data, ..., sort = TRUE, name = "alleles", na_last = TRUE)
 
 \item{sort}{If TRUE, will show the largest groups at the top.}
 
+\item{name}{Name of the count column.}
+
 \item{na_last}{Where to sort NA. If TRUE, NA is put last; if FALSE,
 NA is put first; if NA, NA is dropped.}
 }

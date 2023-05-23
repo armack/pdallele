@@ -5,7 +5,7 @@
 \title{Download MicroBIGG-E Data from the Google Cloud Platform}
 \usage{
 download_microbigge_bq(
-  billing = gcp_billing,
+  billing,
   path,
   taxgroup,
   sciname,
@@ -14,6 +14,8 @@ download_microbigge_bq(
 )
 }
 \arguments{
+\item{billing}{GCP project identifier for billing/usage tracking}
+
 \item{path}{directory to save downloaded files to}
 
 \item{taxgroup}{an NCBI Pathogen Detection organism group to filter by}
@@ -23,8 +25,6 @@ download_microbigge_bq(
 \item{element}{name of a gene/allele to filter by}
 
 \item{debug}{should the query be previewed rather than executed?}
-
-\item{gcp_billing}{GCP project identifier for billing/usage tracking}
 }
 \description{
 See bigrquery help for more information about configuration and authentication

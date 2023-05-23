@@ -7,6 +7,8 @@
 import_mlst(data, path)
 }
 \arguments{
+\item{data}{A dataframe or tibble}
+
 \item{path}{Path to a (reprocessed) MLST CSV file}
 }
 \description{

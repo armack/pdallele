@@ -4,11 +4,7 @@
 \alias{clean_filter_alleles}
 \title{Clean and filter allele listings}
 \usage{
-clean_filter_alleles(
-  data,
-  filter = filter_alleles,
-  remove = remove_allele_types
-)
+clean_filter_alleles(data, filter, remove)
 }
 \arguments{
 \item{data}{A dataframe or tibble with an allele column}

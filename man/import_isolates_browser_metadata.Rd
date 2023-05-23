@@ -4,7 +4,7 @@
 \alias{import_isolates_browser_metadata}
 \title{Import, Select, and Trim NCBI Pathogen Detection Isolates Browser Metadata}
 \usage{
-import_isolates_browser_metadata(path = isolates_path)
+import_isolates_browser_metadata(path)
 }
 \arguments{
 \item{path}{Path to an NCBI Isolates Browser

@@ -7,6 +7,8 @@
 import_cluster_list(data, path)
 }
 \arguments{
+\item{data}{A dataframe or tibble}
+
 \item{path}{Path to an NCBI Pathogen Detection
 PDG_accession.version.reference_target.cluster_list.tsv file}
 }

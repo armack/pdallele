@@ -12,7 +12,7 @@ NULL
 #' See companion function donut_plot_panel() for a variation better suited for
 #' comparison between groups of data
 #'
-#' @param .data a data table or tibble
+#' @param data a data table or tibble
 #' @param fill column containing levels/labels (e.g. alleles names) (rich text)
 #' @param counts column containing counts for the levels
 #' @param count_label label for counts (e.g. Alleles) (rich text)
@@ -22,20 +22,22 @@ NULL
 #' @param palette specify a ggthemes::tableau_color_pal() color palette name
 
 
-donut_plot <- function(.data, fill = allele_markdown, counts = alleles,
+donut_plot <- function(data, fill, counts,
                        count_label = "Alleles", legend_title = "**Allele**",
                        labels = TRUE, total = TRUE, palette = NULL){
-  .donut_data <- .data %>%
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
+
+  .donut_data <- data %>%
     dplyr::mutate(y_proportion = {{counts}} / sum({{counts}})) %>%
-    dplyr::mutate(y_position = 1 - cumsum(y_proportion) + 0.5 * y_proportion) %>%
+    dplyr::mutate(y_position = 1 - cumsum(.data$y_proportion) + 0.5 * .data$y_proportion) %>%
     dplyr::mutate(y_label =
              paste0({{counts}}, " ", count_label, "\n (",
                     format(round(100 * {{counts}} / sum({{counts}}), digits = 1), nsmall = 1),
                     "%)")) %>%
-    dplyr::mutate(group_label = dplyr::if_else(is.na(group_total), NA_character_,
-                                 paste0(group_total,"<br />", count_label)))
+    dplyr::mutate(group_label = dplyr::if_else(is.na(.data$group_total), NA_character_,
+                                 paste0(.data$group_total,"<br />", count_label)))
 
-  plot <- ggplot(.donut_data, ggplot2::aes(y = .data$y_proportion)) +
+  plot <- ggplot2::ggplot(.donut_data, ggplot2::aes(y = .data$y_proportion)) +
     theme_donut() +
     ggplot2::geom_col(ggplot2::aes(fill = {{fill}}, x = 2)) +
     ggplot2::coord_polar(theta = "y") +
@@ -61,11 +63,11 @@ donut_plot <- function(.data, fill = allele_markdown, counts = alleles,
   arcs <- length(unique(pull(.donut_data, {{fill}})))
 
   # Default to Tableau color palettes if not too long. Allow selection too.
-  if (!is_null(palette))
+  if (!rlang::is_null(palette))
     # No error checking - allow scale_fill_tableau to handle
     plot <- plot +
-    ggthemes::scale_fill_tableau(palette = palette, type = palette_type) +
-    ggthemes::scale_color_tableau(palette = palette, type = palette_type)
+    ggthemes::scale_fill_tableau(palette = palette) +
+    ggthemes::scale_color_tableau(palette = palette)
   else{
     if (arcs <= 10)
       plot <- plot +
@@ -86,7 +88,7 @@ donut_plot <- function(.data, fill = allele_markdown, counts = alleles,
 #' See companion function donut_plot() for a variation better suited for
 #' a single condition without faceting
 #'
-#' @param .data a data table or tibble
+#' @param data a data table or tibble
 #' @param fill column containing levels/labels (e.g. alleles names) (rich text)
 #' @param counts column containing counts for the levels
 #' @param facet column to facet plots by (e.g. region)
@@ -97,14 +99,14 @@ donut_plot <- function(.data, fill = allele_markdown, counts = alleles,
 #' @param nrow number of facet rows
 #' @param ncol number of facet columns
 
-donut_plot_panel <- function(.data, fill = allele_markdown, counts = alleles, facet,
+donut_plot_panel <- function(data, fill, counts, facet,
                              count_label = "Alleles", legend_title = "**Allele**",
                              total = TRUE, palette = NULL, nrow = NULL, ncol = NULL){
-  .donut_data <- .data %>%
+  .donut_data <- data %>%
     dplyr::group_by( {{facet}} ) %>%
-    dplyr::mutate(y_proportion = alleles / sum(alleles)) %>%
-    dplyr::mutate(group_label = dplyr::if_else(is.na(group_total), NA_character_,
-                                 paste0(group_total,"<br />", count_label)))
+    dplyr::mutate(y_proportion = .data$alleles / sum(.data$alleles)) %>%
+    dplyr::mutate(group_label = dplyr::if_else(is.na(.data$group_total), NA_character_,
+                                 paste0(.data$group_total,"<br />", count_label)))
 
   plot <- ggplot2::ggplot(.donut_data, ggplot2::aes(y = .data$y_proportion)) +
     theme_donut() +
@@ -124,7 +126,7 @@ donut_plot_panel <- function(.data, fill = allele_markdown, counts = alleles, fa
   arcs <- length(unique(pull(.donut_data, {{fill}})))
 
   # Default to Tableau color palettes if not too long. Allow selection too.
-  if (!is_null(palette))
+  if (!rlang::is_null(palette))
     # No error checking - allow scale_fill_tableau to handle
     plot <- plot +
     ggthemes::scale_fill_tableau(palette = palette) +
@@ -162,7 +164,7 @@ donut_plot_panel <- function(.data, fill = allele_markdown, counts = alleles, fa
 #' `n` most frequent from the entire tibble, ensuring only `n` values in the
 #' output.
 #'
-#' @param .data a dataframe or tibble
+#' @param data a dataframe or tibble
 #' @param count <data-masking> column to count (long axis)
 #' @param group <data-masking> column to compare across (short axis)
 #' @param n number of most frequent `count` to include (i.e. top n =)
@@ -170,40 +172,40 @@ donut_plot_panel <- function(.data, fill = allele_markdown, counts = alleles, fa
 #' @param by_group should `n` be aggregated by group or for the overall dataset?
 #' @param na.rm should NA values be removed from `count`, `group`, and `facet`?
 
-heatmap_data <- function(.data, count = allele_markdown, group, n = 5, facet,
+heatmap_data <- function(data, count, group, n = 5, facet,
                          by_group = TRUE, na.rm = TRUE) {
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
 
-  facet_var <- rlang::enquo(facet)
-  has_facets <- !rlang::quo_is_missing(facet_var)
+  has_facets <- !rlang::quo_is_missing(facet)
 
-  .complete <- .data %>%
+  .complete <- data %>%
     dplyr::ungroup() %>%
     { if(has_facets) dplyr::group_by(., {{facet}}) else . } %>%
     {if(na.rm) tidyr::drop_na(., c({{count}}, {{group}},
-                            if(has_facets) dplyr::any_of(rlang::as_name(facet_var)) else NULL)) else . } %>%
-    dplyr::mutate(total_isolates = length(unique(biosample))) %>%
+                            if(has_facets) dplyr::any_of(rlang::as_name(facet)) else NULL)) else . } %>%
+    dplyr::mutate(total_isolates = length(unique(.data$biosample))) %>%
     dplyr::group_by({{group}}, .add = TRUE) %>%
-    dplyr::mutate(group_isolates = length(unique(biosample))) %>%
-    dplyr::select(c({{count}}, {{group}}, group_isolates, total_isolates,
-             if(has_facets) dplyr::any_of(rlang::as_name(facet_var)) else NULL)) %>%
+    dplyr::mutate(group_isolates = length(unique(.data$biosample))) %>%
+    dplyr::select(c({{count}}, {{group}}, "group_isolates", "total_isolates",
+             if(has_facets) dplyr::any_of(rlang::as_name(facet)) else NULL)) %>%
     dplyr:: group_by({{count}}, .add = TRUE) %>%
-    dplyr::mutate(group_count = n(), group_prop = group_count/group_isolates) %>%
+    dplyr::mutate(group_count = n(), group_prop = .data$group_count/.data$group_isolates) %>%
     dplyr::ungroup({{group}}) %>%
-    dplyr::mutate(total_count = n(), total_prop = total_count/total_isolates) %>%
+    dplyr::mutate(total_count = n(), total_prop = .data$total_count/.data$total_isolates) %>%
     dplyr::group_by({{group}}, .add = TRUE) %>%
     dplyr::slice_head() %>%
     dplyr::ungroup({{count}}) %>%
-    dplyr::mutate(group_rank = dplyr::dense_rank((desc(group_count)))) %>%
+    dplyr::mutate(group_rank = dplyr::dense_rank((desc(.data$group_count)))) %>%
     dplyr::ungroup({{group}}) %>%
-    dplyr::mutate(total_rank = dplyr::dense_rank((desc(total_count)))) %>%
-    {if(identical(by_group, TRUE)) dplyr::filter(., {{count}} %in% dplyr::pull(filter(., group_rank <= n), {{count}}))
-      else dplyr::filter(., {{count}} %in% dplyr::pull(filter(., total_rank <= n), {{count}})) } %>%
+    dplyr::mutate(total_rank = dplyr::dense_rank((desc(.data$total_count)))) %>%
+    {if(identical(by_group, TRUE)) dplyr::filter(., {{count}} %in% dplyr::pull(filter(., "group_rank" <= n), {{count}}))
+      else dplyr::filter(., {{count}} %in% dplyr::pull(filter(., "total_rank" <= n), {{count}})) } %>%
     dplyr::group_by({{count}}, .add = TRUE) %>%
-    dplyr::mutate(group_sort = length(unique({{group}})) / mean(group_rank)) %>%
-    dplyr::mutate(total_sort =  mean(total_rank)) %>%
+    dplyr::mutate(group_sort = length(unique({{group}})) / mean(.data$group_rank)) %>%
+    dplyr::mutate(total_sort =  mean(.data$total_rank)) %>%
     dplyr::ungroup() %>%
-    {if(identical(by_group, TRUE)) dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, group_sort, .desc = F))
-      else dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, total_sort, .desc = T)) }
+    {if(identical(by_group, TRUE)) dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, .data$group_sort, .desc = F))
+      else dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, .data$total_sort, .desc = T)) }
 
   if(has_facets){
     levels <- .complete %>%
@@ -235,9 +237,10 @@ heatmap_data <- function(.data, count = allele_markdown, group, n = 5, facet,
 #' Facet directions are fixed with plot orientation to avoid sections or to
 #' avoid unexpected, unintended, and undesirable "tiling" of plots
 #'
-#' @param .data a dataframe or tibble
+#' @param data a dataframe or tibble
 #' @param count <data-masking> column to count (long axis)
 #' @param group <data-masking> column to compare across (short axis)
+#' @param facet column to facet by.
 #' @param wide should the output be wide or tall? See description.
 #' @param rank title for the rank (size) legend
 #' @param prop title for the proportion (color) legend
@@ -258,13 +261,13 @@ heatmap_data <- function(.data, count = allele_markdown, group, n = 5, facet,
 #' @param text_size Text size in plot. Passed to `ggplot2::element_text()`.
 #' @param option Color palette, passed to `viridis::scale_color_viridis()`.
 
-heatmap_plot <- function(.data, count = allele_markdown, group, facet,
+heatmap_plot <- function(data, count, group, facet,
                          option = "viridis", wide = FALSE,
                          rank = "**Rank**", prop = "**Proportion**",
                          prop_breaks = c(0.0001,0.0005,0.001,0.0025,
                                          0.005,0.01,0.025,0.05,0.1,
                                          0.2,0.3,0.5,0.75,.90),
-                         prob_labels = c("0.01%","0.05%","0.1%","0.25%",
+                         prop_labels = c("0.01%","0.05%","0.1%","0.25%",
                                          "0.5%","1%","2.5%","5%","10%",
                                          "20%","30%","50%","75%","90%"),
                          prop_barheight = 15, prop_limits = NULL,
@@ -275,19 +278,19 @@ heatmap_plot <- function(.data, count = allele_markdown, group, facet,
   has_facets <- !rlang::quo_is_missing(rlang::enquo(facet))
 
   if(wide)
-    .data <- dplyr::mutate(.data, {{count}} := forcats::fct_rev({{count}}))
+    data <- dplyr::mutate(data, {{count}} := forcats::fct_rev({{count}}))
 
   if(!wide)
-    .start <- ggplot2::ggplot(.data, ggplot2::aes(x = {{group}}, y = {{count}}))
+    .start <- ggplot2::ggplot(data, ggplot2::aes(x = {{group}}, y = {{count}}))
   else
-    .start <- ggplot2::ggplot(.data, ggplot2::aes(x = {{count}}, y = {{group}}))
+    .start <- ggplot2::ggplot(data, ggplot2::aes(x = {{count}}, y = {{group}}))
 
   .plot <- .start  +
     theme_heatmap() %+replace%
     ggplot2::theme(text = ggplot2::element_text(size = text_size)) +
     ggplot2::geom_point(ggplot2::aes(color = .data$group_prop, size = .data$group_rank), show.legend = TRUE) +
     viridis::scale_color_viridis(option = option, trans = "log", breaks = prop_breaks,
-                                 labels = prob_labels, limits = prop_limits) +
+                                 labels = prop_labels, limits = prop_limits) +
     ggplot2::scale_size(range = rank_range, limits = rank_limits, breaks = rank_breaks) +
     ggplot2::labs(size = rank, color = prop) +
     ggplot2:: guides(color = ggplot2::guide_colorbar(barheight = prop_barheight, order = 2),

@@ -8,8 +8,6 @@ process_mlst(mlst)
 }
 \arguments{
 \item{mlst}{tibble or data frame of raw FastMLST csv input}
-
-\item{save}{should the re-parsed file be saved?}
 }
 \description{
 Decode and simplify FastMLST ST calls

@@ -10,8 +10,6 @@ parse_mbe_oxa_family(data, by = "allele")
 \item{data}{A dataframe or tibble}
 
 \item{by}{passed to left_join as a join by command; the column(s) to match in the join}
-
-\item{.refgene}{A dataframe or timble imported from an NCBI ReferenceGeneCatalog file}
 }
 \description{
 Determines OXA family from MBE data and adds a 'family' column

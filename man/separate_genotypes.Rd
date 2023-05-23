@@ -8,6 +8,9 @@ separate_genotypes(data, include = "amr")
 }
 \arguments{
 \item{data}{A dataframe or tibble with genotype columns (amr, stress, vir)}
+
+\item{include}{Which types of alleles (\code{amr}, \code{stress}, \code{vir}) should be kept?
+This is a regex - separate multiple valeus with \code{|}}
 }
 \description{
 Uses separate_rows to separate genotype columns (amr, stress, vir) originally

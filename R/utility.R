@@ -44,17 +44,17 @@ fastmlst_scheme <- function(text){
     if(grepl("#", text)){
       split <- unlist(stringr::str_split(text, " "))
       split_num <- unlist(stringr::str_split(text, "#"))
-      genus <- str_sub(split[1],1,1)
+      genus <- stringr::str_sub(split[1],1,1)
       species <- unlist(stringr::str_split(split[2], "#"))[1]
       scheme_number <- split_num[length(split_num)]
       scheme <- paste0(genus, species, "#", scheme_number)
     } else{
       split <- unlist(stringr::str_split(text, " "))
-      genus <- str_sub(split[1],1,1)
+      genus <- stringr::str_sub(split[1],1,1)
       species <- unlist(stringr::str_split(split[2], "#"))[1]
       scheme <- paste0(genus, species)
     }
-  }else if(length(unlist(str_split(text, " "))) > 2){
+  }else if(length(unlist(stringr::str_split(text, " "))) > 2){
     #"Genus species extra" scheme
     if(grepl("#", text)){
       split <- unlist(stringr::str_split(text, " "))
@@ -120,7 +120,7 @@ pubmlst_listing <- function(url = "https://pubmlst.org/static/data/dbases.xml"){
 parse_mlst_profiles <- function(.calls, .profiles){
 
   call_names <- .calls %>%
-    dplyr::select(-Genome, -Scheme, -ST, - dplyr::any_of(c("clonal_complex"))) %>%
+    dplyr::select(-"Genome", -"Scheme", -"ST", - dplyr::any_of(c("clonal_complex"))) %>%
     names()
   profile_names <- .profiles %>%
     dplyr::select(- dplyr::any_of(c("ST", "clonal_complex", "species"))) %>%
@@ -130,24 +130,24 @@ parse_mlst_profiles <- function(.calls, .profiles){
     warning("Allele names do not match. Ensure correct scheme is being used.")
 
   .complete <- .calls %>%
-    dplyr::select(Genome, all_of(profile_names)) %>%
-    separate_rows_sequential(-Genome, sep = "\\|") %>%
+    dplyr::select("Genome", all_of(profile_names)) %>%
+    separate_rows_sequential(-"Genome", sep = "\\|") %>%
     dplyr::distinct() %>%
     dplyr::left_join(mutate(.profiles, match = TRUE), by = profile_names) %>%
-    tidyr::unite(col = combined, dplyr::all_of(profile_names), sep = ",", na.rm = TRUE) %>%
+    tidyr::unite(col = "combined", dplyr::all_of(profile_names), sep = ",", na.rm = TRUE) %>%
     dplyr::mutate(error = dplyr::case_when(
-      match ~ NA_character_,
-      grepl("~", combined) ~ "new_allele",
-      stringr::str_count(combined, ",") < length(profile_names) - 1 ~ "missing_allele",
+      .data$match ~ NA_character_,
+      grepl("~", .data$combined) ~ "new_allele",
+      stringr::str_count(.data$combined, ",") < length(profile_names) - 1 ~ "missing_allele",
       TRUE ~ "new_st"
     )) %>%
-    dplyr::group_by(Genome) %>%
-    dplyr::mutate(ST = dplyr::na_if(paste0(stringr::str_sort(stats::na.omit(unique(ST)), numeric = TRUE), collapse = ";"), "")) %>%
-    dplyr::mutate(errors = dplyr::na_if(paste0(stats::na.omit(unique(error)), collapse = ";"), "")) %>%
+    dplyr::group_by("Genome") %>%
+    dplyr::mutate(ST = dplyr::na_if(paste0(stringr::str_sort(stats::na.omit(unique(.data$ST)), numeric = TRUE), collapse = ";"), "")) %>%
+    dplyr::mutate(errors = dplyr::na_if(paste0(stats::na.omit(unique(.data$error)), collapse = ";"), "")) %>%
     dplyr::mutate(row = row_number()) %>%
     dplyr::ungroup() %>%
-    dplyr::select(Genome, ST, errors) %>%
-    dplyr::mutate(assembly = as.character(stringr::str_match(Genome,"GCA_\\d+\\.\\d+"))) %>%
+    dplyr::select("Genome", "ST", "errors") %>%
+    dplyr::mutate(assembly = as.character(stringr::str_match(.data$Genome,"GCA_\\d+\\.\\d+"))) %>%
     dplyr::distinct()
 
   return(.complete)
@@ -180,7 +180,7 @@ reparse_mlst <- function(path, save = TRUE){
   mlst <- process_mlst(raw_mlst)
 
   pubmlst <- pubmlst_listing() %>%
-    dplyr::mutate(Scheme = purrr::map_chr(species, fastmlst_scheme))
+    dplyr::mutate(Scheme = purrr::map_chr(.data$species, fastmlst_scheme))
 
   current_schema <- raw_mlst %>%
     dplyr::left_join(pubmlst, by = "Scheme") %>%
@@ -218,18 +218,17 @@ reparse_mlst <- function(path, save = TRUE){
 #' Decode and simplify FastMLST ST calls
 #'
 #' @param mlst tibble or data frame of raw FastMLST csv input
-#' @param save should the re-parsed file be saved?
 process_mlst <- function(mlst){
   .complete <- mlst %>%
-    dplyr::mutate(mlst_note = dplyr::case_when(ST == "-" ~ "Missing Allele(s)",
-                                 ST == "new_ST" ~ "New ST",
-                                 ST == "new_alleles" ~ "New Allele(s)",
+    dplyr::mutate(mlst_note = dplyr::case_when(.data$ST == "-" ~ "Missing Allele(s)",
+                                 .data$ST == "new_ST" ~ "New ST",
+                                 .data$ST == "new_alleles" ~ "New Allele(s)",
                                  TRUE ~ NA_character_)) %>%
-    dplyr::mutate(mlst = dplyr::recode(ST, "new_ST" = NA_character_,
+    dplyr::mutate(mlst = dplyr::recode("ST", "new_ST" = NA_character_,
                          "new_alleles" = NA_character_,
                          "-" = NA_character_)) %>%
-    dplyr::mutate(assembly = as.character(stringr::str_match(Genome,"GCA_\\d+\\.\\d+"))) %>%
-    dplyr::select(assembly, mlst, mlst_note)
+    dplyr::mutate(assembly = as.character(stringr::str_match(.data$Genome, "GCA_\\d+\\.\\d+"))) %>%
+    dplyr::select("assembly", "mlst", "mlst_note")
 
   return(.complete)
 }
@@ -276,11 +275,11 @@ download_protein_sequences <- function(id, n = 100){
 #'
 #' @param path path to an NCBI ReferenceGeneCatalog.txt file
 #' @param file filename to save the accession/sequence pairs
-download_reference_gene_catalog_proteins <- function(path = refgene_path,
+download_reference_gene_catalog_proteins <- function(path,
                                                      file = "reference_proteins.tsv"){
   accessions <- import_reference_gene_catalog(path) %>%
-    tidyr::drop_na(protein) %>%
-    dplyr::pull(protein)
+    tidyr::drop_na("protein") %>%
+    dplyr::pull("protein")
 
   .sequences <- download_protein_sequences(accessions)
 

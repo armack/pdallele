@@ -4,18 +4,10 @@
 \alias{heatmap_data}
 \title{Prepare data for rank and proprtion heatmap}
 \usage{
-heatmap_data(
-  .data,
-  count = allele_markdown,
-  group,
-  n = 5,
-  facet,
-  by_group = TRUE,
-  na.rm = TRUE
-)
+heatmap_data(data, count, group, n = 5, facet, by_group = TRUE, na.rm = TRUE)
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{count}{\if{html}{\out{<data-masking>}} column to count (long axis)}
 

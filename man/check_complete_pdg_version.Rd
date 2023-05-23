@@ -4,7 +4,7 @@
 \alias{check_complete_pdg_version}
 \title{Verify a PDG accession.version is complete (FTP)}
 \usage{
-check_complete_pdg_version(url = ftp_results_base, organism, version)
+check_complete_pdg_version(url, organism, version)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP "Results" directory}

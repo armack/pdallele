@@ -4,7 +4,7 @@
 \alias{get_versions}
 \title{List Available accession.versions for an Organism (FTP)}
 \usage{
-get_versions(url = ftp_results_base, organism)
+get_versions(url, organism)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP "Results" directory}

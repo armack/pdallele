@@ -5,8 +5,8 @@
 \title{Prepare ggplot object of heatmap}
 \usage{
 heatmap_plot(
-  .data,
-  count = allele_markdown,
+  data,
+  count,
   group,
   facet,
   option = "viridis",
@@ -15,7 +15,7 @@ heatmap_plot(
   prop = "**Proportion**",
   prop_breaks = c(1e-04, 5e-04, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.3,
     0.5, 0.75, 0.9),
-  prob_labels = c("0.01\%", "0.05\%", "0.1\%", "0.25\%", "0.5\%", "1\%", "2.5\%", "5\%",
+  prop_labels = c("0.01\%", "0.05\%", "0.1\%", "0.25\%", "0.5\%", "1\%", "2.5\%", "5\%",
     "10\%", "20\%", "30\%", "50\%", "75\%", "90\%"),
   prop_barheight = 15,
   prop_limits = NULL,
@@ -26,11 +26,13 @@ heatmap_plot(
 )
 }
 \arguments{
-\item{.data}{a dataframe or tibble}
+\item{data}{a dataframe or tibble}
 
 \item{count}{\if{html}{\out{<data-masking>}} column to count (long axis)}
 
 \item{group}{\if{html}{\out{<data-masking>}} column to compare across (short axis)}
+
+\item{facet}{column to facet by.}
 
 \item{option}{Color palette, passed to \code{viridis::scale_color_viridis()}.}
 
@@ -42,6 +44,9 @@ heatmap_plot(
 
 \item{prop_breaks}{Proportion values to be displayed in the legend. Passed to
 \code{ggplot2::continuous_scale(breaks = )}}
+
+\item{prop_labels}{Labes corresponding to \code{prop_breaks}. Passed to
+\code{ggplot2::continuous_scale(labels = )}}
 
 \item{prop_barheight}{Height of the bar for the proportion legend Passed to
 \code{ggplot2::guide_colorbar(barheight = )}}
@@ -59,9 +64,6 @@ heatmap_plot(
 \code{ggplot2::scale_size(range = )}}
 
 \item{text_size}{Text size in plot. Passed to \code{ggplot2::element_text()}.}
-
-\item{prop_labels}{Labes corresponding to \code{prop_breaks}. Passed to
-\code{ggplot2::continuous_scale(labels = )}}
 }
 \description{
 Notes on Plot Orientation:

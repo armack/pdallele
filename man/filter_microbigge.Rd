@@ -4,19 +4,16 @@
 \alias{filter_microbigge}
 \title{Filter imported MBE data to remove less "reliable" protein calls}
 \usage{
-filter_microbigge(
-  data,
-  min_coverage = 100,
-  min_identity = 90,
-  remove = remove_mbe_allele_types
-)
+filter_microbigge(data, min_coverage = 100, min_identity = 90, remove)
 }
 \arguments{
 \item{data}{a data tabel or tibble}
 
-\item{coverage}{integer minimum percent coverage to keep}
+\item{min_coverage}{integer minimum percent coverage to keep}
 
-\item{identity}{integer minimum percent identity to keep}
+\item{min_identity}{integer minimum percent identity to keep}
+
+\item{remove}{regex string of \code{method} to remove}
 }
 \description{
 Also allows for the customization of coverage and identity thresholds. The

@@ -4,7 +4,7 @@
 \alias{select_ftp_organism}
 \title{Interactively select an organism from the NCBI Pathogen Detection FTP directory}
 \usage{
-select_ftp_organism(url = ftp_results_base)
+select_ftp_organism(url)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP "Results" directory}

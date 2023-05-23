@@ -4,7 +4,7 @@
 \alias{import_microbigge}
 \title{Import and Select Columns from NCBI Pathogen Detection MicroBIGG-E File}
 \usage{
-import_microbigge(path = mbe_path)
+import_microbigge(path)
 }
 \arguments{
 \item{path}{Path to an NCBI MicroBIGG-E csv/tsv file.}

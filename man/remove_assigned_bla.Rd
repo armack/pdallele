@@ -6,10 +6,10 @@
 \usage{
 remove_assigned_bla(data)
 }
+\arguments{
+\item{data}{A data frame or tibble}
+}
 \description{
 Filter data to remove unassigned bla alleles
 (i.e. those without an allele number)
-}
-\details{
-#' @param data A data frame or tibble
 }

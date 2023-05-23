@@ -22,9 +22,10 @@ NULL
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveld in alphanumeric order?
 #' @export
-new_top_n_across_groups <- function(data, ..., count = alleles, n = 10,
+new_top_n_across_groups <- function(data, ..., count, n = 10,
                                     desc = TRUE, other = "Other",
                                     relevel = "name", other_pos = "last"){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
   dots <- rlang::enquos(...)
 
   if(...length() < 1){
@@ -45,10 +46,10 @@ new_top_n_across_groups <- function(data, ..., count = alleles, n = 10,
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     mutate(top = if_else(row_number() <= n, paste(!!!dots), NA_character_)) %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
-    with_groups(NULL, mutate, keep = paste(!!!dots) %in% top) %>%
+    with_groups(NULL, mutate, keep = paste(!!!dots) %in% .data$top) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
     mutate(across(c(...), ~if_else(keep, ., as_factor(other)))) %>%
-    group_by(..., group_total, .add = TRUE) %>%
+    group_by(..., "group_total", .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
@@ -83,9 +84,10 @@ new_top_n_across_groups <- function(data, ..., count = alleles, n = 10,
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveled in alphanumeric order?
 #'
-top_n_by_group <- function(data, ..., count = alleles, n = 10, desc = TRUE,
+top_n_by_group <- function(data, ..., count, n = 10, desc = TRUE,
                            other = "Other", relevel = "name",
                            other_pos = "last"){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
   dots <- rlang::enquos(...)
 
   if(...length() < 1){
@@ -107,7 +109,7 @@ top_n_by_group <- function(data, ..., count = alleles, n = 10, desc = TRUE,
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
     mutate(across(c(...), ~if_else(row_number() <= n, ., as_factor(other)))) %>%
-    group_by(..., group_total, .add = TRUE) %>%
+    group_by(..., "group_total", .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
@@ -142,9 +144,10 @@ top_n_by_group <- function(data, ..., count = alleles, n = 10, desc = TRUE,
 #' @param other_pos where should "other" sort?
 #' @param relevel should factors in `...` be releveled in alphanumeric order?
 #'
-top_n_overall <- function(data, ..., count = alleles, n = 10, desc = TRUE,
+top_n_overall <- function(data, ..., count, n = 10, desc = TRUE,
                           other = "Other", relevel = "name",
                           other_pos = "last"){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
   dots <- rlang::enquos(...)
 
   if(...length() < 1){
@@ -164,17 +167,17 @@ top_n_overall <- function(data, ..., count = alleles, n = 10, desc = TRUE,
   .top_values <- data %>%
     group_by(...) %>%
     summarize(total = sum({{count}}), .groups = "drop") %>%
-    {if(desc) arrange(., desc(total)) else arrange(., total)} %>%
+    {if(desc) arrange(., desc("total")) else arrange(., "total")} %>%
     filter(row_number() <= n) %>%
     mutate(concat = paste0(!!!dots)) %>%
-    pull(concat)
+    pull("concat")
 
   .complete <- data %>%
     mutate(concat = paste0(!!!dots)) %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
     mutate(across(c(...), ~if_else(concat %in% .top_values, ., as_factor(other)))) %>%
-    group_by(..., group_total, .add = TRUE) %>%
+    group_by(..., "group_total", .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)

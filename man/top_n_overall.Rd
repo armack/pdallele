@@ -8,7 +8,7 @@ combine the rest into \code{other}}
 top_n_overall(
   data,
   ...,
-  count = alleles,
+  count,
   n = 10,
   desc = TRUE,
   other = "Other",

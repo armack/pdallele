@@ -38,9 +38,10 @@ pipe_warn <- function(data, ...){
 #' @param isolates Should isolates (BioSamples) be counted instead of alleles?
 count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
                             name = "n", na_last = TRUE){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   .complete <- data %>%
-    {if (isolates) dplyr::distinct(., biosample, .keep_all = TRUE) else . } %>%
+    {if (isolates) dplyr::distinct(., "biosample", .keep_all = TRUE) else . } %>%
     dplyr::count(..., name = name) %>%
     {if(sort) dplyr::mutate(., dplyr::across(c(...), ~forcats::fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
         dplyr::arrange(., dplyr::across(c(...))) else . } %>%
@@ -61,6 +62,7 @@ count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
 #' @param data A data frame or tibble.
 #' @param ... <data masking> columns to group by.
 #' @param sort If TRUE, will show the largest groups at the top.
+#' @param name Name of the count column.
 #' @param na_last Where to sort NA. If TRUE, NA is put last; if FALSE,
 #' NA is put first; if NA, NA is dropped.
 count_alleles <- function(data, ..., sort = TRUE, name = "alleles", na_last = TRUE){
@@ -135,10 +137,10 @@ relevel_first_last <- function(data, ..., first = NULL, last = NULL, na_last = T
 #' Filter data to remove unassigned bla alleles
 #' (i.e. those without an allele number)
 #'
-#' #' @param data A data frame or tibble
+#' @param data A data frame or tibble
 remove_assigned_bla <- function(data){
   .complete <- data %>%
-    dplyr::filter(!(grepl("bla", allele, ignore.case = TRUE) & grepl("-", allele)))
+    dplyr::filter(!(grepl("bla", .data$allele, ignore.case = TRUE) & grepl("-", .data$allele)))
 
   return(.complete)
 }
@@ -151,7 +153,7 @@ remove_assigned_bla <- function(data){
 #' @param data A data frame or tibble
 remove_unassigned_bla <- function(data){
   .complete <- data %>%
-    dplyr::filter(!(grepl("bla", allele, ignore.case = TRUE) & !grepl("-", allele)))
+    dplyr::filter(!(grepl("bla", .data$allele, ignore.case = TRUE) & !grepl("-", .data$allele)))
 
   return(.complete)
 }
@@ -179,7 +181,7 @@ filter_attribute <- function(data, attribute, string){
 determine_exclusive_alleles <- function(data, ...){
 
   .complete <- data %>%
-    dplyr::group_by(allele) %>%
+    dplyr::group_by("allele") %>%
     dplyr::filter(length(unique( !!!rlang::enquos(...) )) == 1) %>%
     dplyr::ungroup()
 
@@ -193,7 +195,7 @@ determine_exclusive_alleles <- function(data, ...){
 determine_shared_alleles <- function(data, ...){
 
   .complete <- data %>%
-    dplyr::group_by(allele) %>%
+    dplyr::group_by("allele") %>%
     dplyr::filter(length(unique( !!!rlang::enquos(...) )) > 1) %>%
     dplyr::ungroup()
 
@@ -208,11 +210,12 @@ determine_shared_alleles <- function(data, ...){
 #' @param filter_terms character vector of terms to filter alleles before
 #'        determining groups
 determine_combinations <- function(data, filter_terms = NULL){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
   .combos <- data %>%
-    {if (!is.null(filter))  dplyr::filter(., grepl(paste(filter_terms, collapse = "|"), allele, ignore.case = TRUE )) else .} %>%
-    dplyr::group_by(biosample) %>%
-    dplyr::filter(length(unique(allele)) > 1) %>%
-    dplyr::summarize(combo = paste(allele, collapse = ", "), .groups = "drop")
+    {if (!is.null(filter))  dplyr::filter(., grepl(paste(filter_terms, collapse = "|"), .data$allele, ignore.case = TRUE )) else .} %>%
+    dplyr::group_by("biosample") %>%
+    dplyr::filter(length(unique(.data$allele)) > 1) %>%
+    dplyr::summarize(combo = paste(.data$allele, collapse = ", "), .groups = "drop")
 
   .complete <- data %>%
     inner_join(.combos, by = "biosample")
@@ -231,16 +234,16 @@ determine_combinations <- function(data, filter_terms = NULL){
 possible_unique_proteins_mbe <- function(data){
   accessions_assigned <- data %>%
     remove_unassigned_bla() %>%
-    dplyr::group_by(allele) %>%
+    dplyr::group_by("allele") %>%
     dplyr::slice_head() %>%
     dplyr::ungroup() %>%
-    dplyr::distinct(protein) %>%
+    dplyr::distinct("protein") %>%
     dplyr::pull()
 
   accessions_unassigned <- data %>%
     remove_assigned_bla() %>%
-    dplyr::distinct(protein) %>%
-    dplyr::pull()
+    dplyr::distinct("protein") %>%
+    dplyr::pull("protein")
 
   accessions <- c(accessions_assigned, accessions_unassigned)
 
@@ -308,7 +311,7 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
 #' Either groups or split should be provided. Split takes precedence.
 #'
 #' @param tibble A data frame or tibble
-#' @param source_vol  integer column to group
+#' @param source_col  integer column to group
 #' @param label_col  (new) column for group names
 #' @param label_sep seperator between upper and lower bondary in lable
 #' @param groups number integer of groups to define (fed into
@@ -323,7 +326,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
   if( is.null(split) ){
     bounds <- tibble::tibble %>%
       tidyr::drop_na(!!source_col) %>%
-      dplyr::group_by(biosample) %>%
+      dplyr::group_by("biosample") %>%
       dplyr::filter(row_number() == 1) %>%
       dplyr::pull(!!source_col) %>%
       determine_nearly_equal_integer_groups_lt(groups)
@@ -349,6 +352,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
 #' @param ... <data-masking> columns to reorder NAs
 #' @param na_last argument to be processed (pass directly from parent function)
 .resolve_na_last <- function(data, ..., na_last){
+  . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   .complete <- data %>%
 

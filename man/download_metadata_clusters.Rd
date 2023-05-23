@@ -4,7 +4,7 @@
 \alias{download_metadata_clusters}
 \title{Download metadata and clusters for a specified PDG accession.version (FTP)}
 \usage{
-download_metadata_clusters(url = ftp_results_base, organism, version, path)
+download_metadata_clusters(url, organism, version, path)
 }
 \arguments{
 \item{url}{path to NCBI Pathogen Detection FTP "Results" directory}

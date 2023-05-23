@@ -4,9 +4,11 @@
 \alias{parse_genus_species}
 \title{Parse scientific_name to genus and species}
 \usage{
-parse_genus_species(data)
+parse_genus_species(data, path)
 }
 \arguments{
+\item{data}{A dataframe or tibble}
+
 \item{path}{Path to an NCBI Isolates Browser
 PDG_accession.version.metadata.tsv file}
 }
