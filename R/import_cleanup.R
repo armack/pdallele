@@ -128,7 +128,8 @@ split_location <- function(data) {
 #'
 #' @param data A dataframe or tibble
 #' @param path path to a csv/tsv file containing columns 'country' and 'region'
-import_regions <- function(data, path) {
+#' @param warn should a warning message with unmatched countries be shown?
+import_regions <- function(data, path, warn = FALSE) {
   if(is.null(path)) return(data)
 
   regions <- readr::read_csv(file = path, show_col_types = FALSE)
@@ -137,7 +138,8 @@ import_regions <- function(data, path) {
 
   standardized_countries <- country_list %>%
     dplyr::mutate(std_country = countrycode::countryname(.data$location_broad,
-                                                  destination = "country.name.en")) %>%
+                                                  destination = "country.name.en",
+                                                  warn = warn)) %>%
     dplyr::left_join(regions, by = c("std_country" = "country")) %>%
     tidyr::drop_na()
 
@@ -400,7 +402,7 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 import_microbigge <- function(path){
   .complete <- readr::read_tsv(file = path, na = "", show_col_types = FALSE) %>%
     dplyr::select(protein = "protein_acc", biosample = "biosample_acc", assembly = "asm_acc",
-           allele = "element_symbol", long_name = "element_name", method = "amr_method",
+           allele = "element_symbol", name = "element_name", method = "amr_method",
            coverage = "pct_ref_coverage", identity = "pct_ref_identity",
            nucleotide = "contig_acc", nuc_start = "start_on_contig",
            nuc_stop = "end_on_contig", strand = "strand"
@@ -442,8 +444,8 @@ filter_microbigge <- function(data, min_coverage = 100, min_identity = 90, remov
 parse_mbe_oxa_family <- function(data, by = "allele") {
   .complete <- data %>%
     dplyr::mutate(mbe_family = dplyr::case_when(
-      grepl('family', long_name) ~ stringr::str_extract(long_name, "OXA-\\d+?(?= family)"),
-      TRUE ~ stringr::str_extract(long_name, "OXA-\\d+")
+      grepl('family', name) ~ stringr::str_extract(long_name, "OXA-\\d+?(?= family)"),
+      TRUE ~ stringr::str_extract(name, "OXA-\\d+")
     )) %>%
     dplyr::mutate(ipg_family = dplyr::case_when(
       grepl('family', ipg_name) ~ stringr::str_extract(ipg_name, "OXA-\\d+?(?= family)"),
@@ -467,45 +469,11 @@ parse_mbe_oxa_family <- function(data, by = "allele") {
 import_ipg <- function(data, path){
   if(is.null(path)) return(data)
 
-  .ipg <- readr::read_tsv(file = path, show_col_types = FALSE)
-
-  mbe_proteins <- data %>%
-    dplyr::pull("protein") %>%
-    unique()
-
-  mbe_to_ipg <- .ipg %>%
-    dplyr::select(ipg_uid = "Id", accession = "Protein") %>%
-    dplyr::filter(.data$accession %in% mbe_proteins) %>%
-    dplyr::distinct(.data$accession, .keep_all = TRUE)
-
-  ipg_uid_accession_name <- .ipg %>%
-    dplyr::group_by("Id") %>%
-    dplyr::arrange(!grepl("REFSEQ", .data$Source)) %>%
-    dplyr::select(ipg_uid = "Id", ipg_accession = "Protein", ipg_name = "Protein Name") %>%
-    dplyr::slice_head()
+  .ipg <- readr::read_tsv(file = path, show_col_types = FALSE) %>%
+    dplyr::distinct(.data$protein, .keep_all = TRUE)
 
   .complete <- data %>%
-    dplyr::left_join(mbe_to_ipg, by = c("protein" = "accession")) %>%
-    dplyr::left_join(ipg_uid_accession_name, by = "ipg_uid")
-
-  return(.complete)
-}
-
-#' Add reference protein sequences
-#'
-#' Add column "protein_sequence" to a tibble by dplyr::left_join() on "protein"
-#' (containing accession numbers)
-#'
-#' The source data can be generated from a ReferenceGeneCatalog.txt file using
-#' download_reference_gene_catalog_proteins()
-#'
-#' @param data a data table or tibble with a "protein" column of accession numbers
-#' @param path path to a TSV containing accession number/sequence pairs
-add_ref_protein_sequences <- function(data, path){
-  if(is.null(path)) return(data)
-
-  .complete <- data %>%
-    dplyr::left_join(readr::read_tsv(path, show_col_types = FALSE), by = "protein")
+    dplyr::left_join(.ipg, by = "protein")
 
   return(.complete)
 }

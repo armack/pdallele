@@ -4,12 +4,14 @@
 \alias{import_regions}
 \title{Adds Region information based on a file and the location_broad column}
 \usage{
-import_regions(data, path)
+import_regions(data, path, warn = FALSE)
 }
 \arguments{
 \item{data}{A dataframe or tibble}
 
 \item{path}{path to a csv/tsv file containing columns 'country' and 'region'}
+
+\item{warn}{should a warning message with unmatched countries be shown?}
 }
 \description{
 Requires a csv/tsv file with a 'country' and 'region' column. Countries are
