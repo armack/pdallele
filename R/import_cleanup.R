@@ -92,7 +92,7 @@ reverse_geocode <- function(data){
 
   .complete <- .partial %>%
     dplyr::left_join(geocode_countries, by = c("lat", "lon")) %>%
-    dplyr::mutate(location = dplyr::coalesce("location", "geocode_loc")) %>%
+    dplyr::mutate(location = dplyr::coalesce(.data$location, .data$geocode_loc)) %>%
     dplyr::select(-"geocode_loc")
 
   return(.complete)
@@ -274,7 +274,7 @@ add_reference_gene_catalog <- function(data, path) {
                      whitelisted_taxa == species ~ TRUE,
                      TRUE ~ FALSE)) %>%
     dplyr::select(-"whitelisted_taxa") %>%
-    dplyr::mutate(gene = dplyr::coalesce("gene", "allele"))
+    dplyr::mutate(gene = dplyr::coalesce(.data$gene, .data$allele))
 
   return(.complete)
 }
@@ -449,7 +449,7 @@ parse_mbe_oxa_family <- function(data, by = "allele") {
       grepl('family', ipg_name) ~ stringr::str_extract(ipg_name, "OXA-\\d+?(?= family)"),
       TRUE ~ stringr::str_extract(ipg_name, "OXA-\\d+")
     )) %>%
-    dplyr::mutate(family = dplyr::coalesce("ipg_family", "mbe_family"))
+    dplyr::mutate(family = dplyr::coalesce(.data$ipg_family, .data$mbe_family))
 
   return(.complete)
 }
