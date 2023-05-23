@@ -41,7 +41,7 @@ count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   .complete <- data %>%
-    {if (isolates) dplyr::distinct(., "biosample", .keep_all = TRUE) else . } %>%
+    {if (isolates) dplyr::distinct(., .data$biosample, .keep_all = TRUE) else . } %>%
     dplyr::count(..., name = name) %>%
     {if(sort) dplyr::mutate(., dplyr::across(c(...), ~forcats::fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
         dplyr::arrange(., dplyr::across(c(...))) else . } %>%
@@ -237,12 +237,12 @@ possible_unique_proteins_mbe <- function(data){
     dplyr::group_by("allele") %>%
     dplyr::slice_head() %>%
     dplyr::ungroup() %>%
-    dplyr::distinct("protein") %>%
+    dplyr::distinct(.data$protein) %>%
     dplyr::pull()
 
   accessions_unassigned <- data %>%
     remove_assigned_bla() %>%
-    dplyr::distinct("protein") %>%
+    dplyr::distinct(.data$protein) %>%
     dplyr::pull("protein")
 
   accessions <- c(accessions_assigned, accessions_unassigned)

@@ -267,7 +267,7 @@ download_microbigge_bq <- function(billing, path, taxgroup, sciname, element, de
                  basename(table_path)), file = log, append = TRUE)
     close(log)
     message(paste0("Successfully downloaded ", nrow(mbe_data), " rows covering ",
-                   nrow(dplyr::distinct(mbe_data, "biosample_acc")), " isolates."))
+                   nrow(dplyr::distinct(mbe_data, .data$biosample_acc)), " isolates."))
   }
 }
 

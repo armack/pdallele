@@ -86,9 +86,9 @@ reverse_geocode <- function(data){
     dplyr::select(-"lat_lon", -"lat_dir", -"lon_dir")
 
   geocode_countries <- .partial %>%
-    dplyr::distinct("lat","lon") %>%
+    dplyr::distinct(.data$lat, .data$lon) %>%
     tidyr::drop_na() %>%
-    dplyr::mutate(geocode_loc = maps::map.where(database = "world", .data$lon, .data$lat))
+    dplyr::mutate(geocode_loc = maps::map.where(database = "world", x = .data$lon, y = .data$lat))
 
   .complete <- .partial %>%
     dplyr::left_join(geocode_countries, by = c("lat", "lon")) %>%
@@ -133,7 +133,7 @@ import_regions <- function(data, path) {
 
   regions <- readr::read_csv(file = path, show_col_types = FALSE)
 
-  country_list <- dplyr::distinct(data, "location_broad")
+  country_list <- dplyr::distinct(data, .data$location_broad)
 
   standardized_countries <- country_list %>%
     dplyr::mutate(std_country = countrycode::countryname(.data$location_broad,
@@ -232,7 +232,7 @@ clean_filter_alleles <- function(data, filter, remove) {
   .complete <- data %>%
     dplyr::filter(grepl(paste(filter, collapse = "|"), .data$gene)) %>%
     dplyr::filter(!grepl(paste(remove, collapse = "|"), .data$allele_quality)) %>%
-    dplyr::distinct("biosample", "allele", .keep_all = TRUE)
+    dplyr::distinct(.data$biosample, .data$allele, .keep_all = TRUE)
 
   return(.complete)
 }
@@ -312,7 +312,7 @@ parse_ib_oxa_family <- function(data) {
   if(!any(grepl("OXA", data$allele))){return(data)}
 
   .oxa_families <- data %>%
-    dplyr::distinct("allele", "name") %>%
+    dplyr::distinct(.data$allele, .data$name) %>%
     dplyr::filter(grepl("OXA-", .data$allele, ignore.case = TRUE)) %>%
     dplyr::mutate(oxa_family = dplyr::case_when(
       grepl('family', .data$name) ~ paste0("bla",stringr::str_extract(.data$name, "OXA-\\d+?(?= family)")),
@@ -476,7 +476,7 @@ import_ipg <- function(data, path){
   mbe_to_ipg <- .ipg %>%
     dplyr::select(ipg_uid = "Id", accession = "Protein") %>%
     dplyr::filter(.data$accession %in% mbe_proteins) %>%
-    dplyr::distinct("accession", .keep_all = TRUE)
+    dplyr::distinct(.data$accession, .keep_all = TRUE)
 
   ipg_uid_accession_name <- .ipg %>%
     dplyr::group_by("Id") %>%
