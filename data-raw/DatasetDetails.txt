@@ -1,0 +1,5 @@
+2023-05-17 16:59:19 - Downloaded ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/Pseudomonas_aeruginosa/PDG000000036.849/AMR/PDG000000036.849.amr.metadata.tsv as amr.metadata.tsv
+2023-05-17 16:59:20 - Downloaded ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/Pseudomonas_aeruginosa/PDG000000036.849/Clusters/PDG000000036.849.reference_target.cluster_list.tsv as cluster_list.tsv
+2023-05-17 16:59:32 - Downloaded ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/2023-04-17.1/ReferenceGeneCatalog.txt as refgene.txt
+
+2023-05-17 17:15:11 - Ran Query "SELECT * FROM `ncbi-pathogen-detect.pdbrowser.microbigge` WHERE (`scientific_name` like 'Pseudomonas aeruginosa') AND (`element_symbol` like '%bla%')" on Google Cloud Platform and saved the results as  microbigge.tsv
