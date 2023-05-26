@@ -2,15 +2,23 @@
 % Please edit documentation in R/download.R
 \name{get_versions}
 \alias{get_versions}
-\title{List Available accession.versions for an Organism (FTP)}
+\title{Download listing of available PDG accession.version releases for a given organism}
 \usage{
-get_versions(url, organism)
+get_versions(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism)
 }
 \arguments{
-\item{url}{path to NCBI Pathogen Detection FTP "Results" directory}
+\item{url}{Path to the NCBI Pathogen Detection FTP Results directory}
 
-\item{organism}{name of a valid organism/organism group}
+\item{organism}{FTP directory name of an organism group included in the NCBI
+Pathogen Detection Project}
+}
+\value{
+A tibble with columns \code{version} containing available PDG
+accession.version releases \code{updated} containing the date of the most recent
+update.
 }
 \description{
-List Available accession.versions for an Organism (FTP)
+Downloads listing of PDG (Pathogen Detection Organism Group)
+accession.version releases currently available for \code{organism} on the NCBI
+Pathogen Detection FTP server.
 }

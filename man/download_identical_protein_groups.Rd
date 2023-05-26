@@ -2,20 +2,26 @@
 % Please edit documentation in R/download.R
 \name{download_identical_protein_groups}
 \alias{download_identical_protein_groups}
-\title{Download Identical Protein Groups Data using NCBI Entrez/Eutils}
+\title{Download Identical Protein Groups data using NCBI Entrez}
 \usage{
 download_identical_protein_groups(accessions, n = 10, path)
 }
 \arguments{
-\item{accessions}{a character vector of protein accession numbers to
-determine Identical Protein Groups}
+\item{accessions}{A character vector of protein accession numbers}
 
-\item{n}{count of accession numbers per query}
+\item{n}{Number of accessions to include in each request}
 
-\item{path}{directory to save downloaded files to}
+\item{path}{Destination directory}
 }
 \description{
-A lower value for \code{n} will require more queries to NCBI servers but will reduce
-redundant downloads if an IPG is associated with a large number of accession
-numbers in the dataset.
+Download Identical Protein Group (IPG) details for a list of protein
+accessions using the NCBI Entrez API via the rentrez package. The information
+for \code{n} accessions is downloaded in each batch and the remaining accessions
+filtered to reduce duplicate downloads.
+
+The downloaded data is saved as 'ipg.tsv' in \code{path}.
+
+A lower value for \code{n} will require more queries to NCBI servers but will
+reduce redundant downloads if an IPG is associated with a large number of
+accession numbers in the dataset.
 }

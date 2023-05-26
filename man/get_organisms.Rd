@@ -2,13 +2,22 @@
 % Please edit documentation in R/download.R
 \name{get_organisms}
 \alias{get_organisms}
-\title{List Available Organisms (FTP)}
+\title{Download listing of available organisms}
 \usage{
-get_organisms(url)
+get_organisms(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/")
 }
 \arguments{
-\item{url}{path to NCBI Pathogeen Detection FTP "Results" directory}
+\item{url}{Path to the NCBI Pathogen Detection FTP Results directory}
+}
+\value{
+A tibble with columns \code{organism} containing organism names and
+\code{updated} containing the date of the most recent update.
 }
 \description{
-List Available Organisms (FTP)
+Downloads listing of organisms currently available on the NCBI
+Pathogen Detection FTP server.
+}
+\details{
+The FTP directory can be accessed via browser at
+\link{https://ftp.ncbi.nlm.nih.gov/pathogen/Results/}.
 }

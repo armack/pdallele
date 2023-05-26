@@ -2,19 +2,30 @@
 % Please edit documentation in R/download.R
 \name{download_metadata_clusters}
 \alias{download_metadata_clusters}
-\title{Download metadata and clusters for a specified PDG accession.version (FTP)}
+\title{Download Metadata and Clusters by organism and PDG accession.version}
 \usage{
-download_metadata_clusters(url, organism, version, path)
+download_metadata_clusters(
+  url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/",
+  organism,
+  version,
+  path
+)
 }
 \arguments{
-\item{url}{path to NCBI Pathogen Detection FTP "Results" directory}
+\item{url}{Path to the NCBI Pathogen Detection FTP Results directory}
 
-\item{organism}{name of a valid organism/organism group}
+\item{organism}{FTP directory name of an organism group included in the NCBI
+Pathogen Detection Project}
 
-\item{version}{a valid PDG accession.version}
+\item{version}{A PDG accession.version corresponding to \code{organism}}
 
-\item{path}{directory to save downloaded files to}
+\item{path}{Destination directory}
 }
 \description{
-Download metadata and clusters for a specified PDG accession.version (FTP)
+Download Metadata and SNP Cluster files for the specified
+\code{organism} / \code{version} combination. Verifies the release is complete before
+downloading.
+
+The downloaded files are saved as \code{asm.metadata.tsv} and \code{cluster_list.tsv}
+in \code{path}.
 }

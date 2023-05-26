@@ -30,6 +30,8 @@ download_microbigge_bq(
 See bigrquery help for more information about configuration and authentication
 }
 \details{
+The downloaded data is saved as 'microbigge.tsv' in \code{path}.
+
 Note that taxgroup, sciname, and element all use SQL syntax for queries. Use
 '\%' as a wildcard rather than '*'.
 }
