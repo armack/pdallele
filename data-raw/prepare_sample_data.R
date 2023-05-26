@@ -27,10 +27,10 @@ microbigge_proteins <- microbigge %>%
 readr::write_tsv(x = microbigge, file = file.path(getwd(), "inst/extdata/microbigge.tsv"))
 
 ## Prepare `refgene.txt` -----
-refgene <- readr::read_tsv(file.path(getwd(), "data-raw/refgene.txt")) %>%
+refgene <- readr::read_tsv(file.path(getwd(), "data-raw/refgene.tsv")) %>%
   filter(allele %in% microbigge_element_symbols)
 
-readr::write_tsv(x = refgene, file = file.path(getwd(), "inst/extdata/refgene.txt"))
+readr::write_tsv(x = refgene, file = file.path(getwd(), "inst/extdata/refgene.tsv"))
 
 ## Prepare `ipg.tsv` -----
 ipg <- readr::read_tsv(file.path(getwd(), "data-raw/ipg.tsv")) %>%
