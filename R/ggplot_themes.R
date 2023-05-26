@@ -1,6 +1,8 @@
 #' @importFrom ggplot2 %+replace%
 NULL
 
+#' Base theme for `pdallele` plots
+#' @inheritParams ggplot2::theme_gray
 theme_simple <- function(base_size = 11, base_family = "",
                      base_line_size = base_size / 22,
                      base_rect_size = base_size / 22) {
@@ -25,6 +27,8 @@ theme_simple <- function(base_size = 11, base_family = "",
     )
 }
 
+#' Additional theme elements for `pdallele` donut plots
+#' @inheritParams theme_simple
 theme_donut <- function(base_size = 11, base_family = "",
                         base_line_size = base_size / 22,
                         base_rect_size = base_size / 22) {
@@ -48,6 +52,8 @@ theme_donut <- function(base_size = 11, base_family = "",
     )
 }
 
+#' Additional theme elements for `pdallele` heatmaps
+#' @inheritParams theme_simple
 theme_heatmap <- function(base_size = 11, base_family = "",
                         base_line_size = base_size / 22,
                         base_rect_size = base_size / 22) {

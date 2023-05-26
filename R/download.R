@@ -1,33 +1,55 @@
-########## FTP Listings ##########
+
 #' @importFrom dplyr %>%
 #' @importFrom data.table %like%
 NULL
 
-#' List Available Organisms (FTP)
+########## Metadata and Clusters ##########
+
+#' Download listing of available organisms
 #'
-#' @param url path to NCBI Pathogeen Detection FTP "Results" directory
-get_organisms <- function(url){
-  raw_rows <- RCurl::getURL(url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
+#' Downloads listing of organisms currently available on the NCBI
+#' Pathogen Detection FTP server.
+#'
+#' The FTP directory can be accessed via browser at
+#' [https://ftp.ncbi.nlm.nih.gov/pathogen/Results/].
+#'
+#' @param url Path to the NCBI Pathogen Detection FTP Results directory
+#' @returns A tibble with columns `organism` containing organism names and
+#'   `updated` containing the date of the most recent update.
+#' @export
+get_organisms <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/"){
+  raw_rows <- RCurl::getURL(url = , ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
     stringr::str_split("\n") %>%
     unlist() %>%
     stringr::str_subset("type=dir")
 
   organism <- raw_rows %>%
     stringr::str_extract("(?<=; ).+$")
+
   updated <- raw_rows %>%
     stringr::str_extract("(?<=modify\\=)\\d+(?=;)") %>%
     lubridate::ymd_hms(tz = "UTC")
+
   organism_list <- tibble::tibble(organism, updated) %>%
     dplyr::arrange(organism)
 
   return(organism_list)
 }
 
-#' List Available accession.versions for an Organism (FTP)
+#' Download listing of available PDG accession.version releases for a given organism
 #'
-#' @param url path to NCBI Pathogen Detection FTP "Results" directory
-#' @param organism name of a valid organism/organism group
-get_versions <- function(url, organism){
+#' Downloads listing of PDG (Pathogen Detection Organism Group)
+#' accession.version releases currently available for `organism` on the NCBI
+#' Pathogen Detection FTP server.
+#'
+#' @inheritParams get_organisms
+#' @param organism FTP directory name of an organism group included in the NCBI
+#'   Pathogen Detection Project
+#' @returns A tibble with columns `version` containing available PDG
+#'   accession.version releases `updated` containing the date of the most recent
+#'   update.
+#' @export
+get_versions <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism){
   organism_url <- paste0(url, organism, "/")
   raw_rows <- RCurl::getURL(organism_url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
     stringr::str_split("\n") %>%
@@ -45,12 +67,17 @@ get_versions <- function(url, organism){
   return(version_list)
 }
 
-#' Verify a PDG accession.version is complete (FTP)
+#' Verify a PDG accession.version release is complete
 #'
-#' @param url path to NCBI Pathogen Detection FTP "Results" directory
-#' @param organism name of a valid organism/organism group
-#' @param version a valid PDG accession.version
-check_complete_pdg_version <- function(url, organism, version){
+#' Verifies that the specified PDG accession.version release is complete (i.e.
+#' includes AMR Metadata, SNP Clusters, and SNP Trees). Note that SNP Trees are
+#' part of the definition of a 'complete' release, but are not downloaded or
+#' analyzed by `pdallele`
+#'
+#' @inheritParams get_versions
+#' @param version A PDG accession.version corresponding to `organism`
+#' @export
+check_complete_pdg <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism, version){
   version_url <- paste0(url, organism, "/", version, "/", version, ".final.descriptor.xml")
 
   .complete <- xml2::read_xml(version_url) %>%
@@ -62,41 +89,25 @@ check_complete_pdg_version <- function(url, organism, version){
   return(.complete)
 }
 
-#' List available ReferenceGeneCatalog versions (FTP)
+#' Download Metadata and Clusters by organism and PDG accession.version
 #'
-#' @param url path to NCBI Pathogen Detection FTP Reference Gene Catalog directory
-get_refgene_catalogs <- function(url){
-  raw_rows <- RCurl::getURL(url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
-    stringr::str_split("\n") %>%
-    unlist() %>%
-    stringr::str_subset("type=dir")
-
-  version <- raw_rows %>%
-    stringr::str_extract("(?<=; ).+$")
-  updated <- raw_rows %>%
-    stringr::str_extract("(?<=modify\\=)\\d+(?=;)") %>%
-    lubridate::ymd_hms(tz = "UTC")
-  catalog_list <- tibble::tibble(version, updated) %>%
-    dplyr::arrange(version)
-
-  return(catalog_list)
-}
-
-########## FTP Downloads ##########
-
-#' Download metadata and clusters for a specified PDG accession.version (FTP)
+#' @description Download Metadata and SNP Cluster files for the specified
+#' `organism` / `version` combination. Verifies the release is complete before
+#' downloading.
 #'
-#' @param url path to NCBI Pathogen Detection FTP "Results" directory
-#' @param organism name of a valid organism/organism group
-#' @param version a valid PDG accession.version
-#' @param path directory to save downloaded files to
-download_metadata_clusters <- function(url, organism, version, path){
+#' The downloaded files are saved as `asm.metadata.tsv` and `cluster_list.tsv`
+#' in `path`.
+#'
+#' @inheritParams check_complete_pdg
+#' @param path Destination directory
+#' @export
+download_metadata_clusters <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism, version, path){
   url_base <- paste0(url, organism, "/", version, "/")
   url_descriptor <- paste0(url_base, version, ".final.descriptor.xml")
   url_metadata <- paste0(url_base, "AMR/", version, ".amr.metadata.tsv")
   url_cluster <- paste0(url_base, "Clusters/", version, ".reference_target.cluster_list.tsv")
 
-  complete <- check_complete_pdg_version(organism = organism, version = version)
+  complete <- check_complete_pdg(organism = organism, version = version)
 
   if(!complete){
     stop("`", organism, "` version `", version, "` is not a complete dataset. Please try a different version.")
@@ -128,13 +139,51 @@ download_metadata_clusters <- function(url, organism, version, path){
   }
 }
 
-#' List available ReferenceGeneCatalog versions (FTP)
+########## Reference Gene Catalog ##########
+
+#' Download listing of available Reference Gene Catalog releases
 #'
-#' @param url path to NCBI Pathogen Detection FTP Reference Gene Catalog directory
-#' @param version a valid Reference Gene Catalog version number
-#' @param path directory to save downloaded files to
-download_refgene_catalog <- function(url, version, path){
-  url_complete <- file.path(url, version, "ReferenceGeneCatalog.txt")
+#' Downloads listing of Reference Gene Catalog releases currently available on
+#' the NCBI Pathogen Detection FTP server.
+#'
+#' @param url Path to the NCBI Pathogen Detection FTP Reference Gene Catalog
+#'   directory
+#' @returns A tibble with columns `version` containing available Reference Gene
+#'   Catalog releases and `updated` containing the date of the most recent
+#'   update.
+#' @export
+
+get_reference_gene_catalogs <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/"){
+  raw_rows <- RCurl::getURL(url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
+    stringr::str_split("\n") %>%
+    unlist() %>%
+    stringr::str_subset("type=dir")
+
+  version <- raw_rows %>%
+    stringr::str_extract("(?<=; ).+$")
+  updated <- raw_rows %>%
+    stringr::str_extract("(?<=modify\\=)\\d+(?=;)") %>%
+    lubridate::ymd_hms(tz = "UTC")
+  catalog_list <- tibble::tibble(version, updated) %>%
+    dplyr::arrange(version)
+
+  return(catalog_list)
+}
+
+#' Download Reference Gene Catalog
+#'
+#' @description
+#' Downloads a specified `version` of the Reference Gene Catalog from the NCBI
+#' Pathogen Detection FTP server.
+#'
+#' The downloaded file is saved as 'ReferenceGeneCatalog.tsv' in `path`.
+#'
+#' @inheritParams get_reference_gene_catalogs
+#' @param version A Reference Gene Catalog version number
+#' @param path Destination directory
+#' @export
+download_reference_gene_catalog <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/", version, path){
+  url_complete <- file.path(url, version, "ReferenceGeneCatalog.tsv")
 
   ensure_directory(path)
   version_path <- file.path(path, "refgene.txt")
@@ -151,18 +200,26 @@ download_refgene_catalog <- function(url, version, path){
   }
 }
 
-########## Entrez/Eutils Downloads ##########
+########## Identical Protein Groups ##########
 
-#' Download Identical Protein Groups Data using NCBI Entrez/Eutils
+#' Download Identical Protein Groups data using NCBI Entrez
 #'
-#' A lower value for `n` will require more queries to NCBI servers but will reduce
-#' redundant downloads if an IPG is associated with a large number of accession
-#' numbers in the dataset.
+#' @description
+#' Download Identical Protein Group (IPG) details for a list of protein
+#' accessions using the NCBI Entrez API via the rentrez package. The information
+#' for `n` accessions is downloaded in each batch and the remaining accessions
+#' filtered to reduce duplicate downloads.
 #'
-#' @param accessions a character vector of protein accession numbers to
-#' determine Identical Protein Groups
-#' @param n count of accession numbers per query
-#' @param path directory to save downloaded files to
+#' The downloaded data is saved as 'ipg.tsv' in `path`.
+#'
+#' A lower value for `n` will require more queries to NCBI servers but will
+#' reduce redundant downloads if an IPG is associated with a large number of
+#' accession numbers in the dataset.
+#'
+#' @param accessions A character vector of protein accession numbers
+#' @param n Number of accessions to include in each request
+#' @param path Destination directory
+#' @export
 download_identical_protein_groups <- function(accessions, n = 10, path){
   .ipg_data <- tibble(ipg = integer(), ipg_accession = character(),
                       ipg_name = character(), protein = character())
@@ -211,11 +268,13 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
   close(log)
 }
 
-########## Google Cloud Platform Downloads ##########
+########## MicroBIGG-E ##########
 
 #' Download MicroBIGG-E Data from the Google Cloud Platform
 #'
 #' See bigrquery help for more information about configuration and authentication
+#'
+#' The downloaded data is saved as 'microbigge.tsv' in `path`.
 #'
 #' Note that taxgroup, sciname, and element all use SQL syntax for queries. Use
 #' '%' as a wildcard rather than '*'.
