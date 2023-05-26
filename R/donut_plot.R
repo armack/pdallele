@@ -3,21 +3,29 @@ NULL
 
 ########## Donut Plot Functions ##########
 
-#' Generate a donut plot
+#' Generate donut plots
 #'
-#' Generates a donut plot
+#' @description Generates a donut plot using `fill` as categories and `count` as
+#'   counts.
 #'
-#' @seealso [donut_plot_panel()] to generate a faceted panel containing multiple
-#'   donut plots
+#'   * `donut_plot()` generates a single donut plot
+#'   * `donut_plot_panel()` generates a panel of donut plots faceted by `facet`
+#'
+#'   Data can be prepared for plotting using a ranking function
+#'   [top_n_overall()], [top_n_across_groups()], or [top_n_by_group()].
 #'
 #' @param data A data table or tibble
 #' @param fill Column containing levels/labels (e.g. alleles names) (rich text)
 #' @param counts Column containing counts for the levels
-#' @param count_label Label for counts (e.g. Alleles) (rich text)
+#' @param count_label Label for counts (rich text)
 #' @param legend_title Label for the legend (rich text)
 #' @param labels Should callouts with count & percentage be shown for each arc?
-#' @param total Should total of `count` be displayed inside the donut?
-#' @param palette A [ggthemes::tableau_color_pal()] color palette name
+#' @param total Should total of `count` be displayed inside donuts?
+#' @param palette A [ggthemes::tableau_color_pal()] color palette name. By
+#'   default, uses `Tableau 10` for ≤ 10 categories, `Tableau 20` for 11 to 20
+#'   categories, and the standard `ggplot2` color palette for > 20 categories
+#'
+#' @returns A `ggplot2` plot object
 
 
 donut_plot <- function(data, fill, counts,
@@ -83,12 +91,11 @@ donut_plot <- function(data, fill, counts,
 
 #' Generate a faceted panel of donut plots
 #'
-#' @seealso [donut_plot()] to generate a single donut plot
+#' @rdname donut_plot
 #'
-#' @inheritParams donut_plot
-#' @param facet column to facet plots by (e.g. region)
-#' @param nrow number of facet rows
-#' @param ncol number of facet columns
+#' @param facet Column to facet plots by
+#' @param nrow Number of facet rows
+#' @param ncol Number of facet columns
 
 donut_plot_panel <- function(data, fill, counts, facet,
                              count_label = "Alleles", legend_title = "**Allele**",
