@@ -2,10 +2,33 @@
 % Please edit documentation in R/ranking.R
 \name{top_n_overall}
 \alias{top_n_overall}
-\title{Keep the \code{n} highest (or lowest) \code{count} rows overall for each group and
-combine the rest into \code{other}}
+\alias{top_n_across_groups}
+\alias{top_n_by_group}
+\title{Rank, sort, and combine values}
 \usage{
 top_n_overall(
+  data,
+  ...,
+  count,
+  n = 10,
+  desc = TRUE,
+  other = "Other",
+  relevel = "name",
+  other_pos = "last"
+)
+
+top_n_across_groups(
+  data,
+  ...,
+  count,
+  n = 10,
+  desc = TRUE,
+  other = "Other",
+  relevel = "name",
+  other_pos = "last"
+)
+
+top_n_by_group(
   data,
   ...,
   count,
@@ -36,10 +59,23 @@ into an \code{other} row, meaning n+1 total rows will appear in out unless
 \item{other_pos}{where should "other" sort?}
 }
 \description{
-This function keeps the "top n" overall for each group. See the companion function
-top_n_across_groups() to keep the "top n" in each group across all groups.
+These functions are primarailly designed to prepare data for use
+in \code{\link[=donut_plot]{donut_plot()}} and serve three main purposes:
+\enumerate{
+\item Determine the \code{n} largest (or smallest) counts
+\item Combine remaining counts into \code{other}
+\item Optionally, relevel factor levels using [\code{\link[=relevel_numeric]{relevel_numeric()}}]
 }
-\details{
-Note that no tie-breaking is performed. In the event of a tie for the nth
-row, the first row by arrange() is kept.
+
+They differ in the handling of groups:
+\itemize{
+\item \code{top_n_overall()} determines the "top n" of the entire dataset and keeps those labels across all groups. Up to \code{n} labels + \code{other} will be kept.
+\item \code{top_n_by_group()} determines the "top n" on a group-by-group basis and keeps the "top n" labels for each group independently. The total number of labels kept will vary, with a maximum of \code{n} \* length(groups) + \code{other}
+\item \code{top_n_across_groups()} determines the "top n" on a group-by-group basis and keeps labels appearing in the "top n" of any group across all groups. Up to \code{n} labels + \code{other} will be kept.
+}
+
+All values that aren't 'kept' are combined into \code{other}.
+
+No tie-breaking is performed. In the event of a tie for the nth row, the
+first row by arrange() is kept.
 }

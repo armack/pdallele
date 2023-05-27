@@ -2,7 +2,8 @@
 % Please edit documentation in R/donut_plot.R
 \name{donut_plot}
 \alias{donut_plot}
-\title{Generate a donut plot}
+\alias{donut_plot_panel}
+\title{Generate donut plots}
 \usage{
 donut_plot(
   data,
@@ -14,6 +15,19 @@ donut_plot(
   total = TRUE,
   palette = NULL
 )
+
+donut_plot_panel(
+  data,
+  fill,
+  counts,
+  facet,
+  count_label = "Alleles",
+  legend_title = "**Allele**",
+  total = TRUE,
+  palette = NULL,
+  nrow = NULL,
+  ncol = NULL
+)
 }
 \arguments{
 \item{data}{A data table or tibble}
@@ -22,20 +36,35 @@ donut_plot(
 
 \item{counts}{Column containing counts for the levels}
 
-\item{count_label}{Label for counts (e.g. Alleles) (rich text)}
+\item{count_label}{Label for counts (rich text)}
 
 \item{legend_title}{Label for the legend (rich text)}
 
 \item{labels}{Should callouts with count & percentage be shown for each arc?}
 
-\item{total}{Should total of \code{count} be displayed inside the donut?}
+\item{total}{Should total of \code{count} be displayed inside donuts?}
 
-\item{palette}{A \code{\link[ggthemes:tableau_color_pal]{ggthemes::tableau_color_pal()}} color palette name}
+\item{palette}{A \code{\link[ggthemes:tableau_color_pal]{ggthemes::tableau_color_pal()}} color palette name. By
+default, uses \verb{Tableau 10} for ≤ 10 categories, \verb{Tableau 20} for 11 to 20
+categories, and the standard \code{ggplot2} color palette for > 20 categories}
+
+\item{facet}{Column to facet plots by}
+
+\item{nrow}{Number of facet rows}
+
+\item{ncol}{Number of facet columns}
+}
+\value{
+A \code{ggplot2} plot object
 }
 \description{
-Generates a donut plot
+Generates a donut plot using \code{fill} as categories and \code{count} as
+counts.
+\itemize{
+\item \code{donut_plot()} generates a single donut plot
+\item \code{donut_plot_panel()} generates a panel of donut plots faceted by \code{facet}
 }
-\seealso{
-\code{\link[=donut_plot_panel]{donut_plot_panel()}} to generate a faceted panel containing multiple
-donut plots
+
+Data can be prepared for plotting using a ranking function
+\code{\link[=top_n_overall]{top_n_overall()}}, \code{\link[=top_n_across_groups]{top_n_across_groups()}}, or \code{\link[=top_n_by_group]{top_n_by_group()}}.
 }
