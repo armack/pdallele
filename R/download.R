@@ -1,4 +1,3 @@
-
 #' @importFrom dplyr %>%
 #' @importFrom data.table %like%
 NULL
@@ -7,6 +6,7 @@ NULL
 
 #' Download listing of available organisms
 #'
+#' @description
 #' Downloads listing of organisms currently available on the NCBI
 #' Pathogen Detection FTP server.
 #'
@@ -16,6 +16,7 @@ NULL
 #' @param url Path to the NCBI Pathogen Detection FTP Results directory
 #' @returns A tibble with columns `organism` containing organism names and
 #'   `updated` containing the date of the most recent update.
+#' @family metadata and clusters
 #' @export
 get_organisms <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/"){
   raw_rows <- RCurl::getURL(url = , ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
@@ -48,6 +49,7 @@ get_organisms <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/"){
 #' @returns A tibble with columns `version` containing available PDG
 #'   accession.version releases `updated` containing the date of the most recent
 #'   update.
+#' @family metadata and clusters
 #' @export
 get_versions <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism){
   organism_url <- paste0(url, organism, "/")
@@ -76,6 +78,7 @@ get_versions <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", o
 #'
 #' @inheritParams get_versions
 #' @param version A PDG accession.version corresponding to `organism`
+#' @family metadata and clusters
 #' @export
 check_complete_pdg <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism, version){
   version_url <- paste0(url, organism, "/", version, "/", version, ".final.descriptor.xml")
@@ -91,7 +94,8 @@ check_complete_pdg <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Result
 
 #' Download Metadata and Clusters by organism and PDG accession.version
 #'
-#' @description Download Metadata and SNP Cluster files for the specified
+#' @description
+#' Download Metadata and SNP Cluster files for the specified
 #' `organism` / `version` combination. Verifies the release is complete before
 #' downloading.
 #'
@@ -100,6 +104,8 @@ check_complete_pdg <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Result
 #'
 #' @inheritParams check_complete_pdg
 #' @param path Destination directory
+#' @family metadata and clusters
+#' @family download data
 #' @export
 download_metadata_clusters <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism, version, path){
   url_base <- paste0(url, organism, "/", version, "/")
@@ -151,6 +157,7 @@ download_metadata_clusters <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathoge
 #' @returns A tibble with columns `version` containing available Reference Gene
 #'   Catalog releases and `updated` containing the date of the most recent
 #'   update.
+#' @family reference gene catalog
 #' @export
 
 get_reference_gene_catalogs <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/"){
@@ -181,6 +188,8 @@ get_reference_gene_catalogs <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathog
 #' @inheritParams get_reference_gene_catalogs
 #' @param version A Reference Gene Catalog version number
 #' @param path Destination directory
+#' @family reference gene catalog
+#' @family download data
 #' @export
 download_reference_gene_catalog <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/", version, path){
   url_complete <- file.path(url, version, "ReferenceGeneCatalog.tsv")
@@ -219,6 +228,7 @@ download_reference_gene_catalog <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pa
 #' @param accessions A character vector of protein accession numbers
 #' @param n Number of accessions to include in each request
 #' @param path Destination directory
+#' @family download data
 #' @export
 download_identical_protein_groups <- function(accessions, n = 10, path){
   .ipg_data <- tibble(ipg = integer(), ipg_accession = character(),
@@ -272,19 +282,29 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
 
 #' Download MicroBIGG-E Data from the Google Cloud Platform
 #'
-#' See bigrquery help for more information about configuration and authentication
+#' @description
+#' Download the latest MicroBIGG-E data from the Google Cloud
+#' Platform using `bigrquery` with optional filtering by `taxgroup`, `sciname`,
+#' and `element`.
 #'
 #' The downloaded data is saved as 'microbigge.tsv' in `path`.
 #'
-#' Note that taxgroup, sciname, and element all use SQL syntax for queries. Use
-#' '%' as a wildcard rather than '*'.
+#' Note that `taxgroup`, `sciname`, and `element` all use SQL syntax for
+#' queries, meaning '%' will be treated as a wildcard rather than '*'.
+#'
+#' If you are not familiar with `bigrquery`, please see
+#' [https://bigrquery.r-dbi.org/index.html#important-details] for more
+#' information on authentication and generating a billing project code.
 #'
 #' @param billing GCP project identifier for billing/usage tracking
-#' @param path directory to save downloaded files to
-#' @param taxgroup an NCBI Pathogen Detection organism group to filter by
-#' @param sciname scientific name of the organism of interest to filter by
-#' @param element name of a gene/allele to filter by
-#' @param debug should the query be previewed rather than executed?
+#' @param path Directory to save downloaded files to
+#' @param taxgroup An NCBI Pathogen Detection organism group to filter by
+#' @param sciname Scientific name of the organism of interest to filter by
+#' @param element Name of a gene/allele to filter by
+#' @param debug Should the query be previewed rather than executed?
+#'
+#' @family download data
+#' @export
 download_microbigge_bq <- function(billing, path, taxgroup, sciname, element, debug = FALSE){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
@@ -335,6 +355,8 @@ download_microbigge_bq <- function(billing, path, taxgroup, sciname, element, de
 #' Interactively select an organism from the NCBI Pathogen Detection FTP directory
 #'
 #' @param url path to NCBI Pathogen Detection FTP "Results" directory
+#' @family ftp download helpers
+#' @export
 select_ftp_organism <- function(url){
   organism_list <- get_organisms(url = url) %>%
     dplyr::pull(organism)
@@ -349,6 +371,8 @@ select_ftp_organism <- function(url){
 #'
 #' @param url path to NCBI Pathogen Detection FTP "Results" directory
 #' @param organism name of a valid organism/organism group
+#' @family ftp download helpers
+#' @export
 select_ftp_version <- function(url, organism){
   version_list <- get_versions(url = url, organism = organism) %>%
     dplyr::pull(version)
@@ -362,6 +386,8 @@ select_ftp_version <- function(url, organism){
 #' Detection FTP directory
 #'
 #' @param url path to NCBI Pathogen Detection FTP Reference Gene Catalog directory
+#' @family ftp download helpers
+#' @export
 select_ftp_refgene <- function(url){
   version_list <- get_refgene_catalogs(url = url) %>%
     dplyr::pull(version)
