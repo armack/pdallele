@@ -22,8 +22,8 @@ NULL
 #' @param labels Should callouts with count & percentage be shown for each arc?
 #' @param total Should total of `count` be displayed inside donuts?
 #' @param palette A [ggthemes::tableau_color_pal()] color palette name. By
-#'   default, uses `Tableau 10` for ≤ 10 categories, `Tableau 20` for 11 to 20
-#'   categories, and the standard `ggplot2` color palette for > 20 categories
+#'   default, uses '`Tableau 10`' for ≤ 10 categories, '`Tableau 20`' for 11 to
+#'   20 categories, and the standard `ggplot2` color palette for > 20 categories
 #'
 #' @returns A `ggplot2` plot object
 

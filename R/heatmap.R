@@ -3,31 +3,39 @@
 #' @importFrom rlang .data :=
 NULL
 
-#' Prepare data for rank and proprtion heatmap
+#' Prepare heat map data
 #'
-#' Count all instances of `count` by `group`, filter `n` most frequent `count`
+#' @description
+#' Prepare `data` for plotting as a heatmap with [heapmap_plot()].
+#'
+#' Count all instances of `count` by `category`, filter `n` most frequent `count`
 #' either overall or `by_group`. Optionally prepare to facet by `facet` and
-#' remove NA values.
+#' remove `NA` values.
 #'
-#' Proportion refers to the proportion of isolates in a given `group` associated
+#' Proportion refers to the proportion of isolates in a given `category` associated
 #' with each `count`. Ranks are the `dense_rank(desc())` of the number of
 #' isolates associated with each `count`.
 #'
-#' Note: The default setting `by_group = TRUE` will keep all `count` that appear
-#' in the `n` most frequent in any `group`, typically leading to more than `n`
+#' The default setting `by_group = TRUE` will keep all `count` that appear
+#' in the `n` most frequent in any `category`, typically leading to more than `n`
 #' total values being kept. Conversely, `by_group = FALSE` will keep only the
 #' `n` most frequent from the entire tibble, ensuring only `n` values in the
 #' output.
 #'
-#' @param data a dataframe or tibble
-#' @param count <data-masking> column to count (long axis)
-#' @param group <data-masking> column to compare across (short axis)
-#' @param n number of most frequent `count` to include (i.e. top n =)
-#' @param facet <data-masking>column to facet by
-#' @param by_group should `n` be aggregated by group or for the overall dataset?
-#' @param na.rm should NA values be removed from `count`, `group`, and `facet`?
+#' @seealso [heatmap_plot()] to generate a `ggplot2` heatmap plot
+#'
+#' @param data A dataframe or tibble
+#' @param count <data-masking> Column to count (long axis)
+#' @param category <data-masking> Column to compare across (short axis)
+#' @param n Number of most frequent `count` to include (i.e. top n =)
+#' @param facet <data-masking> Column to facet by
+#' @param by_group Should `n` be aggregated by group or for the overall dataset?
+#' @param na.rm Should `NA` values be removed from `count`, `category`, and `facet`?
+#'
+#' @returns a tibble with ranks, proportions, and counts ready to plot using
+#'   [heatmap_plot()]
 
-heatmap_data <- function(data, count, group, n = 5, facet,
+heatmap_data <- function(data, count, category, n = 5, facet,
                          by_group = TRUE, na.rm = TRUE) {
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
@@ -36,27 +44,27 @@ heatmap_data <- function(data, count, group, n = 5, facet,
   .complete <- data %>%
     dplyr::ungroup() %>%
     { if(has_facets) dplyr::group_by(., {{facet}}) else . } %>%
-    {if(na.rm) tidyr::drop_na(., c({{count}}, {{group}},
+    {if(na.rm) tidyr::drop_na(., c({{count}}, {{category}},
                             if(has_facets) dplyr::any_of(rlang::as_name(facet)) else NULL)) else . } %>%
     dplyr::mutate(total_isolates = length(unique(.data$biosample))) %>%
-    dplyr::group_by({{group}}, .add = TRUE) %>%
+    dplyr::group_by({{category}}, .add = TRUE) %>%
     dplyr::mutate(group_isolates = length(unique(.data$biosample))) %>%
-    dplyr::select(c({{count}}, {{group}}, "group_isolates", "total_isolates",
+    dplyr::select(c({{count}}, {{category}}, "group_isolates", "total_isolates",
              if(has_facets) dplyr::any_of(rlang::as_name(facet)) else NULL)) %>%
     dplyr:: group_by({{count}}, .add = TRUE) %>%
     dplyr::mutate(group_count = n(), group_prop = .data$group_count/.data$group_isolates) %>%
-    dplyr::ungroup({{group}}) %>%
+    dplyr::ungroup({{category}}) %>%
     dplyr::mutate(total_count = n(), total_prop = .data$total_count/.data$total_isolates) %>%
-    dplyr::group_by({{group}}, .add = TRUE) %>%
+    dplyr::group_by({{category}}, .add = TRUE) %>%
     dplyr::slice_head() %>%
     dplyr::ungroup({{count}}) %>%
     dplyr::mutate(group_rank = dplyr::dense_rank((desc(.data$group_count)))) %>%
-    dplyr::ungroup({{group}}) %>%
+    dplyr::ungroup({{category}}) %>%
     dplyr::mutate(total_rank = dplyr::dense_rank((desc(.data$total_count)))) %>%
     {if(identical(by_group, TRUE)) dplyr::filter(., {{count}} %in% dplyr::pull(filter(., "group_rank" <= n), {{count}}))
       else dplyr::filter(., {{count}} %in% dplyr::pull(filter(., "total_rank" <= n), {{count}})) } %>%
     dplyr::group_by({{count}}, .add = TRUE) %>%
-    dplyr::mutate(group_sort = length(unique({{group}})) / mean(.data$group_rank)) %>%
+    dplyr::mutate(group_sort = length(unique({{category}})) / mean(.data$group_rank)) %>%
     dplyr::mutate(total_sort =  mean(.data$total_rank)) %>%
     dplyr::ungroup() %>%
     {if(identical(by_group, TRUE)) dplyr::mutate(., {{count}} := forcats::fct_reorder({{count}}, .data$group_sort, .desc = F))
@@ -78,27 +86,35 @@ heatmap_data <- function(data, count, group, n = 5, facet,
   return(.complete)
 }
 
-#' Prepare ggplot object of heatmap
+#' Generate heat map plot
 #'
-#' Notes on Plot Orientation:
+#' @description
+#' Generate a heatmap plot from a tibble prepared by [heatmap_data()].
 #'
-#' `wide = FALSE` places `count` on the Y-axis and `group` on the X-axis which
-#' will result in "longer" plots when `count` has more levels than `group`.
-#' Plots will facet vertically.
+#' Rank corresponds to size of each circle and proportion corresponds to the
+#' color of each circle.
 #'
-#' `wide = TRUE` swaps the axes and will result in "wider" plots when `count`
-#' has more levels than `group`. Plots will facet horizontally.
 #'
-#' Facet directions are fixed with plot orientation to avoid sections or to
-#' avoid unexpected, unintended, and undesirable "tiling" of plots
+#' Plot orientation:
 #'
-#' @param data a dataframe or tibble
-#' @param count <data-masking> column to count (long axis)
-#' @param group <data-masking> column to compare across (short axis)
-#' @param facet column to facet by.
-#' @param wide should the output be wide or tall? See description.
-#' @param rank title for the rank (size) legend
-#' @param prop title for the proportion (color) legend
+#' * `wide = FALSE` places `count` on the Y-axis and `category` on the X-axis which
+#'   will result in "longer" plots when `count` has more levels than `category`.
+#'   Plots will facet vertically.
+#' * `wide = TRUE` swaps the axes and will result in "wider" plots when `count`
+#'   has more levels than `category`. Plots will facet horizontally.
+#'
+#' Facet directions are fixed with plot orientation to avoid unexpected,
+#' unintended, and undesirable "tiling" of plots
+#'
+#' @seealso [heatmap_data()] to prepare data for plotting as a heatmap
+#'
+#' @param data A dataframe or tibble
+#' @param count <data-masking> Column of counts (long axis)
+#' @param category <data-masking> Column to compare across (short axis)
+#' @param facet Column to facet by.
+#' @param wide Should the output be wide or tall? See description.
+#' @param rank Title for the rank (size) legend
+#' @param prop Title for the proportion (color) legend
 #' @param prop_limits Limits of the proportion color scale. Passed to
 #'   `ggplot2::continuous_scale(limits = )`
 #' @param prop_breaks Proportion values to be displayed in the legend. Passed to
@@ -115,8 +131,10 @@ heatmap_data <- function(data, count, group, n = 5, facet,
 #'   `ggplot2::scale_size(range = )`
 #' @param text_size Text size in plot. Passed to `ggplot2::element_text()`.
 #' @param option Color palette, passed to `viridis::scale_color_viridis()`.
+#'
+#' @returns a `ggplot2` plot object
 
-heatmap_plot <- function(data, count, group, facet,
+heatmap_plot <- function(data, count, category, facet,
                          option = "viridis", wide = FALSE,
                          rank = "**Rank**", prop = "**Proportion**",
                          prop_breaks = c(0.0001,0.0005,0.001,0.0025,
@@ -136,9 +154,9 @@ heatmap_plot <- function(data, count, group, facet,
     data <- dplyr::mutate(data, {{count}} := forcats::fct_rev({{count}}))
 
   if(!wide)
-    .start <- ggplot2::ggplot(data, ggplot2::aes(x = {{group}}, y = {{count}}))
+    .start <- ggplot2::ggplot(data, ggplot2::aes(x = {{category}}, y = {{count}}))
   else
-    .start <- ggplot2::ggplot(data, ggplot2::aes(x = {{count}}, y = {{group}}))
+    .start <- ggplot2::ggplot(data, ggplot2::aes(x = {{count}}, y = {{category}}))
 
   .plot <- .start  +
     theme_heatmap() %+replace%
