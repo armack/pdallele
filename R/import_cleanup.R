@@ -1,18 +1,15 @@
 #' @importFrom dplyr %>%
 NULL
 
-########## configuration ##########
-unclear_species_string <- "Unclear or Unknown"
+########## Isolates Browser Metadata Import and Processing ##########
 
-########## Isolates Browser Import and Processing ##########
-
-#' Import, Select, and Trim NCBI Pathogen Detection Isolates Browser Metadata
+#' Import, select, and trim NCBI Pathogen Detection Isolates Browser Metadata
 #'
-#' Imports Isolated Browser metadataa, selects and renames desired columns, and
+#' Imports Isolates Browser Metadata, selects and renames relevant columns, and
 #' cleans up problematic quotation marks
 #'
-#' @param path Path to an NCBI Isolates Browser
-#'             PDG_accession.version.metadata.tsv file
+#' @param path Path to an NCBI Isolates Browser 'amr.metadata.tsv' file
+#' @export
 
 import_isolates_browser_metadata <- function(path) {
   data <- readr::read_tsv(path, quote="", na = character(), show_col_types = FALSE)
@@ -30,10 +27,14 @@ import_isolates_browser_metadata <- function(path) {
     return(.complete)
 }
 
-#' Replace character vector values with NA across all character columns
+#' Replace character vector values with `NA` across all character columns
+#'
+#' Replace any values matching a value in `terms` with `NA` across all
+#' `character()` columns in `data`.
 #'
 #' @param data A dataframe or tibble to modify
-#' @param terms A character vector to replace values with NA_character_
+#' @param terms A character vector of values to replace with `NA_character_`
+#' @export
 
 na_if_tibble_chr <- function(data, terms) {
   .complete <- data %>%
@@ -47,19 +48,20 @@ na_if_tibble_chr <- function(data, terms) {
 
 #' Parse scientific_name to genus and species
 #'
-#' Parses scientific_name into genus and species columns and their formatted
-#' equivalents. Unpublished "<Genus> sp. <strain_identifier>" (See PMC7408187)
-#' are treated as genus = <Genus> and species = sp.
+#' @description Parses scientific_name into genus and species columns and their
+#'   formatted equivalents. Unpublished "<Genus> sp. <strain_identifier>" (See
+#'   PMC7408187) are treated as genus = <Genus> and species = sp.
 #'
-#' See "How Many Species" in PMC3245000 for info in "sp." strains
-#' Also PMC7408187 (Curation of prokaryotes) and
-#' https://www.ncbi.nlm.nih.gov/biosample/docs/organism/
-#' And https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html
+#' @details See "How Many Species" in PMC3245000 for info in "sp." strains Also
+#'   PMC7408187 (Curation of prokaryotes) and
+#'   <https://www.ncbi.nlm.nih.gov/biosample/docs/organism/> and
+#'   <https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html>
 #'
-#' @param data A dataframe or tibble
-#' @param path Path to an NCBI Isolates Browser
-#'             PDG_accession.version.metadata.tsv file
-parse_genus_species <- function(data, path) {
+#' @param data A dataframe or tibble with a `scientific_name` column
+#' @returns Original `data` with columns `species`, `species_markdown`,
+#'   `species_math`, `genus`, `genus_markdown`, and `genus_math` added
+#' @export
+parse_genus_species <- function(data) {
 
   .complete <- data %>%
     dplyr::mutate(species = stringr::str_extract(.data$scientific_name, "^[^ ]* [^ ]*")) %>%
@@ -72,10 +74,21 @@ parse_genus_species <- function(data, path) {
   return(.complete)
 }
 
-
-#' Reverse geocode "lat_lon" to countries and use to fill in missing "location"
+#' Parse `lat_lon` data and reverse geocode to `location`
 #'
-#' @param data A dataframe or tibble to modify
+#' @description Separates `lat_lon` and convert 'N/S/E/W' labels to '+/-'
+#'   format. Uses these values to reverse geocode and determine country when
+#'   `location` is not provided in the original metadata.
+#'
+#'   Also removes (and reverse geocodes if possible) any `location` values
+#'   containing a forward slash. These appear to sometimes be used in metadata
+#'   to indicate samples tied to multiple locations (e.g. a hospital in one
+#'   country treating a patient who acquired an infection in another country),
+#'   but is not part of the INSDC standard and is not consistently reliable.
+#'
+#' @param data A dataframe or tibble to containing a `lat_lon` column
+#' @returns Original `data` with column `lat_lon` replaced by columns `lat` and
+#'   `lon` and some values for `location` added
 reverse_geocode <- function(data){
 
   .partial <- data %>%
@@ -456,6 +469,7 @@ parse_mbe_oxa_family <- function(data, by = "allele") {
   return(.complete)
 }
 
+########## Identical Protein Group Import and Processing ##########
 
 #' Import NCBI Identical Protein Groups data and add accession numbers and names
 #' to MBE data
