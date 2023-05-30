@@ -2,38 +2,54 @@
 % Please edit documentation in R/heatmap.R
 \name{heatmap_data}
 \alias{heatmap_data}
-\title{Prepare data for rank and proprtion heatmap}
+\title{Prepare heatmap data}
 \usage{
-heatmap_data(data, count, group, n = 5, facet, by_group = TRUE, na.rm = TRUE)
+heatmap_data(
+  data,
+  count,
+  category,
+  n = 5,
+  facet,
+  by_group = TRUE,
+  na.rm = TRUE
+)
 }
 \arguments{
-\item{data}{a dataframe or tibble}
+\item{data}{A dataframe or tibble}
 
-\item{count}{\if{html}{\out{<data-masking>}} column to count (long axis)}
+\item{count}{\if{html}{\out{<data-masking>}} Column to count (long axis)}
 
-\item{group}{\if{html}{\out{<data-masking>}} column to compare across (short axis)}
+\item{category}{\if{html}{\out{<data-masking>}} Column to compare across (short axis)}
 
-\item{n}{number of most frequent \code{count} to include (i.e. top n =)}
+\item{n}{Number of most frequent \code{count} to include (i.e. top n =)}
 
-\item{facet}{\if{html}{\out{<data-masking>}}column to facet by}
+\item{facet}{\if{html}{\out{<data-masking>}} Column to facet by}
 
-\item{by_group}{should \code{n} be aggregated by group or for the overall dataset?}
+\item{by_group}{Should \code{n} be aggregated by group or for the overall dataset?}
 
-\item{na.rm}{should NA values be removed from \code{count}, \code{group}, and \code{facet}?}
+\item{na.rm}{Should \code{NA} values be removed from \code{count}, \code{category}, and \code{facet}?}
+}
+\value{
+a tibble with ranks, proportions, and counts ready to plot using
+\code{\link[=heatmap_plot]{heatmap_plot()}}
 }
 \description{
-Count all instances of \code{count} by \code{group}, filter \code{n} most frequent \code{count}
+Prepare \code{data} for plotting as a heatmap with \code{\link[=heapmap_plot]{heapmap_plot()}}.
+
+Count all instances of \code{count} by \code{category}, filter \code{n} most frequent \code{count}
 either overall or \code{by_group}. Optionally prepare to facet by \code{facet} and
-remove NA values.
-}
-\details{
-Proportion refers to the proportion of isolates in a given \code{group} associated
+remove \code{NA} values.
+
+Proportion refers to the proportion of isolates in a given \code{category} associated
 with each \code{count}. Ranks are the \code{dense_rank(desc())} of the number of
 isolates associated with each \code{count}.
 
-Note: The default setting \code{by_group = TRUE} will keep all \code{count} that appear
-in the \code{n} most frequent in any \code{group}, typically leading to more than \code{n}
+The default setting \code{by_group = TRUE} will keep all \code{count} that appear
+in the \code{n} most frequent in any \code{category}, typically leading to more than \code{n}
 total values being kept. Conversely, \code{by_group = FALSE} will keep only the
 \code{n} most frequent from the entire tibble, ensuring only \code{n} values in the
 output.
+}
+\seealso{
+\code{\link[=heatmap_plot]{heatmap_plot()}} to generate a \code{ggplot2} heatmap plot
 }

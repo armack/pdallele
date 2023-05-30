@@ -2,12 +2,12 @@
 % Please edit documentation in R/heatmap.R
 \name{heatmap_plot}
 \alias{heatmap_plot}
-\title{Prepare ggplot object of heatmap}
+\title{Generate heatmap plot}
 \usage{
 heatmap_plot(
   data,
   count,
-  group,
+  category,
   facet,
   option = "viridis",
   wide = FALSE,
@@ -26,21 +26,21 @@ heatmap_plot(
 )
 }
 \arguments{
-\item{data}{a dataframe or tibble}
+\item{data}{A dataframe or tibble}
 
-\item{count}{\if{html}{\out{<data-masking>}} column to count (long axis)}
+\item{count}{\if{html}{\out{<data-masking>}} Column of counts (long axis)}
 
-\item{group}{\if{html}{\out{<data-masking>}} column to compare across (short axis)}
+\item{category}{\if{html}{\out{<data-masking>}} Column to compare across (short axis)}
 
-\item{facet}{column to facet by.}
+\item{facet}{Column to facet by.}
 
 \item{option}{Color palette, passed to \code{viridis::scale_color_viridis()}.}
 
-\item{wide}{should the output be wide or tall? See description.}
+\item{wide}{Should the output be wide or tall? See description.}
 
-\item{rank}{title for the rank (size) legend}
+\item{rank}{Title for the rank (size) legend}
 
-\item{prop}{title for the proportion (color) legend}
+\item{prop}{Title for the proportion (color) legend}
 
 \item{prop_breaks}{Proportion values to be displayed in the legend. Passed to
 \code{ggplot2::continuous_scale(breaks = )}}
@@ -65,17 +65,27 @@ heatmap_plot(
 
 \item{text_size}{Text size in plot. Passed to \code{ggplot2::element_text()}.}
 }
-\description{
-Notes on Plot Orientation:
+\value{
+a \code{ggplot2} plot object
 }
-\details{
-\code{wide = FALSE} places \code{count} on the Y-axis and \code{group} on the X-axis which
-will result in "longer" plots when \code{count} has more levels than \code{group}.
+\description{
+Generate a heatmap plot from a tibble prepared by \code{\link[=heatmap_data]{heatmap_data()}}.
+
+Rank corresponds to size of each circle and proportion corresponds to the
+color of each circle.
+
+Plot orientation:
+\itemize{
+\item \code{wide = FALSE} places \code{count} on the Y-axis and \code{category} on the X-axis which
+will result in "longer" plots when \code{count} has more levels than \code{category}.
 Plots will facet vertically.
+\item \code{wide = TRUE} swaps the axes and will result in "wider" plots when \code{count}
+has more levels than \code{category}. Plots will facet horizontally.
+}
 
-\code{wide = TRUE} swaps the axes and will result in "wider" plots when \code{count}
-has more levels than \code{group}. Plots will facet horizontally.
-
-Facet directions are fixed with plot orientation to avoid sections or to
-avoid unexpected, unintended, and undesirable "tiling" of plots
+Facet directions are fixed with plot orientation to avoid unexpected,
+unintended, and undesirable "tiling" of plots
+}
+\seealso{
+\code{\link[=heatmap_data]{heatmap_data()}} to prepare data for plotting as a heatmap
 }

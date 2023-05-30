@@ -40,42 +40,64 @@ top_n_by_group(
 )
 }
 \arguments{
-\item{data}{a dataframe or tibble}
+\item{data}{A dataframe or tibble}
 
-\item{...}{\if{html}{\out{<data-masking>}} columns of labels to be ranked}
+\item{...}{\if{html}{\out{<data-masking>}} Columns with 'label' values for \code{count}}
 
-\item{count}{column of values (typically counts) to rank}
+\item{count}{Column of values (typically counts) to rank}
 
-\item{n}{number of rows to keep per group (all other values will be collapsed
-into an \code{other} row, meaning n+1 total rows will appear in out unless
-\code{other_pos} is set to "drop"}
+\item{n}{Number of 'labels' to keep per group (all other values will be
+collapsed into \code{other})}
 
-\item{desc}{should the n highest values of \code{count} be kept?}
+\item{desc}{Should the n highest (\code{TRUE}) or lowest (\code{FALSE}) values of
+\code{count} be kept?}
 
-\item{other}{character label for the "other" group}
+\item{other}{Label for the \code{other} group}
 
-\item{relevel}{should factors in \code{...} be releveled in alphanumeric order?}
+\item{relevel}{should \code{...} be releveled in alphanumeric order?}
 
-\item{other_pos}{where should "other" sort?}
+\item{other_pos}{Where should \code{other} sort? Options: \code{first} before ranked
+values, \code{last} after ranked values, \code{drop} drop all non-ranked values.}
 }
 \description{
-These functions are primarailly designed to prepare data for use
-in \code{\link[=donut_plot]{donut_plot()}} and serve three main purposes:
+These functions are primarily designed to prepare data for use in
+\code{\link[=donut_plot]{donut_plot()}} and serve three main purposes:
 \enumerate{
-\item Determine the \code{n} largest (or smallest) counts
-\item Combine remaining counts into \code{other}
-\item Optionally, relevel factor levels using [\code{\link[=relevel_numeric]{relevel_numeric()}}]
+\item Determine the \code{n} largest (or smallest) \code{count}
+\item Combine remaining \code{count} into \code{other}
+\item Optionally relevel \code{...} using \code{\link[=relevel_numeric]{relevel_numeric()}}
 }
 
 They differ in the handling of groups:
 \itemize{
-\item \code{top_n_overall()} determines the "top n" of the entire dataset and keeps those labels across all groups. Up to \code{n} labels + \code{other} will be kept.
-\item \code{top_n_by_group()} determines the "top n" on a group-by-group basis and keeps the "top n" labels for each group independently. The total number of labels kept will vary, with a maximum of \code{n} \* length(groups) + \code{other}
-\item \code{top_n_across_groups()} determines the "top n" on a group-by-group basis and keeps labels appearing in the "top n" of any group across all groups. Up to \code{n} labels + \code{other} will be kept.
+\item \code{top_n_overall()} determines the "top n" of the entire dataset and keeps those labels across all groups.
+\item \code{top_n_by_group()} determines the "top n" on a group-by-group basis and keeps the "top n" labels for each group independently.
+\item \code{top_n_across_groups()} determines the "top n" on a group-by-group basis and keeps labels appearing in the "top n" of any group across all groups.
 }
 
-All values that aren't 'kept' are combined into \code{other}.
+All values that aren't within the 'top n' are combined into \code{other}, which
+can be dropped from the output if desired.
 
-No tie-breaking is performed. In the event of a tie for the nth row, the
-first row by arrange() is kept.
+No tie-breaking is performed. In the event of a tie for the \code{n}th position,
+the first row by \code{arrange(...)} is kept.
 }
+\section{Output Length}{
+
+
+Number of rows included in the output tibble willvary based on the function
+used and the number of groups \code{group_by(data, ...)} creates.
+
+Assuming each group contains at least \code{n} labels (i.e. \code{group_by(data, ...)}
+groups):
+\itemize{
+\item \code{top_n_overall()} outputs a total of \code{n} distinct labels with all others combined into \code{other}.
+\item \code{top_n_by_group()}  outputs a total of \code{n * n_groups(group_by(data, ...))} distinct labels with all others combined into\code{other}.
+\item \code{top_n_across_groups()} outputs a maximum of \code{n * n_groups(group_by(data, ...))} distinct labels with all others combined into \code{other}.
+}
+
+The exact number of rows output by \code{top_n_across_groups()} will vary based on
+the number of shared values of \code{...} between groups, but will always be
+between \code{n} (e.g. complete overlap) and \code{n * n_groups(group_by(data, ...))}
+(e.g. no overlap).
+}
+

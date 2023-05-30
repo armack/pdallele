@@ -45,8 +45,8 @@ donut_plot_panel(
 \item{total}{Should total of \code{count} be displayed inside donuts?}
 
 \item{palette}{A \code{\link[ggthemes:tableau_color_pal]{ggthemes::tableau_color_pal()}} color palette name. By
-default, uses \verb{Tableau 10} for ≤ 10 categories, \verb{Tableau 20} for 11 to 20
-categories, and the standard \code{ggplot2} color palette for > 20 categories}
+default, uses '\verb{Tableau 10}' for ≤ 10 categories, '\verb{Tableau 20}' for 11 to
+20 categories, and the standard \code{ggplot2} color palette for > 20 categories}
 
 \item{facet}{Column to facet plots by}
 
