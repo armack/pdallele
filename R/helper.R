@@ -2,23 +2,32 @@
 #' @importFrom rlang :=
 NULL
 
-# Where should NA go? TRUE at the end, FALSE at the beginning, NA dropped.
 ########## Flow and Piping ##########
 
-#' Pass data along the pipeline and rlang::inform()
+#' Pass data along the pipeline and inform
+#'
+#' Pass data along the pipeline and invoke rlang::inform() with the desired message
 #'
 #' @param data a dataframe or tibble
 #' @param ... parameters to pass to inform()
+#' @returns unaltered `data`
+#' @seealso [pipe_warn()]
+#' @export
 
 pipe_inform <- function(data, ...){
   rlang::inform(...)
   return(data)
 }
 
-#' Pass data along the pipeline and rlang::warn()
+#' Pass data along the pipeline and warn
+#'
+#' Pass data along the pipeline and invoke rlang::warn() with the desired message
 #'
 #' @param data a dataframe or tibble
 #' @param ... parameters to pass to warn()
+#' @returns unaltered `data`
+#' @seealso [pipe_inform()]
+#' @export
 
 pipe_warn <- function(data, ...){
   rlang::warn(...)
@@ -27,15 +36,24 @@ pipe_warn <- function(data, ...){
 
 ########## Counting ##########
 
-#' Count by Columns
+#' Count by columns
+#'
+#' @description
+#' Wraps [dplyr::count()] and adds additional options for ordering of `NA`
+#' values and counting distinct BioSamples
+#'
+#' Two convenience functions are also available:
+#' * `count_alleles()` wraps `count_by_column(name = "alleles", isolates = FALSE)`
+#' * `count_isolates()` wraps `count_by_column(name = "isolates", isolates = TRUE)`
 #'
 #' @param data A data frame or tibble.
 #' @param ... <data masking> columns to group by.
 #' @param sort If TRUE, will show the largest groups at the top.
 #' @param name The name of the new column in the output.
-#' @param na_last Where to sort NA. If TRUE, NA is put last; if FALSE,
-#' NA is put first; if NA, NA is dropped.
+#' @param na_last Where to sort `NA`. If `TRUE`, `NA` is put last; if `FALSE`,
+#'   `NA` is put first; if `NA`, `NA` is dropped.
 #' @param isolates Should isolates (BioSamples) be counted instead of alleles?
+#' @export
 count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
                             name = "n", na_last = TRUE){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
@@ -54,17 +72,9 @@ count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
   return(.complete)
 }
 
-#' Count Alleles by Columns
-#'
-#' This is a convenience function for count_by_column(name = "alleles",
-#' isolates = FALSE)
-#'
-#' @param data A data frame or tibble.
-#' @param ... <data masking> columns to group by.
-#' @param sort If TRUE, will show the largest groups at the top.
-#' @param name Name of the count column.
-#' @param na_last Where to sort NA. If TRUE, NA is put last; if FALSE,
-#' NA is put first; if NA, NA is dropped.
+#' Count alleles by columns
+#' @rdname count_by_column
+#' @export
 count_alleles <- function(data, ..., sort = TRUE, name = "alleles", na_last = TRUE){
   .complete <- count_by_column(data = data, ..., sort = sort,
                                isolates = FALSE, name = name,
@@ -72,16 +82,9 @@ count_alleles <- function(data, ..., sort = TRUE, name = "alleles", na_last = TR
     return(.complete)
 }
 
-#' Count Isolates by Columns
-#'
-#' This is a convenience function for
-#' count_by_column(isolates = TRUE, name = "isolates")
-#'
-#' @param data A data frame or tibble.
-#' @param ... <data masking> columns to group by.
-#' @param sort If TRUE, will show the largest groups at the top.
-#' @param na_last Where to sort NA. If TRUE, NA is put last; if FALSE,
-#' NA is put first; if NA, NA is dropped.
+#' Count isolates by columns
+#' @rdname count_by_column
+#' @export
 count_isolates <- function(data, ..., sort = TRUE, na_last = TRUE){
   .complete <- count_by_column(data = data, ..., sort = sort, isolates = TRUE,
                   name = "isolates", na_last = na_last)
@@ -90,13 +93,18 @@ count_isolates <- function(data, ..., sort = TRUE, na_last = TRUE){
 
 ########## Releveling ##########
 
-#' Relevel factors in human readable order and sort columns
+#' Relevel and sort factors in human language order
 #'
-#' Relevel factors in 'human' alphanumeric order(i.e. digits are sorted
-#' numerically rather than as strings) and sort columns
+#' Relevel factors in human language alphanumeric order (i.e. digits are sorted
+#' numerically rather than as strings) and sort columns in ascending order.
+#'
+#' @details
+#' Uses [stringr::str_sort()] with `numeric = TRUE` for sorting.
 #'
 #' @param data A dataframe or tibble
-#' @param ... <data-masking> cols to relevel alphanumerically
+#' @param ... <data-masking> Columns to relevel alphanumerically
+#' @family factor releveling
+#' @export
 relevel_numeric <- function(data, ...) {
 
   .complete <- data %>%
@@ -106,18 +114,22 @@ relevel_numeric <- function(data, ...) {
   return(.complete)
 }
 
-
-#' Relevel to first/last position and sort
+#' Relevel strings to first or last position and sort
 #'
-#' Relevel character vector values to first or last position(s) in `...` columns
+#' Relevel values in `...` matching values in `first` or `last` to the beginning
+#' or end (respectively) of the factor levels for `...`.
 #'
-#' Note that both `first` and `last` will remain in the order provided
+#' If `first` or `last` contain multiple values, they will remain in the order
+#' provided as input.
 #'
 #' @param data A data frame or tibble
-#' @param ... <data masking> columns to reorder
-#' @param first a character vector of values to move to the first position
-#' @param last a character vector of values to move to the last position
-#' @param na_last Where should NA go? TRUE at the end, FALSE at the beginning, NA dropped.
+#' @param ... <data masking> Columns to reorder
+#' @param first Character vector of values to move to the first position
+#' @param last Character vector of values to move to the last position
+#' @param na_last Where should `NA` go? `TRUE` at the end, `FALSE` at the
+#'   beginning, `NA` dropped.
+#' @family factor releveling
+#' @export
 relevel_first_last <- function(data, ..., first = NULL, last = NULL, na_last = TRUE){
 
   .complete <- data %>%
@@ -132,12 +144,31 @@ relevel_first_last <- function(data, ..., first = NULL, last = NULL, na_last = T
 
 ########## Filtering ##########
 
-#' Remove assigned bla alleles
+#' Filter *bla* alleles by assignment status
 #'
-#' Filter data to remove unassigned bla alleles
-#' (i.e. those without an allele number)
+#' @description These functions serve to filter beta-lactamase (*bla*) alleles
+#'   based on their assignment status. Two variants are available:
+#'   * `remove_assigned_bla()` removes assigned *bla* alleles from `data`
+#'   * `remove_unassigned_bla()` removes unassigned *bla* alleles from `data`
+#'
+#' @details In NCBI Pathogen Detection Project datasets, *bla* alleles with
+#'   formal designations are listed by their number (e.g. *bla*PDC-3) while
+#'   those without formal designations are collectively listed by their gene
+#'   name (e.g. *bla*PDC).
+#'
+#'   Every *bla*PDC-3 allele will have an identical protein sequence and resolve
+#'   to the same Identical Protein Group accession number. The same is NOT true
+#'   for *bla*PDC, as this is a generic representation of all unassigned
+#' *bla*PDC alleles and can theoretical be associated with hundreds or even
+#'   thousands of unique protein sequences.
+#'
+#'   Note that nomenclature varies and 'unassigned' alleles are often referred
+#'   to as 'novel' alleles.
 #'
 #' @param data A data frame or tibble
+#' @returns A data frame or tibble with either assigned (`remove_assigned_bla`)
+#'   or unassigned (`remove_unassigned_bla`) alleles removed
+#' @export
 remove_assigned_bla <- function(data){
   .complete <- data %>%
     dplyr::filter(!(grepl("bla", .data$allele, ignore.case = TRUE) & grepl("-", .data$allele)))
@@ -145,12 +176,8 @@ remove_assigned_bla <- function(data){
   return(.complete)
 }
 
-#' Remove unassigned bla alleles
-#'
-#' Filter data to remove unassigned bla alleles
-#' (i.e. those with an allele number)
-#'
-#' @param data A data frame or tibble
+#' @rdname remove_assigned_bla
+#' @export
 remove_unassigned_bla <- function(data){
   .complete <- data %>%
     dplyr::filter(!(grepl("bla", .data$allele, ignore.case = TRUE) & !grepl("-", .data$allele)))
@@ -160,12 +187,13 @@ remove_unassigned_bla <- function(data){
 
 #' Filter attribute column by string
 #'
-#' Shorthand for filter(grepl(string, attribute, ignore.case = TRUE))
-#' which looks better in pipes and follows tidyverse argument order
+#' A convenience function wrapping `filter(grepl(string, attribute, ignore.case =
+#' TRUE))` which looks cleaner in pipes and follows tidyverse argument order
 #'
 #' @param data A data frame or tibble
-#' @param attribute <data-masking> column to filter
-#' @param string string to filter by
+#' @param attribute <data-masking> Column to filter
+#' @param string String to look for
+#' @export
 filter_attribute <- function(data, attribute, string){
 
   .complete <- data %>%
@@ -174,11 +202,19 @@ filter_attribute <- function(data, attribute, string){
   return(.complete)
 }
 
-#' Filter alleles exclusive to only a single combination of columns
+#' Filter by allele exclusivity
+#'
+#' Filter `data` to keep alleles based on whether they are exclusive to one
+#' group or shared between multiple groups. Two variants are available:
+#'   * `filter_exclusive_alleles()` keeps alleles appearing only in one group of `group_by(data, ...)`
+#'   * `filter_shared_alleles()` keeps alleles appearing in multiple groups of `group_by(data, ...)`
 #'
 #' @param data A data frame or tibble
-#' @param ... <data-masking> cols to find alleles unique to different values
-determine_exclusive_alleles <- function(data, ...){
+#' @param ... <data-masking> Columns to determine exclusivity by
+#' @returns A data frame or tibble with only exclusive
+#'   (`filter_exclusive_alleles`) or shared (`filter_shared_alleles`) alleles
+#' @export
+filter_exclusive_alleles <- function(data, ...){
 
   .complete <- data %>%
     dplyr::group_by("allele") %>%
@@ -188,11 +224,9 @@ determine_exclusive_alleles <- function(data, ...){
   return(.complete)
 }
 
-#' Filter alleles shared between multiple combinations of columns
-#'
-#' @param data A data frame or tibble
-#' @param ... <data-masking> cols to find alleles shared among different values
-determine_shared_alleles <- function(data, ...){
+#' @rdname filter_exclusive_alleles
+#' @export
+filter_shared_alleles <- function(data, ...){
 
   .complete <- data %>%
     dplyr::group_by("allele") %>%
@@ -203,12 +237,16 @@ determine_shared_alleles <- function(data, ...){
 }
 
 
-#' Add `combo` column of combinations of `allele` present in each `biosample`
-#' and filter out biosamples with only a single allele
+#' Determine allele combinations
 #'
-#' @param data a data frame or tibble
-#' @param filter_terms character vector of terms to filter alleles before
-#'        determining groups
+#' Determine combinations of `allele` present in each isolate, concatenate a
+#' list of alleles into a `combo` column, and remove isolates with only a single
+#' allele.
+#'
+#' @param data A data frame or tibble
+#' @param filter_terms A character vector of (potentially partial) allele names
+#'   to keep. Collapsed with '|' and filtered with [grepl()].
+#' @export
 determine_combinations <- function(data, filter_terms = NULL){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
   .combos <- data %>%
@@ -221,33 +259,6 @@ determine_combinations <- function(data, filter_terms = NULL){
     inner_join(.combos, by = "biosample")
 
   return(.complete)
-}
-
-#' Determine all possible unique proteins present in an MicroBIGG-E dataset
-#'
-#' Combines a single accession number for each distinct, assigned allele with
-#' all distinct accession numbers for unassigned alleles into a single character
-#' vector representing the maximum number of potential distinct alleles present
-#' in the input dataset
-#'
-#' @param data a tibble or dataframe containing MicroBIGG-E data
-possible_unique_proteins_mbe <- function(data){
-  accessions_assigned <- data %>%
-    remove_unassigned_bla() %>%
-    dplyr::group_by("allele") %>%
-    dplyr::slice_head() %>%
-    dplyr::ungroup() %>%
-    dplyr::distinct(.data$protein) %>%
-    dplyr::pull()
-
-  accessions_unassigned <- data %>%
-    remove_assigned_bla() %>%
-    dplyr::distinct(.data$protein) %>%
-    dplyr::pull("protein")
-
-  accessions <- c(accessions_assigned, accessions_unassigned)
-
-  return(accessions)
 }
 
 ########## Split Integers into Groups ##########
@@ -367,7 +378,8 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
 
 #' Apply separate_rows sequentially by column
 #'
-#' Useful for separating and all unique combinations of separated rows when
+#' @description
+#' Separate and all unique combinations of separated rows when
 #' different columns may have different numbers of delimiters for the same row
 #' (which causes a vector recycling error when applying separate_rows to
 #' multiple columns). This essentially "expands" the data column by column.
@@ -394,9 +406,13 @@ separate_rows_sequential <- function(data, ..., sep = "[^[:alnum:].]+", convert 
 
 ########## File Handling ##########
 
-#' Ensure directory exists (and make if it doesn't)
+#' Ensure directory exists
 #'
-#' @param path directory path
+#' Checks if the directory path provided exists and creates it (with
+#' notification) if it does not.
+#'
+#' @param path Directory path
+#' @export
 ensure_directory <- function(path){
   if(!dir.exists(path)){
     dir.create(path, recursive = TRUE)
