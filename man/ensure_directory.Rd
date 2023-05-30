@@ -2,13 +2,14 @@
 % Please edit documentation in R/helper.R
 \name{ensure_directory}
 \alias{ensure_directory}
-\title{Ensure directory exists (and make if it doesn't)}
+\title{Ensure directory exists}
 \usage{
 ensure_directory(path)
 }
 \arguments{
-\item{path}{directory path}
+\item{path}{Directory path}
 }
 \description{
-Ensure directory exists (and make if it doesn't)
+Checks if the directory path provided exists and creates it (with
+notification) if it does not.
 }

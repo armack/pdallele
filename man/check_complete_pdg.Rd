@@ -24,3 +24,10 @@ includes AMR Metadata, SNP Clusters, and SNP Trees). Note that SNP Trees are
 part of the definition of a 'complete' release, but are not downloaded or
 analyzed by \code{pdallele}
 }
+\seealso{
+Other metadata and clusters: 
+\code{\link{download_metadata_clusters}()},
+\code{\link{get_organisms}()},
+\code{\link{get_versions}()}
+}
+\concept{metadata and clusters}

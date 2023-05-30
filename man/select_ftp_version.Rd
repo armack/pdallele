@@ -16,3 +16,9 @@ select_ftp_version(url, organism)
 Interactively select an accession.version for a given organism from the NCBI
 Pathogen Detection FTP directory
 }
+\seealso{
+Other ftp download helpers: 
+\code{\link{select_ftp_organism}()},
+\code{\link{select_ftp_refgene}()}
+}
+\concept{ftp download helpers}

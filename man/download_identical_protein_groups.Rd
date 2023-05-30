@@ -25,3 +25,10 @@ A lower value for \code{n} will require more queries to NCBI servers but will
 reduce redundant downloads if an IPG is associated with a large number of
 accession numbers in the dataset.
 }
+\seealso{
+Other download data: 
+\code{\link{download_metadata_clusters}()},
+\code{\link{download_microbigge_bq}()},
+\code{\link{download_reference_gene_catalog}()}
+}
+\concept{download data}

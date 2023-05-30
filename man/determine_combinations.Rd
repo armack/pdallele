@@ -2,18 +2,18 @@
 % Please edit documentation in R/helper.R
 \name{determine_combinations}
 \alias{determine_combinations}
-\title{Add \code{combo} column of combinations of \code{allele} present in each \code{biosample}
-and filter out biosamples with only a single allele}
+\title{Determine allele combinations}
 \usage{
 determine_combinations(data, filter_terms = NULL)
 }
 \arguments{
-\item{data}{a data frame or tibble}
+\item{data}{A data frame or tibble}
 
-\item{filter_terms}{character vector of terms to filter alleles before
-determining groups}
+\item{filter_terms}{A character vector of (potentially partial) allele names
+to keep. Collapsed with '|' and filtered with \code{\link[=grepl]{grepl()}}.}
 }
 \description{
-Add \code{combo} column of combinations of \code{allele} present in each \code{biosample}
-and filter out biosamples with only a single allele
+Determine combinations of \code{allele} present in each isolate, concatenate a
+list of alleles into a \code{combo} column, and remove isolates with only a single
+allele.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/heatmap.R
 \name{heatmap_data}
 \alias{heatmap_data}
-\title{Prepare heatmap data}
+\title{Prepare heat map data}
 \usage{
 heatmap_data(
   data,

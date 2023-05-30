@@ -2,16 +2,24 @@
 % Please edit documentation in R/helper.R
 \name{relevel_numeric}
 \alias{relevel_numeric}
-\title{Relevel factors in human readable order and sort columns}
+\title{Relevel and sort factors in human language order}
 \usage{
 relevel_numeric(data, ...)
 }
 \arguments{
 \item{data}{A dataframe or tibble}
 
-\item{...}{\if{html}{\out{<data-masking>}} cols to relevel alphanumerically}
+\item{...}{\if{html}{\out{<data-masking>}} Columns to relevel alphanumerically}
 }
 \description{
-Relevel factors in 'human' alphanumeric order(i.e. digits are sorted
-numerically rather than as strings) and sort columns
+Relevel factors in human language alphanumeric order (i.e. digits are sorted
+numerically rather than as strings) and sort columns in ascending order.
 }
+\details{
+Uses \code{\link[stringr:str_order]{stringr::str_sort()}} with \code{numeric = TRUE} for sorting.
+}
+\seealso{
+Other factor releveling: 
+\code{\link{relevel_first_last}()}
+}
+\concept{factor releveling}

@@ -22,3 +22,10 @@ Downloads listing of PDG (Pathogen Detection Organism Group)
 accession.version releases currently available for \code{organism} on the NCBI
 Pathogen Detection FTP server.
 }
+\seealso{
+Other metadata and clusters: 
+\code{\link{check_complete_pdg}()},
+\code{\link{download_metadata_clusters}()},
+\code{\link{get_organisms}()}
+}
+\concept{metadata and clusters}

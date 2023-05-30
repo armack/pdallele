@@ -24,3 +24,14 @@ Pathogen Detection FTP server.
 
 The downloaded file is saved as 'ReferenceGeneCatalog.tsv' in \code{path}.
 }
+\seealso{
+Other reference gene catalog: 
+\code{\link{get_reference_gene_catalogs}()}
+
+Other download data: 
+\code{\link{download_identical_protein_groups}()},
+\code{\link{download_metadata_clusters}()},
+\code{\link{download_microbigge_bq}()}
+}
+\concept{download data}
+\concept{reference gene catalog}

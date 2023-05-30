@@ -2,7 +2,7 @@
 % Please edit documentation in R/heatmap.R
 \name{heatmap_plot}
 \alias{heatmap_plot}
-\title{Generate heatmap plot}
+\title{Generate heat map plot}
 \usage{
 heatmap_plot(
   data,

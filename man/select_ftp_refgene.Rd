@@ -14,3 +14,9 @@ select_ftp_refgene(url)
 Interactively select a ReferenceGeneCatalog version from the NCBI Pathogen
 Detection FTP directory
 }
+\seealso{
+Other ftp download helpers: 
+\code{\link{select_ftp_organism}()},
+\code{\link{select_ftp_version}()}
+}
+\concept{ftp download helpers}

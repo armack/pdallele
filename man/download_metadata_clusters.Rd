@@ -29,3 +29,16 @@ downloading.
 The downloaded files are saved as \code{asm.metadata.tsv} and \code{cluster_list.tsv}
 in \code{path}.
 }
+\seealso{
+Other metadata and clusters: 
+\code{\link{check_complete_pdg}()},
+\code{\link{get_organisms}()},
+\code{\link{get_versions}()}
+
+Other download data: 
+\code{\link{download_identical_protein_groups}()},
+\code{\link{download_microbigge_bq}()},
+\code{\link{download_reference_gene_catalog}()}
+}
+\concept{download data}
+\concept{metadata and clusters}

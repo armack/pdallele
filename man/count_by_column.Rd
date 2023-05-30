@@ -2,7 +2,9 @@
 % Please edit documentation in R/helper.R
 \name{count_by_column}
 \alias{count_by_column}
-\title{Count by Columns}
+\alias{count_alleles}
+\alias{count_isolates}
+\title{Count by columns}
 \usage{
 count_by_column(
   data,
@@ -12,6 +14,10 @@ count_by_column(
   name = "n",
   na_last = TRUE
 )
+
+count_alleles(data, ..., sort = TRUE, name = "alleles", na_last = TRUE)
+
+count_isolates(data, ..., sort = TRUE, na_last = TRUE)
 }
 \arguments{
 \item{data}{A data frame or tibble.}
@@ -24,9 +30,16 @@ count_by_column(
 
 \item{name}{The name of the new column in the output.}
 
-\item{na_last}{Where to sort NA. If TRUE, NA is put last; if FALSE,
-NA is put first; if NA, NA is dropped.}
+\item{na_last}{Where to sort \code{NA}. If \code{TRUE}, \code{NA} is put last; if \code{FALSE},
+\code{NA} is put first; if \code{NA}, \code{NA} is dropped.}
 }
 \description{
-Count by Columns
+Wraps \code{\link[dplyr:count]{dplyr::count()}} and adds additional options for ordering of \code{NA}
+values and counting distinct BioSamples
+
+Two convenience functions are also available:
+\itemize{
+\item \code{count_alleles()} wraps \code{count_by_column(name = "alleles", isolates = FALSE)}
+\item \code{count_isolates()} wraps \code{count_by_column(name = "isolates", isolates = TRUE)}
+}
 }

@@ -9,11 +9,10 @@ filter_attribute(data, attribute, string)
 \arguments{
 \item{data}{A data frame or tibble}
 
-\item{attribute}{\if{html}{\out{<data-masking>}} column to filter}
+\item{attribute}{\if{html}{\out{<data-masking>}} Column to filter}
 
-\item{string}{string to filter by}
+\item{string}{String to look for}
 }
 \description{
-Shorthand for filter(grepl(string, attribute, ignore.case = TRUE))
-which looks better in pipes and follows tidyverse argument order
+A convenience function wrapping \code{filter(grepl(string, attribute, ignore.case = TRUE))} which looks cleaner in pipes and follows tidyverse argument order
 }

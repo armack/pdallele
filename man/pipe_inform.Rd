@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper.R
 \name{pipe_inform}
 \alias{pipe_inform}
-\title{Pass data along the pipeline and rlang::inform()}
+\title{Pass data along the pipeline and inform}
 \usage{
 pipe_inform(data, ...)
 }
@@ -11,6 +11,12 @@ pipe_inform(data, ...)
 
 \item{...}{parameters to pass to inform()}
 }
+\value{
+unaltered \code{data}
+}
 \description{
-Pass data along the pipeline and rlang::inform()
+Pass data along the pipeline and invoke rlang::inform() with the desired message
+}
+\seealso{
+\code{\link[=pipe_warn]{pipe_warn()}}
 }

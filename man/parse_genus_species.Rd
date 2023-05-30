@@ -4,22 +4,23 @@
 \alias{parse_genus_species}
 \title{Parse scientific_name to genus and species}
 \usage{
-parse_genus_species(data, path)
+parse_genus_species(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
-
-\item{path}{Path to an NCBI Isolates Browser
-PDG_accession.version.metadata.tsv file}
+\item{data}{A dataframe or tibble with a \code{scientific_name} column}
+}
+\value{
+Original \code{data} with columns \code{species}, \code{species_markdown},
+\code{species_math}, \code{genus}, \code{genus_markdown}, and \code{genus_math} added
 }
 \description{
-Parses scientific_name into genus and species columns and their formatted
-equivalents. Unpublished "\if{html}{\out{<Genus>}} sp. <strain_identifier>" (See PMC7408187)
-are treated as genus = \if{html}{\out{<Genus>}} and species = sp.
+Parses scientific_name into genus and species columns and their
+formatted equivalents. Unpublished "\if{html}{\out{<Genus>}} sp. <strain_identifier>" (See
+PMC7408187) are treated as genus = \if{html}{\out{<Genus>}} and species = sp.
 }
 \details{
-See "How Many Species" in PMC3245000 for info in "sp." strains
-Also PMC7408187 (Curation of prokaryotes) and
-https://www.ncbi.nlm.nih.gov/biosample/docs/organism/
-And https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html
+See "How Many Species" in PMC3245000 for info in "sp." strains Also
+PMC7408187 (Curation of prokaryotes) and
+\url{https://www.ncbi.nlm.nih.gov/biosample/docs/organism/} and
+\url{https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html}
 }

@@ -16,8 +16,14 @@ A tibble with columns \code{organism} containing organism names and
 \description{
 Downloads listing of organisms currently available on the NCBI
 Pathogen Detection FTP server.
-}
-\details{
+
 The FTP directory can be accessed via browser at
 \link{https://ftp.ncbi.nlm.nih.gov/pathogen/Results/}.
 }
+\seealso{
+Other metadata and clusters: 
+\code{\link{check_complete_pdg}()},
+\code{\link{download_metadata_clusters}()},
+\code{\link{get_versions}()}
+}
+\concept{metadata and clusters}

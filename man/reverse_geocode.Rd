@@ -2,13 +2,25 @@
 % Please edit documentation in R/import_cleanup.R
 \name{reverse_geocode}
 \alias{reverse_geocode}
-\title{Reverse geocode "lat_lon" to countries and use to fill in missing "location"}
+\title{Parse \code{lat_lon} data and reverse geocode to \code{location}}
 \usage{
 reverse_geocode(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble to modify}
+\item{data}{A dataframe or tibble to containing a \code{lat_lon} column}
+}
+\value{
+Original \code{data} with column \code{lat_lon} replaced by columns \code{lat} and
+\code{lon} and some values for \code{location} added
 }
 \description{
-Reverse geocode "lat_lon" to countries and use to fill in missing "location"
+Separates \code{lat_lon} and convert 'N/S/E/W' labels to '+/-'
+format. Uses these values to reverse geocode and determine country when
+\code{location} is not provided in the original metadata.
+
+Also removes (and reverse geocodes if possible) any \code{location} values
+containing a forward slash. These appear to sometimes be used in metadata
+to indicate samples tied to multiple locations (e.g. a hospital in one
+country treating a patient who acquired an infection in another country),
+but is not part of the INSDC standard and is not consistently reliable.
 }

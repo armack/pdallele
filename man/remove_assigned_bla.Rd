@@ -2,14 +2,40 @@
 % Please edit documentation in R/helper.R
 \name{remove_assigned_bla}
 \alias{remove_assigned_bla}
-\title{Remove assigned bla alleles}
+\alias{remove_unassigned_bla}
+\title{Filter \emph{bla} alleles by assignment status}
 \usage{
 remove_assigned_bla(data)
+
+remove_unassigned_bla(data)
 }
 \arguments{
 \item{data}{A data frame or tibble}
 }
+\value{
+A data frame or tibble with either assigned (\code{remove_assigned_bla})
+or unassigned (\code{remove_unassigned_bla}) alleles removed
+}
 \description{
-Filter data to remove unassigned bla alleles
-(i.e. those without an allele number)
+These functions serve to filter beta-lactamase (\emph{bla}) alleles
+based on their assignment status. Two variants are available:
+\itemize{
+\item \code{remove_assigned_bla()} removes assigned \emph{bla} alleles from \code{data}
+\item \code{remove_unassigned_bla()} removes unassigned \emph{bla} alleles from \code{data}
+}
+}
+\details{
+In NCBI Pathogen Detection Project datasets, \emph{bla} alleles with
+formal designations are listed by their number (e.g. \emph{bla}PDC-3) while
+those without formal designations are collectively listed by their gene
+name (e.g. \emph{bla}PDC).
+
+Every \emph{bla}PDC-3 allele will have an identical protein sequence and resolve
+to the same Identical Protein Group accession number. The same is NOT true
+for \emph{bla}PDC, as this is a generic representation of all unassigned
+\emph{bla}PDC alleles and can theoretical be associated with hundreds or even
+thousands of unique protein sequences.
+
+Note that nomenclature varies and 'unassigned' alleles are often referred
+to as 'novel' alleles.
 }

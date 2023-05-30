@@ -2,15 +2,14 @@
 % Please edit documentation in R/import_cleanup.R
 \name{import_isolates_browser_metadata}
 \alias{import_isolates_browser_metadata}
-\title{Import, Select, and Trim NCBI Pathogen Detection Isolates Browser Metadata}
+\title{Import, select, and trim NCBI Pathogen Detection Isolates Browser Metadata}
 \usage{
 import_isolates_browser_metadata(path)
 }
 \arguments{
-\item{path}{Path to an NCBI Isolates Browser
-PDG_accession.version.metadata.tsv file}
+\item{path}{Path to an NCBI Isolates Browser 'amr.metadata.tsv' file}
 }
 \description{
-Imports Isolated Browser metadataa, selects and renames desired columns, and
+Imports Isolates Browser Metadata, selects and renames relevant columns, and
 cleans up problematic quotation marks
 }

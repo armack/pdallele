@@ -12,3 +12,9 @@ select_ftp_organism(url)
 \description{
 Interactively select an organism from the NCBI Pathogen Detection FTP directory
 }
+\seealso{
+Other ftp download helpers: 
+\code{\link{select_ftp_refgene}()},
+\code{\link{select_ftp_version}()}
+}
+\concept{ftp download helpers}

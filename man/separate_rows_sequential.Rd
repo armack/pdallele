@@ -18,12 +18,11 @@ column. This is useful if the column types are actually numeric, integer,
 or logical.}
 }
 \description{
-Useful for separating and all unique combinations of separated rows when
+Separate and all unique combinations of separated rows when
 different columns may have different numbers of delimiters for the same row
 (which causes a vector recycling error when applying separate_rows to
 multiple columns). This essentially "expands" the data column by column.
-}
-\details{
+
 This approach is relatively slow, but serves the purpose without needing to
 modify separate_rows directly.
 }

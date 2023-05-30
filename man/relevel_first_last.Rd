@@ -2,24 +2,32 @@
 % Please edit documentation in R/helper.R
 \name{relevel_first_last}
 \alias{relevel_first_last}
-\title{Relevel to first/last position and sort}
+\title{Relevel strings to first or last position and sort}
 \usage{
 relevel_first_last(data, ..., first = NULL, last = NULL, na_last = TRUE)
 }
 \arguments{
 \item{data}{A data frame or tibble}
 
-\item{...}{\if{html}{\out{<data masking>}} columns to reorder}
+\item{...}{\if{html}{\out{<data masking>}} Columns to reorder}
 
-\item{first}{a character vector of values to move to the first position}
+\item{first}{Character vector of values to move to the first position}
 
-\item{last}{a character vector of values to move to the last position}
+\item{last}{Character vector of values to move to the last position}
 
-\item{na_last}{Where should NA go? TRUE at the end, FALSE at the beginning, NA dropped.}
+\item{na_last}{Where should \code{NA} go? \code{TRUE} at the end, \code{FALSE} at the
+beginning, \code{NA} dropped.}
 }
 \description{
-Relevel character vector values to first or last position(s) in \code{...} columns
+Relevel values in \code{...} matching values in \code{first} or \code{last} to the beginning
+or end (respectively) of the factor levels for \code{...}.
 }
 \details{
-Note that both \code{first} and \code{last} will remain in the order provided
+If \code{first} or \code{last} contain multiple values, they will remain in the order
+provided as input.
 }
+\seealso{
+Other factor releveling: 
+\code{\link{relevel_numeric}()}
+}
+\concept{factor releveling}

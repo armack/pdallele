@@ -21,3 +21,8 @@ update.
 Downloads listing of Reference Gene Catalog releases currently available on
 the NCBI Pathogen Detection FTP server.
 }
+\seealso{
+Other reference gene catalog: 
+\code{\link{download_reference_gene_catalog}()}
+}
+\concept{reference gene catalog}
