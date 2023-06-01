@@ -2,15 +2,25 @@
 % Please edit documentation in R/import_cleanup.R
 \name{import_mlst}
 \alias{import_mlst}
-\title{Import and Add MLST Data}
+\title{Import and add MLST data}
 \usage{
 import_mlst(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble containing an \code{assembly} column}
 
-\item{path}{Path to a (reprocessed) MLST CSV file}
+\item{path}{Path to a (reprocessed) FastMLST CSV file}
+}
+\value{
+\code{data} with columns \code{mlst} and \code{mlst_errors} added
 }
 \description{
-Import and Add MLST Data
+Imports MLST calls from a FastMLST
+}
+\details{
+To ensure compatibility (particularly around errors), the original FastMLST
+output file should be reprocessed using <\if{html}{\out{<FUNCTION NAME HERE>}}> before running
+this function.
+
+For more information on FastMLST, see: <>
 }

@@ -10,8 +10,8 @@ reverse_geocode(data)
 \item{data}{A dataframe or tibble to containing a \code{lat_lon} column}
 }
 \value{
-Original \code{data} with column \code{lat_lon} replaced by columns \code{lat} and
-\code{lon} and some values for \code{location} added
+\code{data} with column \code{lat_lon} replaced by columns \code{lat} and \code{lon} and
+missing values for \code{location} added where possible
 }
 \description{
 Separates \code{lat_lon} and convert 'N/S/E/W' labels to '+/-'

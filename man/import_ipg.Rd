@@ -2,18 +2,20 @@
 % Please edit documentation in R/import_cleanup.R
 \name{import_ipg}
 \alias{import_ipg}
-\title{Import NCBI Identical Protein Groups data and add accession numbers and names
-to MBE data}
+\title{Import Identical Protein Groups data}
 \usage{
 import_ipg(data, path)
 }
 \arguments{
-\item{data}{a data table or tibble}
+\item{data}{A dataframe or tibble}
 
-\item{path}{path to an NCBI IPG csv/tsv file}
+\item{path}{path to an NCBI IPG tsv file}
+}
+\value{
+\code{data} with columns \code{ipg}, \code{ipg_accession}, and \code{ipg_name} added
 }
 \description{
-This data can be obtained by downloading via the web interface, although it
-seems rather inefficient to download the entire listing for all bla alleles
-present in an organism.
+Imports Identical Protein Groups data from \code{path} and adds
+columns corresponding to the IPG UID (\code{ipg}), IPG Accession Number
+(\code{ipg_accession}), and name of the IPG protein (\code{iph_name}) to \code{data}.
 }

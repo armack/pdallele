@@ -2,22 +2,27 @@
 % Please edit documentation in R/import_cleanup.R
 \name{separate_genotypes}
 \alias{separate_genotypes}
-\title{Separate genotypes (amr, stress, vir) by row to allele and allele_type}
+\title{Separate genotypes by row}
 \usage{
 separate_genotypes(data, include = "amr")
 }
 \arguments{
-\item{data}{A dataframe or tibble with genotype columns (amr, stress, vir)}
+\item{data}{A dataframe or tibble with at least one \code{amr}, \code{stress}, or \code{vir}
+column}
 
-\item{include}{Which types of alleles (\code{amr}, \code{stress}, \code{vir}) should be kept?
-This is a regex - separate multiple valeus with \code{|}}
+\item{include}{Which types of alleles (\code{amr}, \code{stress}, \code{vir}) should be
+kept? Separate values with '|'.}
+}
+\value{
+\code{data} with columns \code{allele}, \code{allele_type}, and \code{allele_call} added
 }
 \description{
-Uses separate_rows to separate genotype columns (amr, stress, vir) originally
-AMR_genotype, stress_genotype, and virulance_genotype in isolates browser.
+Uses separate_rows to separate genotype columns (\code{amr},
+\code{stress}, \code{vir}) into rows, with each row corresponding to a single allele.
+Three columns of allele details are added:
+\itemize{
+\item \code{allele} corresponding to the allele name
+\item \code{allele_type} corresponding to the source column (\code{amr}, \code{stress}, or \code{vir})
+\item \code{allele_call} corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See \code{\link[=clean_filter_alleles]{clean_filter_alleles()}} for details.
 }
-\details{
-allele_type -> amr, stress, or vir (virulence)
-allele_quality -> codes correcponding to reasons for non-"complete" alleles,
-see description of clean_filter_alleles() for details
 }

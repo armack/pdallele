@@ -2,16 +2,19 @@
 % Please edit documentation in R/import_cleanup.R
 \name{import_cluster_list}
 \alias{import_cluster_list}
-\title{Import and Add NCBI Pathogen Detection SNP Cluster Data}
+\title{Import and add NCBI Pathogen Detection SNP Cluster data}
 \usage{
 import_cluster_list(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble containing a \code{biosample} column}
 
-\item{path}{Path to an NCBI Pathogen Detection
-PDG_accession.version.reference_target.cluster_list.tsv file}
+\item{path}{Path to an NCBI Pathogen Detection cluster_list.tsv file'}
+}
+\value{
+\code{data} with column \code{pds} added
 }
 \description{
-Import and Add NCBI Pathogen Detection SNP Cluster Data
+Import NCBI \strong{P}athogen \strong{D}etection \strong{S}NP Cluster (PDS) data from \code{path}
+and add a \code{pds} column containing a PDS accession numbers to \code{data}.
 }

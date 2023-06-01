@@ -2,19 +2,23 @@
 % Please edit documentation in R/import_cleanup.R
 \name{import_regions}
 \alias{import_regions}
-\title{Adds Region information based on a file and the location_broad column}
+\title{Adds \code{region} column based on \code{location_broad} and a file}
 \usage{
 import_regions(data, path, warn = FALSE)
 }
 \arguments{
 \item{data}{A dataframe or tibble}
 
-\item{path}{path to a csv/tsv file containing columns 'country' and 'region'}
+\item{path}{Path to a csv file containing at least columns \code{country} and
+\code{region}}
 
-\item{warn}{should a warning message with unmatched countries be shown?}
+\item{warn}{Should a warning message with unmatched countries be shown?}
+}
+\value{
+\code{data} with column \code{region} (and possibly others) added
 }
 \description{
-Requires a csv/tsv file with a 'country' and 'region' column. Countries are
+Requires a csv file with a 'country' and 'region' column. Countries are
 matched to location_broad using countrycode::countryname to account for names
 given in as many languages as possible.
 }

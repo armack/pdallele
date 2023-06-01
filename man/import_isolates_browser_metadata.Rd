@@ -7,9 +7,38 @@
 import_isolates_browser_metadata(path)
 }
 \arguments{
-\item{path}{Path to an NCBI Isolates Browser 'amr.metadata.tsv' file}
+\item{path}{Path to an NCBI Pathogen Detection Project 'amr.metadata.tsv'
+file}
+}
+\value{
+A \code{\link[=tibble]{tibble()}}. Values are described in Details.
 }
 \description{
 Imports Isolates Browser Metadata, selects and renames relevant columns, and
-cleans up problematic quotation marks
+removes quotation marks ()
+}
+\details{
+The following columns are included in the output:\tabular{ll}{
+   \strong{Source File} \tab \strong{Output Tibble} \cr
+   biosample_acc \tab biosample \cr
+   asm_acc \tab assembly \cr
+   pdt \tab target_acc \cr
+   bioproject_acc \tab bioproject \cr
+   bioproject_center \tab bioproject_center \cr
+   collection_date \tab collection_date \cr
+   epi_type \tab sample_type \cr
+   geo_loc_name \tab location \cr
+   host \tab host \cr
+   host_disease \tab host_disease \cr
+   source_type \tab source_type \cr
+   isolation_source \tab isolation_source \cr
+   lat_lon \tab lat_lon \cr
+   scientific_name \tab scientific_name \cr
+   species_taxid \tab species_taxid \cr
+   taxid \tab organism_taxid \cr
+   AMR_genotypes \tab amr \cr
+   stress_genotypes \tab stress \cr
+   virulence_genotypes \tab virulence \cr
+   refgene_db_version \tab refgene_db_version \cr
+}
 }

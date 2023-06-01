@@ -10,8 +10,8 @@ parse_genus_species(data)
 \item{data}{A dataframe or tibble with a \code{scientific_name} column}
 }
 \value{
-Original \code{data} with columns \code{species}, \code{species_markdown},
-\code{species_math}, \code{genus}, \code{genus_markdown}, and \code{genus_math} added
+\code{data} with columns \code{species}, \code{species_markdown}, \code{species_math},
+\code{genus}, \code{genus_markdown}, and \code{genus_math} added
 }
 \description{
 Parses scientific_name into genus and species columns and their

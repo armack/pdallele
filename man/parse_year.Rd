@@ -2,13 +2,16 @@
 % Please edit documentation in R/import_cleanup.R
 \name{parse_year}
 \alias{parse_year}
-\title{Add year parsed from collection_date}
+\title{Parse \code{year} from \code{collection_date}}
 \usage{
 parse_year(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble with \code{collection_date} column}
+}
+\value{
+\code{data} with column \code{year} added
 }
 \description{
-Add year parsed from collection_date
+Parse \code{year} from \code{collection_date}
 }

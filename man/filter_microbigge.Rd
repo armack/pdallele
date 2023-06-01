@@ -2,25 +2,33 @@
 % Please edit documentation in R/import_cleanup.R
 \name{filter_microbigge}
 \alias{filter_microbigge}
-\title{Filter imported MBE data to remove less "reliable" protein calls}
+\title{Filter imported MicroBigg-E data}
 \usage{
-filter_microbigge(data, min_coverage = 100, min_identity = 90, remove)
+filter_microbigge(data, coverage = 100L, identity = 90L, remove)
 }
 \arguments{
-\item{data}{a data tabel or tibble}
+\item{data}{A dataframe or tibble}
 
-\item{min_coverage}{integer minimum percent coverage to keep}
+\item{coverage}{Minimum percent coverage to keep}
 
-\item{min_identity}{integer minimum percent identity to keep}
+\item{identity}{Minimum percent identity to keep}
 
-\item{remove}{regex string of \code{method} to remove}
+\item{remove}{Character vector of \code{method} values to remove alleles}
+}
+\value{
+\code{data} with rows removed according to the selected parameters
 }
 \description{
-Also allows for the customization of coverage and identity thresholds. The
-default identity of 90\% is chosen to match the Isolates Browser criteria
-as stated at:
-https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
+Removes allele calls that do not meet the minimum \code{coverage} and
+\code{identity} thresholds. These values may vary based on the needs of a
+particular analysis. Set both to \code{100} to allow only exact allele calls.
+
+Specific allele calling methods can be excluded from the dataset by name in
+\code{remove}. See <<>> for more information about allele calling methods used
+in MicroBIGG-E data.
 }
 \details{
-********** THIS REALLY NEEDS TO BE REVISITED **********
+Isolates Browser (and thus amr.metadata.tsv files on the NCBI FTP
+server) uses a 90\% \code{identity} threshold:
+https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
 }

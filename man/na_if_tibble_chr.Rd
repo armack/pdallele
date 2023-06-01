@@ -2,7 +2,7 @@
 % Please edit documentation in R/import_cleanup.R
 \name{na_if_tibble_chr}
 \alias{na_if_tibble_chr}
-\title{Replace character vector values with \code{NA} across all character columns}
+\title{Replace multiple values with \code{NA} across all character columns}
 \usage{
 na_if_tibble_chr(data, terms)
 }
@@ -10,6 +10,10 @@ na_if_tibble_chr(data, terms)
 \item{data}{A dataframe or tibble to modify}
 
 \item{terms}{A character vector of values to replace with \code{NA_character_}}
+}
+\value{
+\code{data} with matching values matching \code{terms} replaced by
+\code{NA_character_}
 }
 \description{
 Replace any values matching a value in \code{terms} with \code{NA} across all

@@ -2,16 +2,35 @@
 % Please edit documentation in R/import_cleanup.R
 \name{parse_ib_oxa_family}
 \alias{parse_ib_oxa_family}
-\title{Add oxa_family parsed from name (originally from Reference Gene Catalog file)}
+\alias{parse_mbe_oxa_family}
+\title{Parse \code{oxa_family} from Reference Gene Catalog names}
 \usage{
 parse_ib_oxa_family(data)
+
+parse_mbe_oxa_family(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A dataframe or tibble containing \code{allele} and \code{name} columns}
+}
+\value{
+\code{data} with columns \code{oxa_family}, \code{oxa_family_markdown}, and
+\code{oxa_family_math} added
 }
 \description{
-Also adds markdown and math formatted oxa_family columns
+Uses regular expressions to determine OXA families based on
+\if{html}{\out{<i>}}bla\if{html}{\out{</i>}}\if{html}{\out{<sub>}}OXA\if{html}{\out{</sub>}} Reference Gene Catalog names/descriptions and adds
+columns \code{oxa_family}, \code{oxa_family_markdown}, and \code{oxa_family_math}. Other
+alleles produce \code{NA} values.
+
+Also adds HTML (\code{oxa_family_markdown}) and "math" (\code{oxa_family_math})
+formatted versions for plots. See \code{\link[=parse_bla_formatting]{parse_bla_formatting()}} for details.
+
+Returns \code{data} unchanged if no \if{html}{\out{<i>}}bla\if{html}{\out{</i>}}\if{html}{\out{<sub>}}OXA\if{html}{\out{</sub>}} alleles are
+present.
+
+Two variants are available:
+\itemize{
+\item \code{parse_ib_oxa_family()} for Isolates Browser data
+\item \code{parse_mbe_oxa_family()} for MicroBIGG-E data
 }
-\details{
-Returns the original table if no OXA alleles are present
 }

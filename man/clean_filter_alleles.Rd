@@ -7,23 +7,30 @@
 clean_filter_alleles(data, filter, remove)
 }
 \arguments{
-\item{data}{A dataframe or tibble with an allele column}
+\item{data}{A dataframe or tibble with an \code{allele} column}
 
-\item{filter}{A character vector of gene names to keep. Uses grepl(). Partial
-matches are kept. Vector is collapsed with "|" (or operator).}
+\item{filter}{A character vector of \code{allele} names to keep. Uses grepl().
+Partial matches are kept. Vector is collapsed with "|" (or operator).}
 
-\item{remove}{A character vector of allele_quality values to remove}
+\item{remove}{A character vector of allele_call values to remove}
+}
+\value{
+\code{data} with rows removed according to the selected parameters
 }
 \description{
-allele_quality is a column referring to alleles that are less than perfect
-matches, which include HMM derived alleles, end of contig issues, and point
-mutations. See possible values and explanations at:
-https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
-}
-\details{
-This function also removes any duplicate allele/biosample combinations, which
-could complicate later analysis. Distinct alleles are maintained.
+The column \code{allele_call} contains codes representing to the
+calling method used for a given allele. Some of these codes correspond to
+"less than perfect" matches and may warrant removal depending on the scope
+and goals of the analysis. Detailed explanations are available at:
+\url{https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories}
 
-For alleles without a gene listed (i.e. unassigned alleles and lower quality
-calls not matching an assigned allele), \code{allele} is coalesced into \code{gene}
+This function removes rows with \code{allele_call} matching a value in \code{remove}.
+
+This function also (optionally) keeps only rows with \code{allele} matching a
+value in \code{filter}, such as when only a specific subset of \code{allele} is
+needed in the dataset.
+
+This function also removes any duplicate allele/biosample combinations,
+which could complicate later analysis as some isolates list the same allele
+multiple times across contigs. Distinct alleles are maintained.
 }

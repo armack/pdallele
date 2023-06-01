@@ -2,14 +2,18 @@
 % Please edit documentation in R/import_cleanup.R
 \name{split_location}
 \alias{split_location}
-\title{Splits location into location_broad (country) and location_detail (city/area)}
+\title{Split location into location_broad and location_detail}
 \usage{
 split_location(data)
 }
 \arguments{
 \item{data}{A dataframe or tibble}
 }
+\value{
+\code{data} with columns \code{location_broad} and \code{location_detail}
+added
+}
 \description{
 Splits INSDC/BioSample geo_loc_name style country:detailed_location format
-into location_broad and location_detail.
+into location_broad (country) and location_detail (city/area).
 }

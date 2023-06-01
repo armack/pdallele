@@ -2,19 +2,32 @@
 % Please edit documentation in R/import_cleanup.R
 \name{parse_bla_formatting}
 \alias{parse_bla_formatting}
-\title{Properly format  bla gene/allele names per ASM Journals guidelines}
+\title{Properly format  \emph{bla} gene/allele names}
 \usage{
 parse_bla_formatting(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble with an 'allele' and 'gene' column}
+\item{data}{A dataframe or tibble containing\code{allele} and \code{gene} columns}
+}
+\value{
+\code{data} with columns \code{allele_markdown}, \code{allele_math},
+\code{gene_markdown}, and \code{gene_math} added
 }
 \description{
-Add formatting for proper display of bla allele names in both markdown (used
-by ggtext) and 'math' formatting (used by ggplot with expression()).
+Add formatting of formatted strings for proper display of \emph{bla} allele names
+in both html (used by \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}}) and 'math' formatting
+(used by \code{\link[ggplot2:element]{ggplot2::element_text()}} when wrapped in \code{expression()}).
 }
 \details{
-The format is "bla" in italic and gene/allele name in subscript, e.g. using
-HTML tags: \if{html}{\out{<i>}}bla\if{html}{\out{</i>}}\if{html}{\out{<sub>}}PDC-3\if{html}{\out{</sub>}}. See PMID 35380458 "Consensus on
-β-Lactamase Nomenclature" by Bush et al. for details
+This formatting is part of the standardized beta-lactamase
+nomenclature adopted by ASM Journals. It was developed by a group of
+leading beta-lactamase researchers in conjunction with the NCBI Pathogen
+Detection Project, which is responsible for assigning most beta-lactamase
+allele designations.
+
+The format is "bla" in italic and gene/allele name in subscript, e.g.
+\if{html}{\out{<i>}}bla\if{html}{\out{</i>}}\if{html}{\out{<sub>}}PDC-3\if{html}{\out{</sub>}} from \verb{<i>bla</i><sub>PDC-3</sub>}.
+
+See PMID 35380458 "Consensus on β-Lactamase Nomenclature" by Bush et al.
+for further details
 }

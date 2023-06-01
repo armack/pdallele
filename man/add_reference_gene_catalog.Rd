@@ -2,17 +2,26 @@
 % Please edit documentation in R/import_cleanup.R
 \name{add_reference_gene_catalog}
 \alias{add_reference_gene_catalog}
-\title{Add Reference Gene Catalog information to \code{data} by allele}
+\title{Join Reference Gene Catalog metadata to \code{data} by allele}
 \usage{
 add_reference_gene_catalog(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble to add to}
+\item{data}{A dataframe or tibble containing \code{allele} column}
 
 \item{path}{Path to an NCBI ReferenceGeneCatalog.txt file}
 }
+\value{
+\code{data} with columns \code{gene}, \code{name}, \code{type}, \code{subtype}, \code{class},
+\code{subclass}, and \code{protein} added
+}
 \description{
+Joins Reference Gene Catalog metadata from \code{path} with \code{data} by
+\code{allele}
+
 Filters after joining to remove invalid matches when a row contains
-whitelisted_taxa. Coalesces empty 'gene' column with 'allele' column
-to deal with missing Reference Gene genes
+whitelisted_taxa.
+
+Coalesces empty 'gene' column with 'allele' column to deal with missing
+Reference Gene genes
 }
