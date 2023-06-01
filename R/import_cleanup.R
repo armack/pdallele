@@ -6,9 +6,37 @@ NULL
 #' Import, select, and trim NCBI Pathogen Detection Isolates Browser Metadata
 #'
 #' Imports Isolates Browser Metadata, selects and renames relevant columns, and
-#' cleans up problematic quotation marks
+#' removes quotation marks ()
 #'
-#' @param path Path to an NCBI Isolates Browser 'amr.metadata.tsv' file
+#' @details
+#' The following columns are included in the output:
+#'
+#' |**Source File**    |**Output Tibble** |
+#' |--------------------|-------------------|
+#' |biosample_acc       |biosample          |
+#' |asm_acc             |assembly           |
+#' |pdt                 |target_acc         |
+#' |bioproject_acc      |bioproject         |
+#' |bioproject_center   |bioproject_center  |
+#' |collection_date     |collection_date    |
+#' |epi_type            |sample_type        |
+#' |geo_loc_name        |location           |
+#' |host                |host               |
+#' |host_disease        |host_disease       |
+#' |source_type         |source_type        |
+#' |isolation_source    |isolation_source   |
+#' |lat_lon             |lat_lon            |
+#' |scientific_name     |scientific_name    |
+#' |species_taxid       |species_taxid      |
+#' |taxid               |organism_taxid     |
+#' |AMR_genotypes       |amr                |
+#' |stress_genotypes    |stress             |
+#' |virulence_genotypes |virulence          |
+#' |refgene_db_version  |refgene_db_version |
+#'
+#' @param path Path to an NCBI Pathogen Detection Project 'amr.metadata.tsv'
+#'   file
+#' @returns A [tibble()]. Values are described in Details.
 #' @export
 
 import_isolates_browser_metadata <- function(path) {
@@ -27,13 +55,15 @@ import_isolates_browser_metadata <- function(path) {
     return(.complete)
 }
 
-#' Replace character vector values with `NA` across all character columns
+#' Replace multiple values with `NA` across all character columns
 #'
 #' Replace any values matching a value in `terms` with `NA` across all
 #' `character()` columns in `data`.
 #'
 #' @param data A dataframe or tibble to modify
 #' @param terms A character vector of values to replace with `NA_character_`
+#' @return `data` with matching values matching `terms` replaced by
+#'   `NA_character_`
 #' @export
 
 na_if_tibble_chr <- function(data, terms) {
@@ -58,8 +88,8 @@ na_if_tibble_chr <- function(data, terms) {
 #'   <https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html>
 #'
 #' @param data A dataframe or tibble with a `scientific_name` column
-#' @returns Original `data` with columns `species`, `species_markdown`,
-#'   `species_math`, `genus`, `genus_markdown`, and `genus_math` added
+#' @returns `data` with columns `species`, `species_markdown`, `species_math`,
+#'   `genus`, `genus_markdown`, and `genus_math` added
 #' @export
 parse_genus_species <- function(data) {
 
@@ -87,8 +117,9 @@ parse_genus_species <- function(data) {
 #'   but is not part of the INSDC standard and is not consistently reliable.
 #'
 #' @param data A dataframe or tibble to containing a `lat_lon` column
-#' @returns Original `data` with column `lat_lon` replaced by columns `lat` and
-#'   `lon` and some values for `location` added
+#' @returns `data` with column `lat_lon` replaced by columns `lat` and `lon` and
+#'  missing values for `location` added where possible
+#' @export
 reverse_geocode <- function(data){
 
   .partial <- data %>%
@@ -111,14 +142,15 @@ reverse_geocode <- function(data){
   return(.complete)
 }
 
-
-#' Splits location into location_broad (country) and location_detail (city/area)
+#' Split location into location_broad and location_detail
 #'
 #' Splits INSDC/BioSample geo_loc_name style country:detailed_location format
-#' into location_broad and location_detail.
+#' into location_broad (country) and location_detail (city/area).
 #'
 #' @param data A dataframe or tibble
-#'
+#' @returns `data` with columns `location_broad` and `location_detail`
+#'   added
+#' @export
 split_location <- function(data) {
 
   .complete <- data %>%
@@ -129,9 +161,9 @@ split_location <- function(data) {
   return(.complete)
 }
 
-#' Adds Region information based on a file and the location_broad column
+#' Adds `region` column based on `location_broad` and a file
 #'
-#' Requires a csv/tsv file with a 'country' and 'region' column. Countries are
+#' Requires a csv file with a 'country' and 'region' column. Countries are
 #' matched to location_broad using countrycode::countryname to account for names
 #' given in as many languages as possible.
 #'
@@ -140,19 +172,27 @@ split_location <- function(data) {
 #' regions or including a region_markdown or similar column
 #'
 #' @param data A dataframe or tibble
-#' @param path path to a csv/tsv file containing columns 'country' and 'region'
-#' @param warn should a warning message with unmatched countries be shown?
+#' @param path Path to a csv file containing at least columns `country` and
+#'   `region`
+#' @param warn Should a warning message with unmatched countries be shown?
+#' @returns `data` with column `region` (and possibly others) added
+#' @export
 import_regions <- function(data, path, warn = FALSE) {
-  if(is.null(path)) return(data)
+  if (is.null(path))
+    return(data)
 
   regions <- readr::read_csv(file = path, show_col_types = FALSE)
 
   country_list <- dplyr::distinct(data, .data$location_broad)
 
   standardized_countries <- country_list %>%
-    dplyr::mutate(std_country = countrycode::countryname(.data$location_broad,
-                                                  destination = "country.name.en",
-                                                  warn = warn)) %>%
+    dplyr::mutate(
+      std_country = countrycode::countryname(
+        .data$location_broad,
+        destination = "country.name.en",
+        warn = warn
+      )
+    ) %>%
     dplyr::left_join(regions, by = c("std_country" = "country")) %>%
     tidyr::drop_na()
 
@@ -163,11 +203,15 @@ import_regions <- function(data, path, warn = FALSE) {
 }
 
 
-#' Import and Add NCBI Pathogen Detection SNP Cluster Data
+#' Import and add NCBI Pathogen Detection SNP Cluster data
 #'
-#' @param data A dataframe or tibble
-#' @param path Path to an NCBI Pathogen Detection
-#' PDG_accession.version.reference_target.cluster_list.tsv file
+#' Import NCBI **P**athogen **D**etection **S**NP Cluster (PDS) data from `path`
+#' and add a `pds` column containing a PDS accession numbers to `data`.
+#'
+#' @param data A dataframe or tibble containing a `biosample` column
+#' @param path Path to an NCBI Pathogen Detection cluster_list.tsv file'
+#' @returns `data` with column `pds` added
+#' @export
 
 import_cluster_list <- function(data, path) {
   if(missing(path) | is.null(path)) return(data)
@@ -181,10 +225,19 @@ import_cluster_list <- function(data, path) {
   return(.complete)
 }
 
-#' Import and Add MLST Data
+#' Import and add MLST data
 #'
-#' @param data A dataframe or tibble
-#' @param path Path to a (reprocessed) MLST CSV file
+#' Imports MLST calls from a FastMLST
+#'
+#' To ensure compatibility (particularly around errors), the original FastMLST
+#' output file should be reprocessed using <<FUNCTION NAME HERE>> before running
+#' this function.
+#'
+#' For more information on FastMLST, see: <>
+#'
+#' @param data A dataframe or tibble containing an `assembly` column
+#' @param path Path to a (reprocessed) FastMLST CSV file
+#' @returns `data` with columns `mlst` and `mlst_errors` added
 
 import_mlst <- function(data, path) {
   if(missing(path) | is.null(path)) return(data)
@@ -198,18 +251,22 @@ import_mlst <- function(data, path) {
   return(.complete)
 }
 
-#' Separate genotypes (amr, stress, vir) by row to allele and allele_type
+#' Separate genotypes by row
 #'
-#' Uses separate_rows to separate genotype columns (amr, stress, vir) originally
-#' AMR_genotype, stress_genotype, and virulance_genotype in isolates browser.
+#' @description Uses separate_rows to separate genotype columns (`amr`,
+#'   `stress`, `vir`) into rows, with each row corresponding to a single allele.
+#'   Three columns of allele details are added:
 #'
-#' allele_type -> amr, stress, or vir (virulence)
-#' allele_quality -> codes correcponding to reasons for non-"complete" alleles,
-#'                   see description of clean_filter_alleles() for details
+#' * `allele` corresponding to the allele name
+#' * `allele_type` corresponding to the source column (`amr`, `stress`, or `vir`)
+#' * `allele_call` corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See [clean_filter_alleles()] for details.
 #'
-#' @param data A dataframe or tibble with genotype columns (amr, stress, vir)
-#' @param include Which types of alleles (`amr`, `stress`, `vir`) should be kept?
-#' This is a regex - separate multiple valeus with `|`
+#' @param data A dataframe or tibble with at least one `amr`, `stress`, or `vir`
+#'   column
+#' @param include Which types of alleles (`amr`, `stress`, `vir`) should be
+#'   kept? Separate values with '|'.
+#' @returns `data` with columns `allele`, `allele_type`, and `allele_call` added
+#' @export
 
 separate_genotypes <- function(data, include = "amr"){
 
@@ -219,34 +276,43 @@ separate_genotypes <- function(data, include = "amr"){
     dplyr::filter(grepl(paste(include, collapse = "|"), .data$allele_type)) %>%
     tidyr::drop_na("allele") %>%
     tidyr::separate_rows("allele", sep = ",") %>%
-    tidyr::separate("allele", into = c("allele","allele_quality"), sep = "=", fill = "right")
+    tidyr::separate("allele", into = c("allele","allele_call"), sep = "=", fill = "right")
 
   return(.complete)
 }
 
 #' Clean and filter allele listings
 #'
-#' allele_quality is a column referring to alleles that are less than perfect
-#' matches, which include HMM derived alleles, end of contig issues, and point
-#' mutations. See possible values and explanations at:
-#' https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
+#' @description The column `allele_call` contains codes representing to the
+#'   calling method used for a given allele. Some of these codes correspond to
+#'   "less than perfect" matches and may warrant removal depending on the scope
+#'   and goals of the analysis. Detailed explanations are available at:
+#'   <https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories>
 #'
-#' This function also removes any duplicate allele/biosample combinations, which
-#' could complicate later analysis. Distinct alleles are maintained.
+#'   This function removes rows with `allele_call` matching a value in `remove`.
 #'
-#' For alleles without a gene listed (i.e. unassigned alleles and lower quality
-#' calls not matching an assigned allele), `allele` is coalesced into `gene`
+#'   This function also (optionally) keeps only rows with `allele` matching a
+#'   value in `filter`, such as when only a specific subset of `allele` is
+#'   needed in the dataset.
 #'
-#' @param data A dataframe or tibble with an allele column
-#' @param filter A character vector of gene names to keep. Uses grepl(). Partial
-#'   matches are kept. Vector is collapsed with "|" (or operator).
-#' @param remove A character vector of allele_quality values to remove
+#'   This function also removes any duplicate allele/biosample combinations,
+#'   which could complicate later analysis as some isolates list the same allele
+#'   multiple times across contigs. Distinct alleles are maintained.
+#'
+#' @param data A dataframe or tibble with an `allele` column
+#' @param filter A character vector of `allele` names to keep. Uses grepl().
+#'   Partial matches are kept. Vector is collapsed with "|" (or operator).
+#' @param remove A character vector of allele_call values to remove
+#' @returns `data` with rows removed according to the selected parameters
+#' @export
 
 clean_filter_alleles <- function(data, filter, remove) {
+  missing_filter <- missing(filter)
+  missing_remove <- missing(remove)
 
   .complete <- data %>%
-    dplyr::filter(grepl(paste(filter, collapse = "|"), .data$gene)) %>%
-    dplyr::filter(!grepl(paste(remove, collapse = "|"), .data$allele_quality)) %>%
+    dplyr::filter(grepl(paste(filter, collapse = "|"), .data$allele)) %>%
+    dplyr::filter(!grepl(paste(remove, collapse = "|"), .data$allele_call)) %>%
     dplyr::distinct(.data$biosample, .data$allele, .keep_all = TRUE)
 
   return(.complete)
@@ -254,9 +320,28 @@ clean_filter_alleles <- function(data, filter, remove) {
 
 #' Import Reference Gene Catalog to tibble
 #'
-#' Imports Reference Gene Catalog, renames columns, and removes unneeded data
+#' Imports Reference Gene Catalog, renames columns, and drops data not needed
+#' for downstream processing
+#'
+#' @details
+#' The following columns are included in the output:
+#'
+#' |**Source File**          |**Output Tibble**|
+#' |-------------------------|-----------------|
+#' |allele                   |allele           |
+#' |gene_family              |gene             |
+#' |product_name             |name             |
+#' |type                     |type             |
+#' |subtype                  |subtype          |
+#' |class                    |class            |
+#' |subclass                 |subclass         |
+#' |refseq_protein_accession |protein          |
+#' |blacklisted_taxa         |blacklisted_taxa |
+#' |whitelisted_taxa         |whitelisted_taxa |
 #'
 #' @param path Path to an NCBI ReferenceGeneCatalog.txt file
+#' @returns A [tibble()].  Values are described in Details.
+#' @export
 import_reference_gene_catalog <- function(path){
   .rgc <- readr::read_tsv(path, show_col_types = FALSE) %>%
     dplyr::select("allele", gene = "gene_family", name = "product_name", "type", "subtype",
@@ -268,14 +353,21 @@ import_reference_gene_catalog <- function(path){
 }
 
 
-#' Add Reference Gene Catalog information to `data` by allele
+#' Join Reference Gene Catalog metadata to `data` by allele
+#'
+#' @description Joins Reference Gene Catalog metadata from `path` with `data` by
+#' `allele`
 #'
 #' Filters after joining to remove invalid matches when a row contains
-#' whitelisted_taxa. Coalesces empty 'gene' column with 'allele' column
-#' to deal with missing Reference Gene genes
+#' whitelisted_taxa.
 #'
-#' @param data A dataframe or tibble to add to
+#' Coalesces empty 'gene' column with 'allele' column to deal with missing
+#' Reference Gene genes
+#'
+#' @param data A dataframe or tibble containing `allele` column
 #' @param path Path to an NCBI ReferenceGeneCatalog.txt file
+#' @returns `data` with columns `gene`, `name`, `type`, `subtype`, `class`,
+#'   `subclass`, and `protein` added
 
 add_reference_gene_catalog <- function(data, path) {
   if(is.null(path)) return(data)
@@ -294,16 +386,28 @@ add_reference_gene_catalog <- function(data, path) {
   return(.complete)
 }
 
-#' Properly format  bla gene/allele names per ASM Journals guidelines
+#' Properly format  *bla* gene/allele names
 #'
-#' Add formatting for proper display of bla allele names in both markdown (used
-#' by ggtext) and 'math' formatting (used by ggplot with expression()).
+#' Add formatting of formatted strings for proper display of *bla* allele names
+#' in both html (used by [ggtext::element_markdown()]) and 'math' formatting
+#' (used by [ggplot2::element_text()] when wrapped in `expression()`).
 #'
-#' The format is "bla" in italic and gene/allele name in subscript, e.g. using
-#' HTML tags: <i>bla</i><sub>PDC-3</sub>. See PMID 35380458 "Consensus on
-#' β-Lactamase Nomenclature" by Bush et al. for details
+#' @details This formatting is part of the standardized beta-lactamase
+#'   nomenclature adopted by ASM Journals. It was developed by a group of
+#'   leading beta-lactamase researchers in conjunction with the NCBI Pathogen
+#'   Detection Project, which is responsible for assigning most beta-lactamase
+#'   allele designations.
 #'
-#' @param data A dataframe or tibble with an 'allele' and 'gene' column
+#'   The format is "bla" in italic and gene/allele name in subscript, e.g.
+#'   <i>bla</i><sub>PDC-3</sub> from `<i>bla</i><sub>PDC-3</sub>`.
+#'
+#'   See PMID 35380458 "Consensus on β-Lactamase Nomenclature" by Bush et al.
+#'   for further details
+#'
+#' @param data A dataframe or tibble containing`allele` and `gene` columns
+#' @returns `data` with columns `allele_markdown`, `allele_math`,
+#'   `gene_markdown`, and `gene_math` added
+#' @export
 parse_bla_formatting <- function(data) {
 
   .complete <- data %>%
@@ -315,13 +419,28 @@ parse_bla_formatting <- function(data) {
   return(.complete)
 }
 
-#' Add oxa_family parsed from name (originally from Reference Gene Catalog file)
+#' Parse `oxa_family` from Reference Gene Catalog names
 #'
-#' Also adds markdown and math formatted oxa_family columns
+#' @description Uses regular expressions to determine OXA families based on
+#'   <i>bla</i><sub>OXA</sub> Reference Gene Catalog names/descriptions and adds
+#'   columns `oxa_family`, `oxa_family_markdown`, and `oxa_family_math`. Other
+#'   alleles produce `NA` values.
 #'
-#' Returns the original table if no OXA alleles are present
+#'   Also adds HTML (`oxa_family_markdown`) and "math" (`oxa_family_math`)
+#'   formatted versions for plots. See [parse_bla_formatting()] for details.
 #'
-#' @param data A dataframe or tibble
+#'   Returns `data` unchanged if no <i>bla</i><sub>OXA</sub> alleles are
+#'   present.
+#'
+#'   Two variants are available:
+#'
+#'   * `parse_ib_oxa_family()` for Isolates Browser data
+#'   * `parse_mbe_oxa_family()` for MicroBIGG-E data
+#'
+#' @param data A dataframe or tibble containing `allele` and `name` columns
+#' @returns `data` with columns `oxa_family`, `oxa_family_markdown`, and
+#'   `oxa_family_math` added
+#' @export
 
 parse_ib_oxa_family <- function(data) {
   if(!any(grepl("OXA", data$allele))){return(data)}
@@ -344,9 +463,11 @@ parse_ib_oxa_family <- function(data) {
   return(.complete)
 }
 
-#' Add year parsed from collection_date
+#' Parse `year` from `collection_date`
 #'
-#' @param data A dataframe or tibble
+#' @param data A dataframe or tibble with `collection_date` column
+#' @returns `data` with column `year` added
+#' @export
 
 parse_year <- function(data) {
   .complete <- data %>%
@@ -398,21 +519,50 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 
 ########## MicroBIGG-E Import and Processing ##########
 
-#' Import and Select Columns from NCBI Pathogen Detection MicroBIGG-E File
+#' Import and Select Columns from NCBI Pathogen Detection MicroBIGG-E file
 #'
-#' Imports NCBI Pathogen DetectionMicrobial Browser for Identification of
+#' @description
+#' Imports NCBI Pathogen Detection Microbial Browser for Identification of
 #' Genetic and Genomic Elements (MicroBIGG-E) data and selects and renames
 #' desired columns for downstream processing steps
 #'
-#' As of October 2022, up to 100,000 rows of data can be downloaded via the web
-#' interface at: https://www.ncbi.nlm.nih.gov/pathogens/microbigge/
+#' Two variants are available:
+#' * `import_microbigge_ncbi()` imports files downloded from the NCBI Website
+#' * `import_microbigge_gcp()` imports files downloaded from Google Cloud Platform
 #'
-#' Larger sets can be downloaded using Google Big Query. See instructions from
-#' NCBI at https://www.ncbi.nlm.nih.gov/pathogens/docs/microbigge_gcp/
+#' Slightly different column names are used between NCBI and GCP, resulting in
+#' two slightly different import functions.
 #'
-#' @param path Path to an NCBI MicroBIGG-E csv/tsv file.
+#' @details
+#' The following columns are included in the output:
+#'
+#' |**Source File**  |**Output Tibble**|
+#' |-----------------|-----------------|
+#' |protein_acc      |protein          |
+#' |biosample_acc    |biosample        |
+#' |asm_acc          |assembly         |
+#' |element_symbol   |allele           |
+#' |element_name     |name             |
+#' |amr_method       |method           |
+#' |pct_ref_coverage |coverage         |
+#' |pct_ref_identity |identity         |
+#' |contig_acc       |nucleotide       |
+#' |start_on_contig  |nuc_start        |
+#' |end_on_contig    |nuc_stop         |
+#' |strand           |strand           |
+#'
+#' @section Obtaining Data: Up to 100,000 rows of data (potentially with an
+#'   additional 50 MB cap) can be downloaded via the web interface at:
+#'   [https://www.ncbi.nlm.nih.gov/pathogens/microbigge/]
+#'
+#'   Larger sets can be downloaded using Google Big Query. See instructions from
+#'   NCBI at [https://www.ncbi.nlm.nih.gov/pathogens/docs/microbigge_gcp/]
+#'
+#' @param path Path to a MicroBIGG-E tsv file
+#' @returns A [tibble()]. Values are described in Details.
+#' @export
 
-import_microbigge <- function(path){
+import_microbigge_gcp <- function(path){
   .complete <- readr::read_tsv(file = path, na = "", show_col_types = FALSE) %>%
     dplyr::select(protein = "protein_acc", biosample = "biosample_acc", assembly = "asm_acc",
            allele = "element_symbol", name = "element_name", method = "amr_method",
@@ -424,62 +574,73 @@ import_microbigge <- function(path){
   return(.complete)
 }
 
-#' Filter imported MBE data to remove less "reliable" protein calls
+#' Filter imported MicroBigg-E data
 #'
-#' Also allows for the customization of coverage and identity thresholds. The
-#' default identity of 90% is chosen to match the Isolates Browser criteria
-#' as stated at:
-#' https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
+#' @description Removes allele calls that do not meet the minimum `coverage` and
+#'   `identity` thresholds. These values may vary based on the needs of a
+#'   particular analysis. Set both to `100` to allow only exact allele calls.
 #'
-#' ********** THIS REALLY NEEDS TO BE REVISITED **********
+#'   Specific allele calling methods can be excluded from the dataset by name in
+#'   `remove`. See <<>> for more information about allele calling methods used
+#'   in MicroBIGG-E data.
 #'
-#' @param data a data tabel or tibble
-#' @param min_coverage integer minimum percent coverage to keep
-#' @param min_identity integer minimum percent identity to keep
-#' @param remove regex string of `method` to remove
-filter_microbigge <- function(data, min_coverage = 100, min_identity = 90, remove) {
+#' @details Isolates Browser (and thus amr.metadata.tsv files on the NCBI FTP
+#'   server) uses a 90% `identity` threshold:
+#'   https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
+#'
+#' @param data A dataframe or tibble
+#' @param coverage Minimum percent coverage to keep
+#' @param identity Minimum percent identity to keep
+#' @param remove Character vector of `method` values to remove alleles
+#' @returns `data` with rows removed according to the selected parameters
+#' @export
+filter_microbigge <- function(data, coverage = 100L, identity = 90L, remove) {
   . <- NULL # Workaround to suppress `no visible binding for global variable`
   remove_missing <- missing(remove)
   .complete <- data %>%
     tidyr::drop_na("protein") %>%
     {if(!remove_missing) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
-    dplyr::filter("coverage" >= min_coverage) %>%
-    dplyr::filter("coverage" >= min_identity)
+    dplyr::filter("coverage" >= coverage) %>%
+    dplyr::filter("identity" >= identity)
 
   return(.complete)
 }
 
-#' Determines OXA family from MBE data and adds a 'family' column
-#'
-#' @param data A dataframe or tibble
-#' @param by passed to left_join as a join by command; the column(s) to match in the join
+#' Parse `oxa_family` from MBE & IPG names
+#' @rdname parse_ib_oxa_family
+#' @export
 
-parse_mbe_oxa_family <- function(data, by = "allele") {
+parse_mbe_oxa_family <- function(data) {
   .complete <- data %>%
-    dplyr::mutate(mbe_family = dplyr::case_when(
+    dplyr::mutate(mbe_oxa_family = dplyr::case_when(
       grepl('family', name) ~ stringr::str_extract(long_name, "OXA-\\d+?(?= family)"),
       TRUE ~ stringr::str_extract(name, "OXA-\\d+")
     )) %>%
-    dplyr::mutate(ipg_family = dplyr::case_when(
+    dplyr::mutate(ipg_oxa_family = dplyr::case_when(
       grepl('family', ipg_name) ~ stringr::str_extract(ipg_name, "OXA-\\d+?(?= family)"),
       TRUE ~ stringr::str_extract(ipg_name, "OXA-\\d+")
     )) %>%
-    dplyr::mutate(family = dplyr::coalesce(.data$ipg_family, .data$mbe_family))
+    dplyr::mutate(oxa_family = dplyr::coalesce(.data$ipg_oxa_family, .data$mbe_oxa_family)) %>%
+    dplyr::mutate(oxa_family_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>",
+                                            .data$oxa_family, perl = TRUE) ) %>%
+    dplyr::mutate(oxa_family_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]",
+                                        .data$oxa_family, perl = TRUE) )
 
   return(.complete)
 }
 
 ########## Identical Protein Group Import and Processing ##########
 
-#' Import NCBI Identical Protein Groups data and add accession numbers and names
-#' to MBE data
+#' Import Identical Protein Groups data
 #'
-#' This data can be obtained by downloading via the web interface, although it
-#' seems rather inefficient to download the entire listing for all bla alleles
-#' present in an organism.
+#' @description Imports Identical Protein Groups data from `path` and adds
+#' columns corresponding to the IPG UID (`ipg`), IPG Accession Number
+#' (`ipg_accession`), and name of the IPG protein (`iph_name`) to `data`.
 #'
-#' @param data a data table or tibble
-#' @param path path to an NCBI IPG csv/tsv file
+#' @param data A dataframe or tibble
+#' @param path path to an NCBI IPG tsv file
+#' @returns `data` with columns `ipg`, `ipg_accession`, and `ipg_name` added
+#' @export
 import_ipg <- function(data, path){
   if(is.null(path)) return(data)
 
