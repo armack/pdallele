@@ -147,9 +147,11 @@ relevel_first_last <- function(data, ..., first = NULL, last = NULL, na_last = T
 #' Filter *bla* alleles by assignment status
 #'
 #' @description These functions serve to filter beta-lactamase (*bla*) alleles
-#'   based on their assignment status. Two variants are available:
-#'   * `remove_assigned_bla()` removes assigned *bla* alleles from `data`
-#'   * `remove_unassigned_bla()` removes unassigned *bla* alleles from `data`
+#'   based on their assignment status. Four variants are available:
+#'   * `filter_assigned_bla()` keeps only assigned *bla* alleles from `data`
+#'   * `filter_unassigned_bla()` keeps only unassigned *bla* alleles from `data`
+#'   * `remove_assigned_bla()` removes assigned *bla* alleles from `data` while leaving other alleles untouched
+#'   * `remove_unassigned_bla()` removes unassigned *bla* alleles from `data` while leacing other alleles untouched
 #'
 #' @details In NCBI Pathogen Detection Project datasets, *bla* alleles with
 #'   formal designations are listed by their number (e.g. *bla*PDC-3) while
@@ -181,6 +183,22 @@ remove_assigned_bla <- function(data){
 remove_unassigned_bla <- function(data){
   .complete <- data %>%
     dplyr::filter(!(grepl("bla", .data$allele, ignore.case = TRUE) & !grepl("-", .data$allele)))
+
+  return(.complete)
+}
+
+filter_assigned_bla <- function(data){
+  .complete <- data %>%
+    dplyr::filter((grepl("bla", .data$allele, ignore.case = TRUE) & grepl("-", .data$allele)))
+
+  return(.complete)
+}
+
+#' @rdname remove_assigned_bla
+#' @export
+filter_unassigned_bla <- function(data){
+  .complete <- data %>%
+    dplyr::filter((grepl("bla", .data$allele, ignore.case = TRUE) & !grepl("-", .data$allele)))
 
   return(.complete)
 }
