@@ -444,7 +444,8 @@ possible_unique_proteins <- function(data){
     dplyr::slice_head() %>%
     dplyr::ungroup() %>%
     dplyr::distinct(.data$protein) %>%
-    dplyr::pull("protein")
+    dplyr::pull("protein") %>%
+    as.character()
 
   accessions_unassigned <- data %>%
     tidyr::drop_na(.data$protein) %>%
