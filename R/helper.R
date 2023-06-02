@@ -217,7 +217,7 @@ filter_attribute <- function(data, attribute, string){
 filter_exclusive_alleles <- function(data, ...){
 
   .complete <- data %>%
-    dplyr::group_by("allele") %>%
+    dplyr::group_by(.data$allele) %>%
     dplyr::filter(length(unique( !!!rlang::enquos(...) )) == 1) %>%
     dplyr::ungroup()
 
@@ -229,7 +229,7 @@ filter_exclusive_alleles <- function(data, ...){
 filter_shared_alleles <- function(data, ...){
 
   .complete <- data %>%
-    dplyr::group_by("allele") %>%
+    dplyr::group_by(.data$allele) %>%
     dplyr::filter(length(unique( !!!rlang::enquos(...) )) > 1) %>%
     dplyr::ungroup()
 
@@ -251,7 +251,7 @@ determine_combinations <- function(data, filter_terms = NULL){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
   .combos <- data %>%
     {if (!is.null(filter))  dplyr::filter(., grepl(paste(filter_terms, collapse = "|"), .data$allele, ignore.case = TRUE )) else .} %>%
-    dplyr::group_by("biosample") %>%
+    dplyr::group_by(.data$biosample) %>%
     dplyr::filter(length(unique(.data$allele)) > 1) %>%
     dplyr::summarize(combo = paste(.data$allele, collapse = ", "), .groups = "drop")
 
@@ -337,7 +337,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
   if( is.null(split) ){
     bounds <- tibble::tibble %>%
       tidyr::drop_na(!!source_col) %>%
-      dplyr::group_by("biosample") %>%
+      dplyr::group_by(.data$biosample) %>%
       dplyr::filter(row_number() == 1) %>%
       dplyr::pull(!!source_col) %>%
       determine_nearly_equal_integer_groups_lt(groups)
@@ -402,6 +402,59 @@ separate_rows_sequential <- function(data, ..., sep = "[^[:alnum:].]+", convert 
   }
 
   return(.modified)
+}
+
+#' Determine all possible unique proteins
+#'
+#' @description Uses `protein` accession numbers and `allele` names to create a
+#'   character vector representing the complete subset of *possible* unique
+#'   alleles in the datasets.
+#'
+#' @details This function is only for use with MicroBIGG-E datasets, as Isolates
+#'   Browser datasets do not contain sufficient data to make the determination
+#'   of unique unassinged alleles.
+#'
+#'   Every distinct assigned allele is represented by a single accession number,
+#'   selected as the first occurrence after sorting "WP_" prefixed accession
+#'   numbers to the top.
+#'
+#'   Every distinct accession number corresponding to an unassigned allele is
+#'   included as they correspond to *possible* distinct alleles. In most
+#'   datasets, there will likely be overlap with several of these accession
+#'   numbers corresponding to the same distinct protein. Downstream use may
+#'   require deduplication, which can be achieved using Identical Protein Groups
+#'   data.
+#'
+#' @param data A dataframe or tibble with columns `allele` and `protein`
+#' @returns A character vector of accession numbers
+#' @export
+possible_unique_proteins <- function(data){
+  wp_accn <- data %>%
+    remove_unassigned_bla() %>%
+    filter(grepl("WP_", .data$protein)) %>%
+    pull("protein") %>%
+    unique()
+
+  accessions_assigned <- data %>%
+    tidyr::drop_na(.data$protein) %>%
+    remove_unassigned_bla() %>%
+    dplyr::mutate(protein = forcats::fct_relevel(.data$protein, wp_accn, after = 0L)) %>%
+    dplyr::arrange(.data$protein) %>%
+    dplyr::group_by(.data$allele) %>%
+    dplyr::slice_head() %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(.data$protein) %>%
+    dplyr::pull("protein")
+
+  accessions_unassigned <- data %>%
+    tidyr::drop_na(.data$protein) %>%
+    remove_assigned_bla() %>%
+    dplyr::distinct(.data$protein) %>%
+    dplyr::pull("protein")
+
+  accessions <- c(accessions_assigned, accessions_unassigned)
+
+  return(accessions)
 }
 
 ########## File Handling ##########

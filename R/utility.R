@@ -141,7 +141,7 @@ parse_mlst_profiles <- function(.calls, .profiles){
       stringr::str_count(.data$combined, ",") < length(profile_names) - 1 ~ "missing_allele",
       TRUE ~ "new_st"
     )) %>%
-    dplyr::group_by("Genome") %>%
+    dplyr::group_by(.data$Genome) %>%
     dplyr::mutate(ST = dplyr::na_if(paste0(stringr::str_sort(stats::na.omit(unique(.data$ST)), numeric = TRUE), collapse = ";"), "")) %>%
     dplyr::mutate(errors = dplyr::na_if(paste0(stats::na.omit(unique(.data$error)), collapse = ";"), "")) %>%
     dplyr::mutate(row = row_number()) %>%

@@ -19,7 +19,7 @@ NULL
 #' @family metadata and clusters
 #' @export
 get_organisms <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/"){
-  raw_rows <- RCurl::getURL(url = , ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
+  raw_rows <- RCurl::getURL(url = url, ftp.use.epsv = FALSE, customrequest = "MLSD") %>%
     stringr::str_split("\n") %>%
     unlist() %>%
     stringr::str_subset("type=dir")
@@ -83,7 +83,10 @@ get_versions <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", o
 check_complete_pdg <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/", organism, version){
   version_url <- paste0(url, organism, "/", version, "/", version, ".final.descriptor.xml")
 
-  .complete <- xml2::read_xml(version_url) %>%
+  try(xml_content <- xml2::read_xml(version_url), silent = TRUE)
+  if(!exists("xml_content")) return(FALSE)
+
+  .complete <- xml_content %>%
     xml2::xml_find_first("/PathogenGroupDescriptor/PathogenGroup") %>%
     xml2::xml_attr("complete") %>%
     as.integer() %>%
@@ -183,7 +186,7 @@ get_reference_gene_catalogs <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathog
 #' Downloads a specified `version` of the Reference Gene Catalog from the NCBI
 #' Pathogen Detection FTP server.
 #'
-#' The downloaded file is saved as 'ReferenceGeneCatalog.tsv' in `path`.
+#' The downloaded file is saved as 'refgene.tsv' in `path`.
 #'
 #' @inheritParams get_reference_gene_catalogs
 #' @param version A Reference Gene Catalog version number
@@ -192,10 +195,10 @@ get_reference_gene_catalogs <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathog
 #' @family download data
 #' @export
 download_reference_gene_catalog <- function(url = "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/", version, path){
-  url_complete <- file.path(url, version, "ReferenceGeneCatalog.tsv")
+  url_complete <- file.path(url, version, "ReferenceGeneCatalog.txt")
 
   ensure_directory(path)
-  version_path <- file.path(path, "refgene.txt")
+  version_path <- file.path(path, "refgene.tsv")
 
   if(!file.exists(version_path)){
     utils::download.file(url = url_complete,
@@ -389,7 +392,7 @@ select_ftp_version <- function(url, organism){
 #' @family ftp download helpers
 #' @export
 select_ftp_refgene <- function(url){
-  version_list <- get_refgene_catalogs(url = url) %>%
+  version_list <- get_reference_gene_catalogs(url = url) %>%
     dplyr::pull(version)
   version <- version_list[utils::menu(stringr::str_replace_all(version_list, "_", " "),
                                title = "Select a version. The newest is reccomended.")]

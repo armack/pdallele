@@ -88,7 +88,7 @@ top_n_overall <- function(data, ..., count, n = 10, desc = TRUE,
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
     mutate(across(c(...), ~if_else(concat %in% .top_values, ., as_factor(other)))) %>%
-    group_by(..., "group_total", .add = TRUE) %>%
+    group_by(..., .data$group_total, .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
@@ -136,7 +136,7 @@ top_n_across_groups <- function(data, ..., count, n = 10,
     with_groups(NULL, mutate, keep = paste(!!!dots) %in% .data$top) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
     mutate(across(c(...), ~if_else(keep, ., as_factor(other)))) %>%
-    group_by(..., "group_total", .add = TRUE) %>%
+    group_by(..., .data$group_total, .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
@@ -181,7 +181,7 @@ top_n_by_group <- function(data, ..., count, n = 10, desc = TRUE,
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
     mutate(across(c(...), ~if_else(row_number() <= n, ., as_factor(other)))) %>%
-    group_by(..., "group_total", .add = TRUE) %>%
+    group_by(..., .data$group_total, .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)

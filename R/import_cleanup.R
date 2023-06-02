@@ -11,7 +11,7 @@ NULL
 #' @details
 #' The following columns are included in the output:
 #'
-#' |**Source File**    |**Output Tibble** |
+#' |**Source File**     |**Output Tibble** |
 #' |--------------------|-------------------|
 #' |biosample_acc       |biosample          |
 #' |asm_acc             |assembly           |
@@ -55,10 +55,31 @@ import_isolates_browser_metadata <- function(path) {
     return(.complete)
 }
 
-#' Replace multiple values with `NA` across all character columns
+#' Replace with `NA` across character columns
 #'
-#' Replace any values matching a value in `terms` with `NA` across all
-#' `character()` columns in `data`.
+#' @description Replace values in all `character()` columns in `data` matching a
+#'   value in `terms` with `NA`. Ignores case and requires a complete match.
+#'
+#'   For example, "null" would replace "NULL" with `NA` but leave "nullify"
+#'   intact.
+#'
+#' @section Suggested `terms` Values: Unfortunately, due to the presence of many fields
+#'   in BioSample metadata allowing free text entry and no enforced standard
+#'   for how to indicate data is unavailable, a wide variety of strings need to
+#'   be treated as `NA` in order to maximize the utility of the metadata.
+#'
+#'   The following suggestions come from examining more than 40,000
+#'   *Acinetobacter* and *Pseudomonas* isolates present in the Pathogen
+#'   Detection Project databases. It is by no means a complete list, but should
+#'   serve as a good starting point to clean your data sets.
+#'
+#' ```
+#' c("na", "n/a", "missing", "none", "unknown", "unknow",
+#' "unspecified", "not known", "not applicable", "not_applicable", "not
+#' provided", "not available", "not determined", "not specified", "not
+#' recorded", "no data", "notfound", "null", "not collected", "not available: to
+#' be reported later", "-")
+#' ```
 #'
 #' @param data A dataframe or tibble to modify
 #' @param terms A character vector of values to replace with `NA_character_`
@@ -70,7 +91,7 @@ na_if_tibble_chr <- function(data, terms) {
   .complete <- data %>%
     dplyr::mutate(across(
       dplyr::where(is.character),
-      ~ dplyr::if_else(stringr::str_to_lower(.) %in% terms, NA_character_, .)
+      ~ dplyr::if_else(stringr::str_to_lower(.) %in% stringr::str_to_lower(terms), NA_character_, .)
     ))
 
   return(.complete)
@@ -216,7 +237,7 @@ import_regions <- function(data, path, warn = FALSE) {
 import_cluster_list <- function(data, path) {
   if(missing(path) | is.null(path)) return(data)
 
-  .clusters <- readr::read_tsv(file = path, show_col_types = FALSE) %>%
+  .clusters <- readr::read_tsv(file = path, show_col_types = FALSE, na = "NULL") %>%
     dplyr::select(pds = "PDS_acc", biosample = "biosample_acc")
 
   .complete <- data %>%
@@ -498,11 +519,11 @@ filter_pds <- function(data, ignore_genotype = FALSE){
   cluster_biosamples <- data %>%
     dplyr::select("biosample", "pds", "allele") %>%
     tidyr::drop_na("pds") %>%
-    dplyr::group_by("biosample") %>%
+    dplyr::group_by(.data$biosample) %>%
     dplyr::mutate(combo = paste(.data$allele, collapse = ",")) %>%
-    dplyr::group_by("pds") %>%
-    {if(!ignore_genotype) dplyr::group_by(., "combo", .add = TRUE) else .} %>%
-    dplyr::arrange("biosample") %>%
+    dplyr::group_by(.data$pds) %>%
+    {if(!ignore_genotype) dplyr::group_by(., .data$combo, .add = TRUE) else .} %>%
+    dplyr::arrange(.data$biosample) %>%
     dplyr::slice_head() %>%
     dplyr::pull("biosample")
 
@@ -563,7 +584,7 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #' @export
 
 import_microbigge_gcp <- function(path){
-  .complete <- readr::read_tsv(file = path, na = "", show_col_types = FALSE) %>%
+  .complete <- readr::read_tsv(file = path, show_col_types = FALSE) %>%
     dplyr::select(protein = "protein_acc", biosample = "biosample_acc", assembly = "asm_acc",
            allele = "element_symbol", name = "element_name", method = "amr_method",
            coverage = "pct_ref_coverage", identity = "pct_ref_identity",
@@ -613,7 +634,7 @@ filter_microbigge <- function(data, coverage = 100L, identity = 90L, remove) {
 parse_mbe_oxa_family <- function(data) {
   .complete <- data %>%
     dplyr::mutate(mbe_oxa_family = dplyr::case_when(
-      grepl('family', name) ~ stringr::str_extract(long_name, "OXA-\\d+?(?= family)"),
+      grepl('family', name) ~ stringr::str_extract(name, "OXA-\\d+?(?= family)"),
       TRUE ~ stringr::str_extract(name, "OXA-\\d+")
     )) %>%
     dplyr::mutate(ipg_oxa_family = dplyr::case_when(
