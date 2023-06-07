@@ -2,7 +2,7 @@
 % Please edit documentation in R/import_cleanup.R
 \name{na_if_tibble_chr}
 \alias{na_if_tibble_chr}
-\title{Replace multiple values with \code{NA} across all character columns}
+\title{Replace with \code{NA} across character columns}
 \usage{
 na_if_tibble_chr(data, terms)
 }
@@ -16,6 +16,28 @@ na_if_tibble_chr(data, terms)
 \code{NA_character_}
 }
 \description{
-Replace any values matching a value in \code{terms} with \code{NA} across all
-\code{character()} columns in \code{data}.
+Replace values in all \code{character()} columns in \code{data} matching a
+value in \code{terms} with \code{NA}. Ignores case and requires a complete match.
+
+For example, "null" would replace "NULL" with \code{NA} but leave "nullify"
+intact.
 }
+\section{Suggested \code{terms} Values}{
+ Unfortunately, due to the presence of many fields
+in BioSample metadata allowing free text entry and no enforced standard
+for how to indicate data is unavailable, a wide variety of strings need to
+be treated as \code{NA} in order to maximize the utility of the metadata.
+
+The following suggestions come from examining more than 40,000
+\emph{Acinetobacter} and \emph{Pseudomonas} isolates present in the Pathogen
+Detection Project databases. It is by no means a complete list, but should
+serve as a good starting point to clean your data sets.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{c("na", "n/a", "missing", "none", "unknown", "unknow",
+"unspecified", "not known", "not applicable", "not_applicable", "not
+provided", "not available", "not determined", "not specified", "not
+recorded", "no data", "notfound", "null", "not collected", "not available: to
+be reported later", "-")
+}\if{html}{\out{</div>}}
+}
+

@@ -1,8 +1,8 @@
 Package: pdallele
-Title: What the Package Does (One Line, Title Case)
+Title: Download, Parse, and Explore NCBI Pathogen Detection Allele Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Andrew", "Mack", , "arm252@case.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
@@ -36,3 +36,9 @@ Imports:
   tidyselect,
   viridis,
   xml2
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr

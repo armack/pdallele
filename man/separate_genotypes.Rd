@@ -4,7 +4,7 @@
 \alias{separate_genotypes}
 \title{Separate genotypes by row}
 \usage{
-separate_genotypes(data, include = "amr")
+separate_genotypes(data, include)
 }
 \arguments{
 \item{data}{A dataframe or tibble with at least one \code{amr}, \code{stress}, or \code{vir}

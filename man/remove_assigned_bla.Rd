@@ -3,11 +3,17 @@
 \name{remove_assigned_bla}
 \alias{remove_assigned_bla}
 \alias{remove_unassigned_bla}
+\alias{filter_assigned_bla}
+\alias{filter_unassigned_bla}
 \title{Filter \emph{bla} alleles by assignment status}
 \usage{
 remove_assigned_bla(data)
 
 remove_unassigned_bla(data)
+
+filter_assigned_bla(data)
+
+filter_unassigned_bla(data)
 }
 \arguments{
 \item{data}{A data frame or tibble}
@@ -18,10 +24,12 @@ or unassigned (\code{remove_unassigned_bla}) alleles removed
 }
 \description{
 These functions serve to filter beta-lactamase (\emph{bla}) alleles
-based on their assignment status. Two variants are available:
+based on their assignment status. Four variants are available:
 \itemize{
-\item \code{remove_assigned_bla()} removes assigned \emph{bla} alleles from \code{data}
-\item \code{remove_unassigned_bla()} removes unassigned \emph{bla} alleles from \code{data}
+\item \code{filter_assigned_bla()} keeps only assigned \emph{bla} alleles from \code{data}
+\item \code{filter_unassigned_bla()} keeps only unassigned \emph{bla} alleles from \code{data}
+\item \code{remove_assigned_bla()} removes assigned \emph{bla} alleles from \code{data} while leaving other alleles untouched
+\item \code{remove_unassigned_bla()} removes unassigned \emph{bla} alleles from \code{data} while leacing other alleles untouched
 }
 }
 \details{

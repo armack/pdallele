@@ -22,7 +22,7 @@ directory}
 Downloads a specified \code{version} of the Reference Gene Catalog from the NCBI
 Pathogen Detection FTP server.
 
-The downloaded file is saved as 'ReferenceGeneCatalog.tsv' in \code{path}.
+The downloaded file is saved as 'refgene.tsv' in \code{path}.
 }
 \seealso{
 Other reference gene catalog: 
