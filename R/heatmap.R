@@ -38,8 +38,7 @@ NULL
 heatmap_data <- function(data, count, category, n = 5, facet,
                          by_group = TRUE, na.rm = TRUE) {
   . <- NULL # Workaround to suppress `no visible binding for global variable`
-
-  has_facets <- !rlang::quo_is_missing(facet)
+  has_facets <- !missing(facet)
 
   .complete <- data %>%
     dplyr::ungroup() %>%
@@ -51,7 +50,7 @@ heatmap_data <- function(data, count, category, n = 5, facet,
     dplyr::mutate(group_isolates = length(unique(.data$biosample))) %>%
     dplyr::select(c({{count}}, {{category}}, "group_isolates", "total_isolates",
              if(has_facets) dplyr::any_of(rlang::as_name(facet)) else NULL)) %>%
-    dplyr:: group_by({{count}}, .add = TRUE) %>%
+    dplyr::group_by({{count}}, .add = TRUE) %>%
     dplyr::mutate(group_count = n(), group_prop = .data$group_count/.data$group_isolates) %>%
     dplyr::ungroup({{category}}) %>%
     dplyr::mutate(total_count = n(), total_prop = .data$total_count/.data$total_isolates) %>%
@@ -61,8 +60,8 @@ heatmap_data <- function(data, count, category, n = 5, facet,
     dplyr::mutate(group_rank = dplyr::dense_rank((desc(.data$group_count)))) %>%
     dplyr::ungroup({{category}}) %>%
     dplyr::mutate(total_rank = dplyr::dense_rank((desc(.data$total_count)))) %>%
-    {if(identical(by_group, TRUE)) dplyr::filter(., {{count}} %in% dplyr::pull(filter(., "group_rank" <= n), {{count}}))
-      else dplyr::filter(., {{count}} %in% dplyr::pull(filter(., "total_rank" <= n), {{count}})) } %>%
+    {if(identical(by_group, TRUE)) dplyr::filter(., {{count}} %in% dplyr::pull(dplyr::filter(., .data$group_rank <= n), {{count}}) )
+      else dplyr::filter(., {{count}} %in% dplyr::pull(dplyr::filter(., .data$total_rank <= n), {{count}}) ) } %>%
     dplyr::group_by({{count}}, .add = TRUE) %>%
     dplyr::mutate(group_sort = length(unique({{category}})) / mean(.data$group_rank)) %>%
     dplyr::mutate(total_sort =  mean(.data$total_rank)) %>%
