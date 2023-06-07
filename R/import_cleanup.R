@@ -278,9 +278,9 @@ import_mlst <- function(data, path) {
 #'   `stress`, `vir`) into rows, with each row corresponding to a single allele.
 #'   Three columns of allele details are added:
 #'
-#' * `allele` corresponding to the allele name
-#' * `allele_type` corresponding to the source column (`amr`, `stress`, or `vir`)
-#' * `allele_call` corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See [clean_filter_alleles()] for details.
+#'   * `allele` corresponding to the allele name
+#'   * `allele_type` corresponding to the source column (`amr`, `stress`, or `vir`)
+#'   * `allele_call` corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See [clean_filter_alleles()] for details.
 #'
 #' @param data A dataframe or tibble with at least one `amr`, `stress`, or `vir`
 #'   column
@@ -289,52 +289,16 @@ import_mlst <- function(data, path) {
 #' @returns `data` with columns `allele`, `allele_type`, and `allele_call` added
 #' @export
 
-separate_genotypes <- function(data, include = "amr"){
+separate_genotypes <- function(data, include){
+  missing_include <- missing(include)
 
   .complete <- data %>%
     tidyr::pivot_longer(any_of(c("amr", "stress","vir")), names_to = "allele_type",
                  values_to = "allele") %>%
-    dplyr::filter(grepl(paste(include, collapse = "|"), .data$allele_type)) %>%
+    {if(!missing_include) dplyr::filter(., grepl(paste(include, collapse = "|"), .data$allele_type)) else .} %>%
     tidyr::drop_na("allele") %>%
     tidyr::separate_rows("allele", sep = ",") %>%
     tidyr::separate("allele", into = c("allele","allele_call"), sep = "=", fill = "right")
-
-  return(.complete)
-}
-
-#' Clean and filter allele listings
-#'
-#' @description The column `allele_call` contains codes representing to the
-#'   calling method used for a given allele. Some of these codes correspond to
-#'   "less than perfect" matches and may warrant removal depending on the scope
-#'   and goals of the analysis. Detailed explanations are available at:
-#'   <https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories>
-#'
-#'   This function removes rows with `allele_call` matching a value in `remove`.
-#'
-#'   This function also (optionally) keeps only rows with `allele` matching a
-#'   value in `filter`, such as when only a specific subset of `allele` is
-#'   needed in the dataset.
-#'
-#'   This function also removes any duplicate allele/biosample combinations,
-#'   which could complicate later analysis as some isolates list the same allele
-#'   multiple times across contigs. Distinct alleles are maintained.
-#'
-#' @param data A dataframe or tibble with an `allele` column
-#' @param filter A character vector of `allele` names to keep. Uses grepl().
-#'   Partial matches are kept. Vector is collapsed with "|" (or operator).
-#' @param remove A character vector of allele_call values to remove
-#' @returns `data` with rows removed according to the selected parameters
-#' @export
-
-clean_filter_alleles <- function(data, filter, remove) {
-  missing_filter <- missing(filter)
-  missing_remove <- missing(remove)
-
-  .complete <- data %>%
-    dplyr::filter(grepl(paste(filter, collapse = "|"), .data$allele)) %>%
-    dplyr::filter(!grepl(paste(remove, collapse = "|"), .data$allele_call)) %>%
-    dplyr::distinct(.data$biosample, .data$allele, .keep_all = TRUE)
 
   return(.complete)
 }
