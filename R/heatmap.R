@@ -148,6 +148,7 @@ heatmap_plot <- function(data, count, category, facet,
                          text_size = 16){
 
   has_facets <- !rlang::quo_is_missing(rlang::enquo(facet))
+  print(has_facets)
 
   if(wide)
     data <- dplyr::mutate(data, {{count}} := forcats::fct_rev({{count}}))
