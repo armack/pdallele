@@ -559,38 +559,6 @@ import_microbigge_gcp <- function(path){
   return(.complete)
 }
 
-#' Filter imported MicroBigg-E data
-#'
-#' @description Removes allele calls that do not meet the minimum `coverage` and
-#'   `identity` thresholds. These values may vary based on the needs of a
-#'   particular analysis. Set both to `100` to allow only exact allele calls.
-#'
-#'   Specific allele calling methods can be excluded from the dataset by name in
-#'   `remove`. See <<>> for more information about allele calling methods used
-#'   in MicroBIGG-E data.
-#'
-#' @details Isolates Browser (and thus amr.metadata.tsv files on the NCBI FTP
-#'   server) uses a 90% `identity` threshold:
-#'   https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories
-#'
-#' @param data A dataframe or tibble
-#' @param coverage Minimum percent coverage to keep
-#' @param identity Minimum percent identity to keep
-#' @param remove Character vector of `method` values to remove alleles
-#' @returns `data` with rows removed according to the selected parameters
-#' @export
-filter_microbigge <- function(data, coverage = 100L, identity = 90L, remove) {
-  . <- NULL # Workaround to suppress `no visible binding for global variable`
-  remove_missing <- missing(remove)
-  .complete <- data %>%
-    tidyr::drop_na("protein") %>%
-    {if(!remove_missing) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
-    dplyr::filter("coverage" >= coverage) %>%
-    dplyr::filter("identity" >= identity)
-
-  return(.complete)
-}
-
 #' Parse `oxa_family` from MBE & IPG names
 #' @rdname parse_ib_oxa_family
 #' @export
