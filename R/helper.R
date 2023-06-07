@@ -437,9 +437,9 @@ separate_rows_sequential <- function(data, ..., sep = "[^[:alnum:].]+", convert 
 #'   Browser datasets do not contain sufficient data to make the determination
 #'   of unique unassinged alleles.
 #'
-#'   Every distinct assigned allele is represented by a single accession number,
-#'   selected as the first occurrence after sorting "WP_" prefixed accession
-#'   numbers to the top.
+#'   Every distinct assigned allele with a "WP_" prefixed accession number is
+#'   deduplicated. This does NOT alter values in the original `data` and some
+#'   downstream matching may require Identical Protein Groups data.
 #'
 #'   Every distinct accession number corresponding to an unassigned allele is
 #'   included as they correspond to *possible* distinct alleles. In most
@@ -452,31 +452,25 @@ separate_rows_sequential <- function(data, ..., sep = "[^[:alnum:].]+", convert 
 #' @returns A character vector of accession numbers
 #' @export
 possible_unique_proteins <- function(data){
-  wp_accn <- data %>%
-    remove_unassigned_bla() %>%
-    filter(grepl("WP_", .data$protein)) %>%
-    pull("protein") %>%
+  wp_accessions <- data %>%
+    filter_assigned_bla() %>%
+    dplyr::filter(grepl("WP_", .data$protein)) %>%
+    dplyr::pull("protein") %>%
     unique()
 
-  accessions_assigned <- data %>%
-    tidyr::drop_na(.data$protein) %>%
-    remove_unassigned_bla() %>%
-    dplyr::mutate(protein = forcats::fct_relevel(.data$protein, wp_accn, after = 0L)) %>%
-    dplyr::arrange(.data$protein) %>%
-    dplyr::group_by(.data$allele) %>%
-    dplyr::slice_head() %>%
-    dplyr::ungroup() %>%
-    dplyr::distinct(.data$protein) %>%
+  wp_alleles <- data %>%
+    filter_assigned_bla() %>%
+    dplyr::filter(grepl("WP_", .data$protein)) %>%
+    dplyr:: pull("allele") %>%
+    unique()
+
+  other_accessions <- data %>%
+    tidyr::drop_na("protein") %>%
+    dplyr::filter(!.data$allele %in% wp_alleles) %>%
     dplyr::pull("protein") %>%
-    as.character()
+    unique()
 
-  accessions_unassigned <- data %>%
-    tidyr::drop_na(.data$protein) %>%
-    remove_assigned_bla() %>%
-    dplyr::distinct(.data$protein) %>%
-    dplyr::pull("protein")
-
-  accessions <- c(accessions_assigned, accessions_unassigned)
+  accessions <- c(wp_accessions, other_accessions)
 
   return(accessions)
 }
