@@ -632,8 +632,19 @@ import_ipg <- function(data, path){
   .ipg <- readr::read_tsv(file = path, show_col_types = FALSE) %>%
     dplyr::distinct(.data$protein, .keep_all = TRUE)
 
-  .complete <- data %>%
+  .assigned <- data %>%
+    filter_assigned_bla() %>%
+    dplyr::left_join(.ipg, by = "protein") %>%
+    dplyr::group_by(.data$allele) %>%
+    dplyr::arrange(ipg) %>%
+    tidyr::fill("ipg", "ipg_accession", "ipg_name", .direction = "down")
+
+  .unassigned <- data %>%
+    remove_assigned_bla() %>%
     dplyr::left_join(.ipg, by = "protein")
+
+  .complete <- .assigned %>%
+    dplyr::bind_rows(.unassigned)
 
   return(.complete)
 }
