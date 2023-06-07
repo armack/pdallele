@@ -82,9 +82,16 @@ theme_heatmap <- function(base_size = 11, base_family = "",
       axis.ticks = ggplot2::element_blank(),
 
       panel.background = ggplot2::element_blank(),
-      panel.spacing = ggplot2::unit(0.5, "in"),
+      panel.spacing    = ggplot2::unit(0.5, "in"),
       strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_blank(),
+      strip.text       = ggplot2::element_blank(),
+
+      # Revert to standard `element_text()` as `ggtext::element_markdown()` in
+      # `legend.text` can cause `Error in grid.Call.graphics(C_setviewport, vp,
+      # TRUE) : non-finite location and/or size for viewport` when combined with
+      # a color scale (potentially only with geom_point()) See:
+      # https://github.com/wilkelab/ggtext/issues/33
+      legend.text = ggplot2::element_text(),
 
       complete = TRUE
     )
