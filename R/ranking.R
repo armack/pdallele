@@ -87,12 +87,12 @@ top_n_overall <- function(data, ..., count, n = 10, desc = TRUE,
     mutate(concat = paste0(!!!dots)) %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
-    mutate(across(c(...), ~if_else(concat %in% .top_values, ., as_factor(other)))) %>%
+    mutate(across(c(...), ~if_else(concat %in% .top_values, ., forcats::as_factor(other)))) %>%
     group_by(..., .data$group_total, .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
-      else if(identical(relevel,"count")) mutate(., across(c(...), fct_reorder(., {{count}})))
+      else if(identical(relevel,"count")) mutate(., across(c(...), forcats::fct_reorder(., {{count}})))
       else .} %>%
     {if (identical(other_pos, "last")) mutate(., across(c(...), ~ suppressWarnings(fct_relevel(., other, after = Inf))))
       else if(identical(other_pos, "first")) mutate(., across(c(...), ~ suppressWarnings(fct_relevel(., other, after = 0L))))
@@ -135,12 +135,12 @@ top_n_across_groups <- function(data, ..., count, n = 10,
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     with_groups(NULL, mutate, keep = paste(!!!dots) %in% .data$top) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
-    mutate(across(c(...), ~if_else(keep, ., as_factor(other)))) %>%
+    mutate(across(c(...), ~if_else(keep, ., forcats::as_factor(other)))) %>%
     group_by(..., .data$group_total, .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
-      else if(identical(relevel,"count")) mutate(., across(c(...), ~fct_reorder(., {{count}})))
+      else if(identical(relevel,"count")) mutate(., across(c(...), ~forcats::fct_reorder(., {{count}})))
       else .} %>%
     {if (identical(other_pos, "last")) mutate(., across(c(...), ~ suppressWarnings(fct_relevel(., other, after = Inf))))
       else if(identical(other_pos, "first")) mutate(., across(c(...), ~ suppressWarnings(fct_relevel(., other, after = 0L))))
@@ -180,12 +180,12 @@ top_n_by_group <- function(data, ..., count, n = 10, desc = TRUE,
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     mutate(group_total = if_else(row_number() == 1, sum({{count}}), NA_integer_)) %>%
     mutate(across(c(...), ~fct_expand(., cur_column(), other))) %>%
-    mutate(across(c(...), ~if_else(row_number() <= n, ., as_factor(other)))) %>%
+    mutate(across(c(...), ~if_else(row_number() <= n, ., forcats::as_factor(other)))) %>%
     group_by(..., .data$group_total, .add = TRUE) %>%
     summarize({{count}} := sum({{count}}), .groups = "drop") %>%
     {if(desc) arrange(., desc({{count}})) else arrange(., {{count}})} %>%
     {if (identical(relevel,"name")) relevel_numeric(., ...)
-      else if(identical(relevel,"count")) mutate(., across(c(...), ~fct_reorder(., {{count}})))
+      else if(identical(relevel,"count")) mutate(., across(c(...), ~forcats::fct_reorder(., {{count}})))
       else .} %>%
     {if (identical(other_pos, "last")) mutate(., across(c(...), ~ suppressWarnings(fct_relevel(., other, after = Inf))))
       else if(identical(other_pos, "first")) mutate(., across(c(...), ~ suppressWarnings(fct_relevel(., other, after = 0L))))
