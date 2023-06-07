@@ -187,6 +187,8 @@ remove_unassigned_bla <- function(data){
   return(.complete)
 }
 
+#' @rdname remove_assigned_bla
+#' @export
 filter_assigned_bla <- function(data){
   .complete <- data %>%
     dplyr::filter((grepl("bla", .data$allele, ignore.case = TRUE) & grepl("-", .data$allele)))
@@ -290,7 +292,7 @@ determine_combinations <- function(data, filter_terms = NULL){
 #'
 #' @param values integer vector of values to group
 #' @param groups integer of groups to define
-#'
+#' @export
 determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
   if(!is.integer(values)){
     stop("Please ensure 'values' is an integer vector.")
@@ -309,11 +311,11 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
     tibble <- tibble::tibble(values) %>%
       dplyr::filter(values >= last_value)
 
-    include <- tibble::tibble %>%
+    include <- tibble %>%
       dplyr::filter(values <= test_value ) %>%
       nrow()
 
-    exclude <- tibble::tibble %>%
+    exclude <- tibble %>%
       dplyr::filter(values < test_value ) %>%
       nrow()
 
@@ -347,16 +349,17 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
 #'        determine_nearly_equal_integer_groups_lt() to determine boundaries)
 #' @param split integer vector of boundaries, which is generally the output of
 #'        determine_nearly_equal_integer_groups_lt()
+#' @export
 
-categorize_integer_groups <- function(tibble, source_col, label_col, label_sep = " - ", groups, split = NULL){
-  source_col = rlang::sym(source_col)
-  label_col = rlang::sym(label_col)
+categorize_integer_groups <- function(data, source_col, label_col, label_sep = " - ", groups, split = NULL){
+  source_col_sym = rlang::sym(source_col)
+  label_col_sym = rlang::sym(label_col)
 
   if( is.null(split) ){
-    bounds <- tibble::tibble %>%
+    bounds <- data %>%
       tidyr::drop_na(!!source_col) %>%
       dplyr::group_by(.data$biosample) %>%
-      dplyr::filter(row_number() == 1) %>%
+      dplyr::filter(dplyr::row_number() == 1) %>%
       dplyr::pull(!!source_col) %>%
       determine_nearly_equal_integer_groups_lt(groups)
   }
@@ -366,7 +369,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
   bounds_labels <- paste(lower_bounds,label_sep,upper_bounds - 1, sep = "")
   bounds_conditions <- paste(source_col," >= ",lower_bounds," & ",source_col," < ",upper_bounds," ~ ","'",bounds_labels,"'",sep="")
 
-  tibble %>%
+  data %>%
     dplyr::mutate(!!label_col := dplyr::case_when(!!!rlang::parse_exprs(bounds_conditions))) %>%
     return()
 }
@@ -380,6 +383,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
 #' @param data a dataframe or tibble
 #' @param ... <data-masking> columns to reorder NAs
 #' @param na_last argument to be processed (pass directly from parent function)
+#' @export
 .resolve_na_last <- function(data, ..., na_last){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
@@ -411,6 +415,7 @@ categorize_integer_groups <- function(tibble, source_col, label_col, label_sep =
 #' @param convert If TRUE will automatically run type.convert() on the key
 #'   column. This is useful if the column types are actually numeric, integer,
 #'   or logical.
+#' @export
 separate_rows_sequential <- function(data, ..., sep = "[^[:alnum:].]+", convert = FALSE){
   vars <- tidyselect::eval_select(expr(c(...)), data)
   .modified <- data
