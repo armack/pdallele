@@ -1,0 +1,160 @@
+---
+title: "Loading Data for Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{load-data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+```
+## Introduction 
+Many of the analysis functions included in this package require data in specific
+formats and/or with specific column names. Importing data and generating
+datasets according to this guide can simplify the analysis process.
+
+Following this guide generates, filters, and prepares two datasets:
+
+* `isolates` uses Isolates Browser data and provides overview information on all covered alleles for all isolates of an organism of choice in the Pathogen Detection Project. This dataset contains more isolates but does not allow the differentiation of distinct unassigned alleles.
+* `mbe` uses Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) data, which represents the subset of Isolates Browser data for which whole genome assemblies are available in GenBank. This dataset contains fewer isolates but allows the differentiation of MLST sequence types and differentiation of distinct, unassigned alleles, enabling additional dimensions of analysis.
+
+## Data Directory
+
+Specify path to the directory containing data files for analysis. These files
+can easily be downloaded/generated using the included download functions (see
+`vignette("downloading-data")` for details) or can be downloaded manually from the
+NCBI website.
+
+```{r, eval = FALSE}
+data_path      <- ""
+```
+
+Specify the names of the individual data files within the dataset directory. The
+file names and paths included below reflect the defaults for data downloaded
+using the included downloading functions (with the exception of `mlst.csv` which
+requires additional processing).
+
+```{r, eval = FALSE}
+isolates_path     <- file.path(data_path, "amr.metadata.tsv")
+microbigge_path   <- file.path(data_path, "microbigge.tsv")
+refgene_path      <- file.path(data_path, "refgene.tsv")
+ipg_path          <- file.path(data_path, "ipg.tsv")
+cluster_path      <- file.path(data_path, "cluster_list.tsv")
+mlst_path         <- file.path(data_path, "mlst.csv")
+region_path       <- system.file("extdata/regions.csv", package = "pdallele")
+```
+
+### File/Path Descriptions
+* `isolates_path` is an Isolates Browser tab-separated values (TSV) file for the organism of interest (a `PDG_Accession.Version.amr.metadata.tsv` file), downloaded from the NCBI FTP server 
+* `microbigge_path` MicroBIGG-E TSV file downloaded either from the Google Cloud Platform
+* `refgene_path` is an Reference Gene Catalog TXT/TSV file downloaded from the NCBI FTP server (a `ReferenceGeneCatalog.txt` file)
+* `ipg_path` is an Identical Protein Groups file covering the organism and alleles of interest, downloaded using the included `download_identical_protein_groups` function
+* `cluster_path` is a SNP Cluster List TSV file for the organism of interest (a `PDG_Accession.Version.reference_target.cluster_list.tsv` file), downloaded from the NCBI FTP server
+* `mlst_path` is a FastMLST TSV file that has been processed using the included processing functions for easier analysis (see `vignette("mlst")` for details)
+* `region_path` is a CSV file correlating countries to one (or more) regions. A file correlating to several regional groupings is included in with this package in `extdata` and is accessible using the path above
+
+## Determine Parameters for Cleanup and Processing
+### Strings corresponding to `NA` in the dataset
+The following suggestions come from examining more than 40,000 *Acinetobacter*
+and *Pseudomonas* isolates present in the Pathogen Detection Project databases.
+It is by no means a complete list, but should serve as a good starting point to
+clean your data sets.
+
+```{r, eval = FALSE}
+na_strings <-
+  c(
+    "na",
+    "n/a",
+    "missing",
+    "none",
+    "unknown",
+    "unknow",
+    "unspecified",
+    "not known",
+    "not applicable",
+    "not_applicable",
+    "not provided",
+    "not available",
+    "not determined",
+    "not specified",
+    "not recorded",
+    "no data",
+    "notfound",
+    "null",
+    "not collected",
+    "not available: to be reported later",
+    "-"
+  )
+```
+
+### Filtering alleles by coverage and identity
+The additional details provided in MicroBIGG-E data allow for alleles to be
+filtered by `coverage` and `identity`, allowing for fine-tuning of how "strict"
+the allele calls used in the analysis should be.
+
+* `coverage` is the percentage of the reference sequence covered by the alignment between the target and the reference sequence
+* `identity` is the percentage of identical amino acids or base pairs in the alignment betweeb the target and reference sequence
+
+The following suggested defaults are based on the thresholds used by Isolates
+Browser
+(<https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories>).
+
+```{r, eval = FALSE}
+min_coverage <- 100L
+min_identity <- 90L
+```
+
+## Isolates Browser
+```{r, eval = FALSE}
+isolates_raw <- import_isolates_browser_metadata(isolates_path) %>%
+  na_if_tibble_chr(terms = na_strings) %>%
+  parse_genus_species() %>%
+  reverse_geocode() %>%
+  split_location() %>%
+  import_regions(path = region_path) %>%
+  import_cluster_list(cluster_path) %>%
+  separate_genotypes(include = "amr") %>%
+  add_reference_gene_catalog(refgene_path) %>%
+  parse_bla_formatting() %>%
+  parse_ib_oxa_family() %>%
+  parse_year()
+```
+
+Optionally, the fully processed dataset can be saved for later reuse, easier
+sharing with colleagues or collaborators, as supplemental material for
+publications, or for other purposes.
+
+```{r, eval = FALSE}
+isolates %>%
+  readr::write_tsv(file = file.path(data_path, "isolates_complete.tsv"))
+```
+
+## Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E)
+```{r, eval = FALSE}
+mbe_raw <- import_microbigge_gcp(microbigge_path)
+
+mbe <- mbe_raw %>%
+  na_if_tibble_chr(terms = na_strings) %>%
+  filter_microbigge(coverage = min_coverage, identity = min_identity, remove = remove_mbe_allele_types) %>%
+  import_ipg(ipg_path) %>%
+  import_cluster_list(cluster_path) %>%
+  #import_mlst(mlst_path) %>%
+  parse_mbe_oxa_family()
+```
+
+Optionally, the fully processed dataset can be saved for later reuse, easier
+sharing with colleagues or collaborators, as supplemental material for
+publications, or for other purposes.
+
+```{r, eval = FALSE}
+mbe %>%
+  readr::write_tsv(file = file.path(data_path, "mbe_complete.tsv"))
+```

@@ -1,0 +1,154 @@
+---
+title: "Download NCBI Pathogen Detection Project Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{download-data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+```
+
+## Set Variables
+```{r, eval = FALSE}
+ftp_results_base <- "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/"
+ftp_refgene_base <- "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/"
+```
+
+## Step One - Select the organism group of interest
+```{r, eval = FALSE}
+organism <- select_ftp_organism(ftp_results_base)
+
+```
+
+## Step Two - Select a version of the data to download
+```{r, eval = FALSE}
+version <- select_ftp_version(ftp_results_base, organism)
+```
+
+## Step Three - Select a path to save downloaded data
+```{r, eval = FALSE}
+data_path <- "/Users/armack/Library/CloudStorage/OneDrive-CaseWesternReserveUniversity/Allele Distribution Data/Pseudomonas/2023-06-01/"
+```
+
+## Step Four - Download AMR and Cluster Data (NCBI FTP)
+```{r, eval = FALSE}
+download_metadata_clusters(ftp_results_base, organism, version, data_path)
+```
+
+## Step Five - Download Reference Gene Catalog Data (NCBI FTP)
+```{r, eval = FALSE}
+refgene_version <- select_ftp_refgene(ftp_refgene_base)
+download_reference_gene_catalog(ftp_refgene_base, refgene_version, data_path)
+```
+
+## Step Six - Download MicroBIGG-E Data (Google Cloud)
+Filter by "taxgroup_name" to match the organism group from step one or by
+"scientific_name" to match to a specific genus/species at the isolate level.
+Optionally, filter by "element_symbol" to limit to a specific type of allele,
+such as "%bla%" to filter only beta-lactamase alleles. Use '%' as a wildcard.
+
+Note that "taxgroup_name" matches organism group names from
+https://www.ncbi.nlm.nih.gov/pathogens/organisms/ and that "Escherichia coli
+Shigella" becomes "E.coli and Shigella"
+
+Set gcp_billing in _private_config.R or enter directly below if desired. See
+bigrquery help at https://bigrquery.r-dbi.org for more information about
+connecting to BigQuery using R.
+
+```{r, eval = FALSE}
+download_microbigge_bq(billing = gcp_billing,
+                       path = data_path,
+                       sciname = "Pseudomonas aeruginosa",
+                       element = "%bla%")
+```
+
+
+
+## Step Seven - Download Identical Protein Groups Data (NCBI Entrez)
+```{r, eval = FALSE}
+import_microbigge_gcp(file.path(data_path, "microbigge.tsv")) %>%
+  distinct(protein) %>%
+  pull(protein) %>%
+  download_identical_protein_groups(n = 25, path = data_path)
+```
+
+## Step Eight (Optional) - Determine Genomes to Download for MLST
+See `vignette("mlst")` for more information on downloading assemblies and determining MLST
+
+Path to NCBI Assembly Summary. This is a very large (~500 MB) file so it may
+be useful to keep one local copy when downloading data for multiple organisms
+
+```{r, eval = FALSE}
+genome_data_path <- file.path(data_path, "all_bacteria_assemblies.tsv")
+```
+
+### Download NCBI FTP Genome Details (If Needed).
+```{r, eval = FALSE}
+options(timeout = 300)
+utils::download.file(
+  url = "ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/bacteria/assembly_summary.txt",
+  destfile = genome_data_path)
+```
+
+### Load Genome Details
+```{r, eval = FALSE}
+genomes <-
+  read_tsv(file = genome_data_path, skip = 2,
+           col_types = "c-c----------------c---",
+           col_names = c(
+             "assembly",
+             "bioproject",
+             "biosample",
+             "wgs_master",
+             "refseq_category",
+             "taxid",
+             "species_taxid",
+             "organism_name",
+             "infraspecific_name",
+             "isolate",
+             "version_status",
+             "assembly_level",
+             "release_type",
+             "genome_rep",
+             "seq_rel_date",
+             "asm_name",
+             "submitter",
+             "gbrs_paired_asm",
+             "paired_asm_comp",
+             "ftp_base",
+             "excluded_from_refseq",
+             "relation_to_type_material",
+             "asm_not_live_date"
+           )
+  )
+```
+
+
+### Determine Assemblies Needed
+```{r, eval = FALSE}
+assemblies_to_download <- import_microbigge(file.path(data_path, "microbigge.tsv")) %>%
+  distinct(assembly) %>%
+  pull(assembly)
+```
+
+
+### Generate and Save FTP Paths to File
+```{r, eval = FALSE}
+genomes %>%
+  filter(assembly %in% assemblies_to_download) %>%
+  mutate(ftp_url = paste0(ftp_base, "/", basename(ftp_base), "_genomic.fna.gz")) %>%
+  pull(ftp_url) %>%
+  write_lines(file = file.path(data_path, "assemblies_to_download.txt"))
+```
+
+
+  
