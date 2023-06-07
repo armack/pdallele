@@ -96,6 +96,23 @@ unclear_species_string <- "Unclear or Unknown"
 
 ```
 
+### Filtering alleles by coverage and identity
+The additional details provided in MicroBIGG-E data allow for alleles to be
+filtered by `coverage` and `identity`, allowing for fine-tuning of how "strict"
+the allele calls used in the analysis should be.
+
+* `coverage` is the percentage of the reference sequence covered by the alignment between the target and the reference sequence
+* `identity` is the percentage of identical amino acids or base pairs in the alignment betweeb the target and reference sequence
+
+The following suggested defaults are based on the thresholds used by Isolates
+Browser
+(<https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories>).
+
+```{r, eval = FALSE}
+min_coverage <- 100L
+min_identity <- 90L
+```
+
 ### Prepare filtered Isolates Browser dataset
 
 ```{r, eval = FALSE}
@@ -1188,3 +1205,11 @@ ggplot2::ggsave(filename = file.path(
 ```
 
 ## MicroBIGG-E Dataset
+
+### Setup
+```{r, eval = FALSE}
+mbe <- mbe_raw %>%
+  filter_microbigge(coverage = min_coverage,
+                    identity = min_identity,
+                    remove = remove_mbe_allele_types)
+```
