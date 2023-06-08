@@ -152,12 +152,12 @@ overview_unfiltered_distinct_genes <- alleles_filtered %>%
   paste(collapse = ", ")
 
 overview_removed_alleles <- alleles_filtered %>%
-  dplyr::filter(grepl(paste(remove_allele_types, collapse = "|"), allele_call)) %>%
-  dplyr::count(allele_call)
+  dplyr::filter(grepl(paste(remove_allele_types, collapse = "|"), method)) %>%
+  dplyr::count(method)
 
 overview_removed_alleles_text <-
   sprintf("%s (%i)",
-          overview_removed_alleles$allele_call,
+          overview_removed_alleles$method,
           overview_removed_alleles$n) %>%
   paste0(collapse = ", ")
 

@@ -14,7 +14,7 @@ column}
 kept? Separate values with '|'.}
 }
 \value{
-\code{data} with columns \code{allele}, \code{allele_type}, and \code{allele_call} added
+\code{data} with columns \code{allele}, \code{allele_type}, and \code{method} added
 }
 \description{
 Uses separate_rows to separate genotype columns (\code{amr},
@@ -23,6 +23,6 @@ Three columns of allele details are added:
 \itemize{
 \item \code{allele} corresponding to the allele name
 \item \code{allele_type} corresponding to the source column (\code{amr}, \code{stress}, or \code{vir})
-\item \code{allele_call} corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See \code{\link[=clean_filter_alleles]{clean_filter_alleles()}} for details.
+\item \code{method} corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See \code{\link[=clean_filter_alleles]{clean_filter_alleles()}} for details.
 }
 }

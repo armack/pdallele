@@ -280,13 +280,13 @@ import_mlst <- function(data, path) {
 #'
 #'   * `allele` corresponding to the allele name
 #'   * `allele_type` corresponding to the source column (`amr`, `stress`, or `vir`)
-#'   * `allele_call` corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See [clean_filter_alleles()] for details.
+#'   * `method` corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See [clean_filter_alleles()] for details.
 #'
 #' @param data A dataframe or tibble with at least one `amr`, `stress`, or `vir`
 #'   column
 #' @param include Which types of alleles (`amr`, `stress`, `vir`) should be
 #'   kept? Separate values with '|'.
-#' @returns `data` with columns `allele`, `allele_type`, and `allele_call` added
+#' @returns `data` with columns `allele`, `allele_type`, and `method` added
 #' @export
 
 separate_genotypes <- function(data, include){
@@ -298,7 +298,7 @@ separate_genotypes <- function(data, include){
     {if(!missing_include) dplyr::filter(., grepl(paste(include, collapse = "|"), .data$allele_type)) else .} %>%
     tidyr::drop_na("allele") %>%
     tidyr::separate_rows("allele", sep = ",") %>%
-    tidyr::separate("allele", into = c("allele","allele_call"), sep = "=", fill = "right")
+    tidyr::separate("allele", into = c("allele","method"), sep = "=", fill = "right")
 
   return(.complete)
 }
@@ -612,7 +612,8 @@ import_ipg <- function(data, path){
     dplyr::left_join(.ipg, by = "protein")
 
   .complete <- .assigned %>%
-    dplyr::bind_rows(.unassigned)
+    dplyr::bind_rows(.unassigned) %>%
+    dplyr::ungroup()
 
   return(.complete)
 }
