@@ -17,19 +17,39 @@ knitr::opts_chunk$set(
 ```{r setup}
 ```
 
-## Settings, Filters, and Defaults
-
-### Set output path and ensure directories exist
-Enter
+## Analysis settings and preferences
+### Output directoreis
+Enter directory paths for output of analysis results. By default, results are
+saved to a `/results` subdirectory under the working directory with `/tables`
+and `/graphics` subdirectories to help organize generated files.
 ```{r, eval = FALSE}
+# Enter paths for output directories
 output_path <- file.path(getwd(), "results")
 graphic_path <- file.path(output_path, "graphics")
 table_path <- file.path(output_path, "tables")
+
+# Ensure directories are present
 ensure_directory(output_path)
 ensure_directory(graphic_path)
 ensure_directory(table_path)
 ```
 
+### General preferences
+The following variables modify aspects of the analysis and output:
+
+* `genes_of_interest` a character vector of genes to generate a full analysis for. Also used to
+* `heatmap_palette` a character vector of `viridis::scale_color_viridis()` color palettes corresponding to each element of `genes_of_interest` or a single value recycled for all genes
+* `unclear_species_string` a string of text to use in the `species` column when a species cannot be determined
+* `collection_period_groups` an integer of how many year-based groups (of similar isolate counts) to bin collection dates into
+
+```{r, eval = FALSE}
+genes_of_interest <- c("PDC","OXA")
+heatmap_palette   <- "viridis"
+unclear_species_string <- "Unclear or Unknown"
+collection_period_groups <- 6L
+```
+
+## Filtering alleles and datasets
 ### Filter alleles by name
 Filter the `allele` column based on a list of regular expressions. Values are
 collapsed with "|".
@@ -70,33 +90,7 @@ remove_mbe_allele_types <-
   )
 ```
 
-## Specific genes of interest
-* `genes_of_interest` a character vector of genes to generate a full analysis for. Also used to
-* `heatmap_palette` character vector of `viridis::scale_color_viridis()` color palettes corresponding to each element of `genes_of_interest` or a single value recycled for all genes
-
-```{r, eval = FALSE}
-genes_of_interest <- c("PDC","OXA")
-heatmap_palette   <- "viridis"
-```
-
-## Collection period groups
-How many groups groups (of similar isolate counts) should collection periods be
-split into?
-```{r, eval = FALSE}
-collection_period_groups <- 6L
-```
-
-## Unclear species string
-
-```{r, eval = FALSE}
-unclear_species_string <- "Unclear or Unknown"
-```
-
-```{r, eval = FALSE}
-
-```
-
-### Filtering alleles by coverage and identity
+### Filter alleles by coverage and identity
 The additional details provided in MicroBIGG-E data allow for alleles to be
 filtered by `coverage` and `identity`, allowing for fine-tuning of how "strict"
 the allele calls used in the analysis should be.
@@ -114,23 +108,24 @@ min_identity <- 90L
 ```
 
 ### Prepare filtered Isolates Browser dataset
-
 ```{r, eval = FALSE}
 isolates <- isolates_raw %>%
-  clean_filter_alleles(filter = filter_alleles,
+  filter_isolates_browser(filter = filter_alleles,
                        remove = remove_allele_types,
                        deduplicate = TRUE)
 
 alleles_filtered <- isolates_raw %>%
-  clean_filter_alleles(filter = filter_alleles,
+  filter_isolates_browser(filter = filter_alleles,
                        deduplicate = TRUE)
 
 ```
 
 ### Prepare filtered MicroBIGG-E dataset
-
 ```{r, eval = FALSE}
-
+mbe <- mbe_raw %>%
+  filter_microbigge(coverage = min_coverage,
+                    identity = min_identity,
+                    remove = remove_mbe_allele_types)
 ```
 
 ## Isolates Browser Dataset
@@ -669,12 +664,8 @@ species_shared_alleles %>%
 ```
 
 ### Genes of interest
-
 #### Setup
-
 ```{r, eval = FALSE}
-
-#
 combinations <- tibble::tibble(name = genes_of_interest) %>%
   dplyr::mutate(type = dplyr::if_else(stringr::str_detect(name, "OXA"), "allele;oxa_family", "allele")) %>%
   dplyr::mutate(label = dplyr::if_else(
@@ -697,9 +688,7 @@ for (i in 1:nrow(combinations)) {
 
 ```
 
-
 #### Counts and donut plots
-
 ```{r, eval = FALSE}
 # Distinct assigned <gene_filter_type> frequency
 gene_assigned_type_frequency <- isolates %>%
@@ -1205,13 +1194,9 @@ ggplot2::ggsave(filename = file.path(
 ```
 
 ## MicroBIGG-E Dataset
-
 ### Setup
 ```{r, eval = FALSE}
-mbe <- mbe_raw %>%
-  filter_microbigge(coverage = min_coverage,
-                    identity = min_identity,
-                    remove = remove_mbe_allele_types)
+
 ```
 
 ### Overview
