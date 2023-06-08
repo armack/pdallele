@@ -1,5 +1,5 @@
 ---
-title: "basic-analysis"
+title: "Example Analysis using `pdallele`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{example-analysis}
@@ -16,12 +16,14 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 ```
+## Introduction
+The following code provides an example of how the `pdallele` package can be used to perform analysis of the alleles present in *Pseudomonas aeruginosa* isolates present in the NCBI Pathogen Detection Project Isolates Browser and MicroBIGG-E databases.
 
 ## Analysis settings and preferences
 ### Output directoreis
 Enter directory paths for output of analysis results. By default, results are
 saved to a `/results` subdirectory under the working directory with `/tables`
-and `/graphics` subdirectories to help organize generated files.
+and `/graphics` subdirectories to organize generated files.
 ```{r, eval = FALSE}
 # Enter paths for output directories
 output_path <- file.path(getwd(), "results")
@@ -49,19 +51,23 @@ unclear_species_string <- "Unclear or Unknown"
 collection_period_groups <- 6L
 ```
 
-## Filtering alleles and datasets
+## Filtering alleles and data sets
 ### Filter alleles by name
 Filter the `allele` column based on a list of regular expressions. Values are
-collapsed with "|".
+collapsed with "|" and partial matches are acceptable.
 ```{r, eval = FALSE}
 filter_alleles <- c("bla")
 ```
 
 ### Filter alleles by calling method
 Determining exactly which alleles should be excluded from a particular analysis
-depends greatly on the goals and scope of that analysis.
+depends greatly on the goals and scope of that analysis. More information on the
+specific calling methods is available in the [Pathogen Detection Help
+Document](https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories)
+and [AMRFinderPlus Github
+Wiki](https://github.com/ncbi/amr/wiki/Interpreting-results#the-method-column).
 
-The following suggested defaults remove calls made using Hidden Markov Models
+The suggested defaults below remove calls made using Hidden Markov Models
 (which are further from their reference their targets than BLAST-based calling
 methods) and alleles for which clear problems are present (e.g. partial alleles,
 truncation by contig boundaries, and internal stop codons).
@@ -98,16 +104,19 @@ the allele calls used in the analysis should be.
 * `coverage` is the percentage of the reference sequence covered by the alignment between the target and the reference sequence
 * `identity` is the percentage of identical amino acids or base pairs in the alignment betweeb the target and reference sequence
 
-The following suggested defaults are based on the thresholds used by Isolates
-Browser
+The suggested `min_identity` is based on the thresholds used by AMRFinderPlus
+and Isolates Browser for BLAST-based allele calls
 (<https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories>).
+The suggested `min_coverage` ensures only complete genes are being used in the
+analysis.
 
 ```{r, eval = FALSE}
 min_coverage <- 100L
 min_identity <- 90L
 ```
 
-### Prepare filtered Isolates Browser dataset
+## Prepare filtered data sets
+### Prepare filtered Isolates Browser data set
 ```{r, eval = FALSE}
 isolates <- isolates_raw %>%
   filter_isolates_browser(filter = filter_alleles,
@@ -120,15 +129,17 @@ alleles_filtered <- isolates_raw %>%
 
 ```
 
-### Prepare filtered MicroBIGG-E dataset
+### Prepare filtered MicroBIGG-E data set
 ```{r, eval = FALSE}
 mbe <- mbe_raw %>%
-  filter_microbigge(coverage = min_coverage,
+  filter_microbigge(filter = filter_alleles,
+                    coverage = min_coverage,
                     identity = min_identity,
-                    remove = remove_mbe_allele_types)
+                    remove = remove_mbe_allele_types,
+                    deduplicate = TRUE)
 ```
 
-## Isolates Browser Dataset
+## Isolates Browser data set
 ### Overview
 #### Isolates and genes before and after filtering
 ```{r, eval = FALSE}
@@ -628,7 +639,7 @@ species_allele_counts <- isolates %>%
 species_allele_counts %>%
   readr::write_csv(file.path(table_path, "species_allele_counts.csv"))
 
-# Count of exclusive alleles by Species within Dataset
+# Count of exclusive alleles by Species within data set
 species_exclusive_allele_overview <- isolates %>%
   filter_exclusive_alleles(species) %>%
   group_by(species) %>%
@@ -720,7 +731,7 @@ ggplot2::ggsave(filename = file.path(
   plot = gene_assigned_type_frequency_plot
 )
 
-# Count of <gene_filter> alleles unique to a single species (in the dataset)
+# Count of <gene_filter> alleles unique to a single species (in the data set)
 gene_species_exclusive_allele_overview <- isolates %>%
   remove_unassigned_bla() %>%
   filter_exclusive_alleles(species) %>%
@@ -1193,7 +1204,7 @@ ggplot2::ggsave(filename = file.path(
 )
 ```
 
-## MicroBIGG-E Dataset
+## MicroBIGG-E data set
 ### Setup
 ```{r, eval = FALSE}
 
