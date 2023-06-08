@@ -19,27 +19,25 @@ knitr::opts_chunk$set(
 ## Introduction 
 Many of the analysis functions included in this package require data in specific
 formats and/or with specific column names. Importing data and generating
-datasets according to this guide can simplify the analysis process.
+data sets according to this guide can simplify the analysis process.
 
-Following this guide generates, filters, and prepares two datasets:
+Following this guide prepares two data sets:
 
-* `isolates` uses Isolates Browser data and provides overview information on all covered alleles for all isolates of an organism of choice in the Pathogen Detection Project. This dataset contains more isolates but does not allow the differentiation of distinct unassigned alleles.
-* `mbe` uses Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) data, which represents the subset of Isolates Browser data for which whole genome assemblies are available in GenBank. This dataset contains fewer isolates but allows the differentiation of MLST sequence types and differentiation of distinct, unassigned alleles, enabling additional dimensions of analysis.
+* `isolates` uses Isolates Browser data and provides overview information on all covered alleles for all isolates of an organism of choice in the Pathogen Detection Project. This data set contains more isolates but does not allow the differentiation of distinct unassigned alleles.
+* `mbe` uses Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) data, which represents the subset of Isolates Browser data for which whole genome assemblies are available in GenBank. This data set contains fewer isolates but allows the differentiation of MLST sequence types and differentiation of distinct, unassigned alleles, enabling additional dimensions of analysis.
 
 ## Data Directory
-
 Specify path to the directory containing data files for analysis. These files
 can easily be downloaded/generated using the included download functions (see
-`vignette("downloading-data")` for details) or can be downloaded manually from the
-NCBI website.
+`vignette("downloading-data")` for details).
 
 ```{r, eval = FALSE}
-data_path      <- ""
+data_path      <- file.path(getwd(), "data")
 ```
 
-Specify the names of the individual data files within the dataset directory. The
-file names and paths included below reflect the defaults for data downloaded
-using the included downloading functions (with the exception of `mlst.csv` which
+Specify the names of the individual data files within the data set directory.
+The file names and paths  below reflect the defaults for data downloaded using
+the included downloading functions (with the exception of `mlst.csv` which
 requires additional processing).
 
 ```{r, eval = FALSE}
@@ -54,19 +52,19 @@ region_path       <- system.file("extdata/regions.csv", package = "pdallele")
 
 ### File/Path Descriptions
 * `isolates_path` is an Isolates Browser tab-separated values (TSV) file for the organism of interest (a `PDG_Accession.Version.amr.metadata.tsv` file), downloaded from the NCBI FTP server 
-* `microbigge_path` MicroBIGG-E TSV file downloaded either from the Google Cloud Platform
+* `microbigge_path` MicroBIGG-E TSV file downloaded from the Google Cloud Platform
 * `refgene_path` is an Reference Gene Catalog TXT/TSV file downloaded from the NCBI FTP server (a `ReferenceGeneCatalog.txt` file)
-* `ipg_path` is an Identical Protein Groups file covering the organism and alleles of interest, downloaded using the included `download_identical_protein_groups` function
+* `ipg_path` is an Identical Protein Groups file covering the organism and alleles of interest, downloaded using the included [download_identical_protein_groups()] function
 * `cluster_path` is a SNP Cluster List TSV file for the organism of interest (a `PDG_Accession.Version.reference_target.cluster_list.tsv` file), downloaded from the NCBI FTP server
 * `mlst_path` is a FastMLST TSV file that has been processed using the included processing functions for easier analysis (see `vignette("mlst")` for details)
 * `region_path` is a CSV file correlating countries to one (or more) regions. A file correlating to several regional groupings is included in with this package in `extdata` and is accessible using the path above
 
 ## Determine Parameters for Cleanup and Processing
-### Strings corresponding to `NA` in the dataset
-The following suggestions come from examining more than 40,000 *Acinetobacter*
+### Strings corresponding to `NA` in the data set
+The following suggestions come from examining nearly 50,000 *Acinetobacter*
 and *Pseudomonas* isolates present in the Pathogen Detection Project databases.
-It is by no means a complete list, but should serve as a good starting point to
-clean your data sets.
+It is by no means a complete list, but can serve as a starting point for
+cleaning data sets. The list is case-insensitive.
 
 ```{r, eval = FALSE}
 na_strings <-
@@ -95,9 +93,7 @@ na_strings <-
   )
 ```
 
-
-
-## Isolates Browser
+## Import Isolates Browser data
 ```{r, eval = FALSE}
 isolates_raw <- import_isolates_browser_metadata(isolates_path) %>%
   na_if_tibble_chr(terms = na_strings) %>%
@@ -113,16 +109,14 @@ isolates_raw <- import_isolates_browser_metadata(isolates_path) %>%
   parse_year()
 ```
 
-Optionally, the fully processed dataset can be saved for later reuse, easier
-sharing with colleagues or collaborators, as supplemental material for
-publications, or for other purposes.
+Optionally, save the processed data set:
 
 ```{r, eval = FALSE}
-isolates %>%
+isolates_raw %>%
   readr::write_tsv(file = file.path(data_path, "isolates_complete.tsv"))
 ```
 
-## Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E)
+## Import Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) data
 ```{r, eval = FALSE}
 mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   na_if_tibble_chr(terms = na_strings) %>%
@@ -132,11 +126,9 @@ mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   parse_mbe_oxa_family()
 ```
 
-Optionally, the fully processed dataset can be saved for later reuse, easier
-sharing with colleagues or collaborators, as supplemental material for
-publications, or for other purposes.
+Optionally, save the processed data set:
 
 ```{r, eval = FALSE}
-mbe %>%
+mbe_raw %>%
   readr::write_tsv(file = file.path(data_path, "mbe_complete.tsv"))
 ```
