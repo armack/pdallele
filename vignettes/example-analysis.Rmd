@@ -1213,3 +1213,135 @@ mbe <- mbe_raw %>%
                     identity = min_identity,
                     remove = remove_mbe_allele_types)
 ```
+
+### Overview
+```{r, eval = FALSE}
+# Raw Isolate and Allele Counts
+overview_raw_mbe_isolates <- mbe_raw %>%
+  dplyr::distinct(biosample) %>%
+  dplyr::summarize(total = n()) %>%
+  as.integer()
+
+overview_raw_mbe_alleles <- mbe_raw %>%
+  count_alleles(protein) %>%
+  dplyr::summarize(total = sum(alleles)) %>%
+  as.integer()
+
+# Total Isolate and Allele Counts
+overview_mbe_isolates <- mbe %>%
+  count_isolates(biosample) %>%
+  dplyr::summarize(total = sum(isolates)) %>%
+  as.integer()
+
+overview_mbe_alleles <- mbe %>%
+  count_alleles(allele) %>%
+  dplyr::summarize(total = sum(alleles)) %>%
+  as.integer()
+
+overview_mbe_distinct_alleles <- mbe %>%
+  tidyr::drop_na(ipg) %>%
+  dplyr::distinct(ipg) %>%
+  dplyr::summarize(total = n()) %>%
+  as.integer()
+
+overview_mbe_distinct_assigned_alleles <- mbe %>%
+  tidyr::drop_na(ipg) %>%
+  remove_unassigned_bla() %>%
+  dplyr::distinct(ipg) %>%
+  dplyr::summarize(total = n()) %>%
+  as.integer()
+
+overview_mbe_distinct_unassigned_alleles <- mbe %>%
+  tidyr::drop_na(ipg) %>%
+  remove_assigned_bla() %>%
+  dplyr::distinct(ipg) %>%
+  dplyr::summarize(total = n()) %>%
+  as.integer()
+
+mbe_overview_text <- c(
+  "Raw Isolates:" = overview_raw_mbe_isolates,
+  "Raw Alleles:" = overview_raw_mbe_alleles,
+  "Cleaned Isolates:" = overview_mbe_isolates,
+  "Cleaned Alleles:" = overview_mbe_alleles,
+  "Total Distinct Alleles:" = overview_mbe_distinct_alleles,
+  "Distinct Named Alleles:" = overview_mbe_distinct_assigned_alleles,
+  "Distinct Novel Alleles:" = overview_mbe_distinct_unassigned_alleles
+)
+
+file_con <- file(file.path(output_path, "mbe_overview.txt"), open = "a")
+writeLines(paste(names(mbe_overview_text), mbe_overview_text), file_con)
+writeLines("\n")
+close(file_con)
+
+# Count of Assigned and Unassigned Alleles
+mbe_distinct_assigned_allele_counts <- mbe %>%
+  filter_assigned_bla() %>%
+  dplyr::mutate(gene = stringr::str_remove(allele, "-\\d+[a-zA-Z]?$")) %>%
+  dplyr::group_by(gene) %>%
+  dplyr::distinct(allele) %>%
+  dplyr::summarize(assigned = n())
+
+mbe_distinct_unassigned_allele_counts <- mbe %>%
+  filter_unassigned_bla() %>%
+  dplyr::rename(gene = "allele") %>%
+  dplyr::group_by(gene) %>%
+  dplyr::distinct(ipg) %>%
+  dplyr::summarize(unassigned = n())
+
+mbe_distinct_allele_counts <- mbe_distinct_assigned_allele_counts %>%
+  dplyr::full_join(mbe_distinct_unassigned_allele_counts, by = "gene") %>%
+  dplyr::arrange(gene) %>%
+  dplyr::mutate(prop_unassigned = unassigned / (assigned + unassigned))
+
+mbe_distinct_allele_counts %>%
+    readr::write_csv(file.path(
+    table_path,
+    paste0("mbe_distinct_allele_counts.csv")
+  ))
+
+```
+
+### Genes of Interest
+
+
+for (i in 1:nrow(combinations)) {
+  gene_filter <- combinations[[i, "name"]]
+  gene_filter_type <- rlang::sym(combinations[[i, "type"]])
+  gene_filter_type_markdown <-
+    rlang::sym(paste0(combinations[[i, "type"]], "_markdown"))
+  gene_filter_type_text <- combinations[[i, "type"]]
+  gene_filter_label <- combinations[[i, "label"]]
+  heatmap_palette <- combinations[[i, "heatmap_palette"]]
+}
+
+```{r, eval = FALSE}
+# Runs in a loop to cover all genes of interest
+for (gene_name in genes_of_interest) {
+  
+  # Frequency of unassigned gene_of_interest alleles
+  mbe_goi_unassigned_allele_list <- mbe %>%
+    remove_assigned_bla() %>%
+    dplyr::filter(grepl(gene_name, allele)) %>%
+    tidyr::drop_na(ipg) %>%
+    count_alleles(ipg_accession, oxa_family) %>%
+    dplyr::arrange(desc(alleles))
+  
+  mbe_goi_unassigned_allele_list %>%
+    readr::write_csv(file.path(
+      table_path,
+      paste0("mbe_unassigned_", gene_name, "_alleles.csv")
+    ))
+  
+  mbe_goi_unassigned_allele_plot <- mbe_goi_unassigned_allele_list %>%
+    top_n_overall(ipg_accession, count = alleles, n = 10) %>%
+    donut_plot(fill = ipg_accession,
+               counts = alleles,
+               legend = "**Allele**")
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0("mbe_unassigned_top10_", gene_name, "_alleles_donut.svg")),
+    plot = mbe_goi_unassigned_allele_plot
+  )
+}
+```
