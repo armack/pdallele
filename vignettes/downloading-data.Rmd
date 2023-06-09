@@ -16,8 +16,11 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 ```
+## Introduction
+This guide covers the step-by-step process of downloading all the data required to perform a detailed analysis of the alleles present in 
 
-## Set Variables
+## Set FTP Directories
+Specify the directories on the NCBI FTP server containing the data of interest.
 ```{r, eval = FALSE}
 ftp_results_base <- "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Results/"
 ftp_refgene_base <- "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/"
@@ -26,7 +29,6 @@ ftp_refgene_base <- "ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistanc
 ## Step One - Select the organism group of interest
 ```{r, eval = FALSE}
 organism <- select_ftp_organism(ftp_results_base)
-
 ```
 
 ## Step Two - Select a version of the data to download
@@ -34,9 +36,9 @@ organism <- select_ftp_organism(ftp_results_base)
 version <- select_ftp_version(ftp_results_base, organism)
 ```
 
-## Step Three - Select a path to save downloaded data
+## Step Three - Specify a path to save downloaded data
 ```{r, eval = FALSE}
-data_path <- "/Users/armack/Library/CloudStorage/OneDrive-CaseWesternReserveUniversity/Allele Distribution Data/Pseudomonas/2023-06-01/"
+data_path <- file.path(getwd(), "data")
 ```
 
 ## Step Four - Download AMR and Cluster Data (NCBI FTP)
@@ -58,20 +60,20 @@ such as "%bla%" to filter only beta-lactamase alleles. Use '%' as a wildcard.
 
 Note that "taxgroup_name" matches organism group names from
 https://www.ncbi.nlm.nih.gov/pathogens/organisms/ and that "Escherichia coli
-Shigella" becomes "E.coli and Shigella"
+Shigella" becomes "E.coli and Shigella".
 
-Set gcp_billing in _private_config.R or enter directly below if desired. See
-bigrquery help at https://bigrquery.r-dbi.org for more information about
-connecting to BigQuery using R.
+Set `gcp_billing` to your GCP billing code. See bigrquery help at
+https://bigrquery.r-dbi.org for more information about connecting to BigQuery
+using R.
 
 ```{r, eval = FALSE}
-download_microbigge_bq(billing = gcp_billing,
-                       path = data_path,
-                       sciname = "Pseudomonas aeruginosa",
-                       element = "%bla%")
+download_microbigge_bq(
+  billing = gcp_billing,
+  path = data_path,
+  sciname = "Pseudomonas aeruginosa",
+  element = "%bla%"
+)
 ```
-
-
 
 ## Step Seven - Download Identical Protein Groups Data (NCBI Entrez)
 ```{r, eval = FALSE}
@@ -82,10 +84,11 @@ import_microbigge_gcp(file.path(data_path, "microbigge.tsv")) %>%
 ```
 
 ## Step Eight (Optional) - Determine Genomes to Download for MLST
-See `vignette("mlst")` for more information on downloading assemblies and determining MLST
+See `vignette("mlst")` for more information on downloading assemblies and
+determining MLST
 
-Path to NCBI Assembly Summary. This is a very large (~500 MB) file so it may
-be useful to keep one local copy when downloading data for multiple organisms
+Path to NCBI Assembly Summary. This is a very large (~500 MB) file so it may be
+useful to keep one local copy when downloading data for multiple organisms
 
 ```{r, eval = FALSE}
 genome_data_path <- file.path(data_path, "all_bacteria_assemblies.tsv")
@@ -94,9 +97,8 @@ genome_data_path <- file.path(data_path, "all_bacteria_assemblies.tsv")
 ### Download NCBI FTP Genome Details (If Needed).
 ```{r, eval = FALSE}
 options(timeout = 300)
-utils::download.file(
-  url = "ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/bacteria/assembly_summary.txt",
-  destfile = genome_data_path)
+utils::download.file(url = "ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/bacteria/assembly_summary.txt",
+                     destfile = genome_data_path)
 ```
 
 ### Load Genome Details
@@ -132,14 +134,13 @@ genomes <-
   )
 ```
 
-
 ### Determine Assemblies Needed
 ```{r, eval = FALSE}
-assemblies_to_download <- import_microbigge(file.path(data_path, "microbigge.tsv")) %>%
+assemblies_to_download <-
+  import_microbigge(file.path(data_path, "microbigge.tsv")) %>%
   distinct(assembly) %>%
   pull(assembly)
 ```
-
 
 ### Generate and Save FTP Paths to File
 ```{r, eval = FALSE}
@@ -150,5 +151,16 @@ genomes %>%
   write_lines(file = file.path(data_path, "assemblies_to_download.txt"))
 ```
 
+### Download and unzip assemblies
+This can be accomplished using any tool that allows bulk downloading from a list
+of URLs. The following examples utilize the command line/terminal.
 
-  
+#### Linux or MacOS
+
+#### Windows
+##### Download
+##### Decompress
+
+### Determine MLST
+Proceed to `vignette("mlst")` for more information on determining MLST sequence
+types and processing the output of FastMLST.

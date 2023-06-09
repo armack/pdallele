@@ -32,7 +32,7 @@ can easily be downloaded/generated using the included download functions (see
 `vignette("downloading-data")` for details).
 
 ```{r, eval = FALSE}
-data_path      <- file.path(getwd(), "data")
+data_path <- file.path(getwd(), "data")
 ```
 
 Specify the names of the individual data files within the data set directory.
