@@ -329,7 +329,7 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
   value_boundaries[length(value_boundaries)] = quantiles[[length(quantiles)]] + 1
 
   if(any(duplicated(value_boundaries))){
-    stop("Duplicate boundaries. This is likely caused by unbalanced data or too many groups.")
+    stop("Duplicate boundaries. Ensure `data` contains sufficient rows and consider tring fewer `groups`.")
   }
 
   return(value_boundaries)
