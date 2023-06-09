@@ -547,13 +547,23 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #' @returns A [tibble()]. Values are described in Details.
 #' @export
 
-import_microbigge_gcp <- function(path){
-  .complete <- readr::read_tsv(file = path, show_col_types = FALSE) %>%
-    dplyr::select(protein = "protein_acc", biosample = "biosample_acc", assembly = "asm_acc",
-           allele = "element_symbol", name = "element_name", method = "amr_method",
-           coverage = "pct_ref_coverage", identity = "pct_ref_identity",
-           nucleotide = "contig_acc", nuc_start = "start_on_contig",
-           nuc_stop = "end_on_contig", strand = "strand"
+import_microbigge_gcp <- function(path) {
+  .complete <-
+    readr::read_tsv(file = path, show_col_types = FALSE) %>%
+    dplyr::select(
+      species = "scientific_name",
+      protein = "protein_acc",
+      biosample = "biosample_acc",
+      assembly = "asm_acc",
+      allele = "element_symbol",
+      name = "element_name",
+      method = "amr_method",
+      coverage = "pct_ref_coverage",
+      identity = "pct_ref_identity",
+      nucleotide = "contig_acc",
+      nuc_start = "start_on_contig",
+      nuc_stop = "end_on_contig",
+      strand = "strand"
     )
 
   return(.complete)

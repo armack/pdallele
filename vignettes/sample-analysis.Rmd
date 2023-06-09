@@ -45,9 +45,10 @@ The following variables modify aspects of the analysis and output:
 * `collection_period_groups` an integer of how many year-based groups (of similar isolate counts) to bin collection dates into
 
 ```{r, eval = FALSE}
-genes_of_interest <- c("PDC","OXA")
-heatmap_palette   <- "viridis"
-unclear_species_string <- "Unclear or Unknown"
+species_of_interest      <- "Pseudomonas aeruginosa"
+genes_of_interest        <- c("PDC","OXA")
+heatmap_palette          <- "viridis"
+unclear_species_string   <- "Unclear or Unknown"
 collection_period_groups <- 6L
 ```
 
@@ -119,7 +120,8 @@ min_identity <- 90L
 ### Prepare filtered Isolates Browser data set
 ```{r, eval = FALSE}
 isolates <- isolates_raw %>%
-  filter_isolates_browser(filter = filter_alleles,
+  filter_isolates_browser(species = species_of_interest,
+                          filter = filter_alleles,
                           remove = remove_allele_types,
                           deduplicate = TRUE)
 
@@ -132,7 +134,8 @@ alleles_filtered <- isolates_raw %>%
 ### Prepare filtered MicroBIGG-E data set
 ```{r, eval = FALSE}
 mbe <- mbe_raw %>%
-  filter_microbigge(filter = filter_alleles,
+  filter_microbigge(species = species_of_interest,
+                    filter = filter_alleles,
                     coverage = min_coverage,
                     identity = min_identity,
                     remove = remove_mbe_allele_types,

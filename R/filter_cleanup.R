@@ -44,6 +44,8 @@ NULL
 #'   .keep_all = TRUE)`.
 #'
 #' @param data A dataframe or tibble with an `allele` column
+#' @param species A character vector of `species` names to keep. Uses regex,
+#'   vector is collapsed with "|".
 #' @param filter A character vector of `allele` names to keep. Uses regex,
 #'   vector is collapsed with "|".
 #' @param remove A character vector of `method` values to remove. Uses regex,
@@ -52,11 +54,13 @@ NULL
 #'   removed?
 #' @returns `data` with rows removed according to the selected parameters
 #' @export
-filter_isolates_browser <- function(data, filter, remove, deduplicate = TRUE) {
+filter_isolates_browser <- function(data, species, filter, remove, deduplicate = TRUE) {
+  has_species <- !missing(species)
   has_filter <- !missing(filter)
   has_remove <- !missing(remove)
 
   .complete <- data %>%
+    {if(has_species) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$species)) else . } %>%
     {if(has_filter) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$allele)) else . } %>%
     {if(has_remove) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method))  else . }%>%
     {if(deduplicate) dplyr::distinct(., .data$biosample, .data$allele, .keep_all = TRUE) else . }
@@ -68,15 +72,17 @@ filter_isolates_browser <- function(data, filter, remove, deduplicate = TRUE) {
 #' @param coverage Minimum percent coverage to keep
 #' @param identity Minimum percent identity to keep
 #' @export
-filter_microbigge <- function(data, coverage = 100L, identity = 90L, filter, remove, deduplicate = TRUE) {
+filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, filter, remove, deduplicate = TRUE) {
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
+  has_species <- !missing(species)
   has_filter <- !missing(filter)
   has_remove <- !missing(remove)
 
   .complete <- data %>%
     dplyr::filter("coverage" >= coverage) %>%
     dplyr::filter("identity" >= identity) %>%
+    {if(has_species) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$species)) else . } %>%
     {if(has_filter) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$allele)) else . } %>%
     {if(has_remove) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
     {if(deduplicate) dplyr::distinct(dplyr::arrange(., .data$protein), .data$biosample, .data$allele, .data$ipg, .keep_all = TRUE) else . }
