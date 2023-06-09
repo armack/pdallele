@@ -60,7 +60,7 @@ filter_isolates_browser <- function(data, species, filter, remove, deduplicate =
   has_remove <- !missing(remove)
 
   .complete <- data %>%
-    {if(has_species) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$species)) else . } %>%
+    {if(has_species) dplyr::filter(., grepl(paste(species, collapse = "|"), .data$species)) else . } %>%
     {if(has_filter) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$allele)) else . } %>%
     {if(has_remove) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method))  else . }%>%
     {if(deduplicate) dplyr::distinct(., .data$biosample, .data$allele, .keep_all = TRUE) else . }
@@ -82,7 +82,7 @@ filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, fi
   .complete <- data %>%
     dplyr::filter("coverage" >= coverage) %>%
     dplyr::filter("identity" >= identity) %>%
-    {if(has_species) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$species)) else . } %>%
+    {if(has_species) dplyr::filter(., grepl(paste(species, collapse = "|"), .data$species)) else . } %>%
     {if(has_filter) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$allele)) else . } %>%
     {if(has_remove) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
     {if(deduplicate) dplyr::distinct(dplyr::arrange(., .data$protein), .data$biosample, .data$allele, .data$ipg, .keep_all = TRUE) else . }
