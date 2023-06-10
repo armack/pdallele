@@ -39,15 +39,16 @@ ensure_directory(table_path)
 ### General preferences
 The following variables modify aspects of the analysis and output:
 
-* `genes_of_interest` a character vector of genes to generate a full analysis for. Also used to
+* `species` a character vector of species to include in the analysis
+* `genes_of_interest` a character vector of genes to generate a full analysis for. Also used for combinations of genes.
 * `heatmap_palette` a character vector of `viridis::scale_color_viridis()` color palettes corresponding to each element of `genes_of_interest` or a single value recycled for all genes
 * `unclear_species_string` a string of text to use in the `species` column when a species cannot be determined
 * `collection_period_groups` an integer of how many year-based groups (of similar isolate counts) to bin collection dates into
 
 ```{r, eval = FALSE}
-species_of_interest      <- "Pseudomonas aeruginosa"
+species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("PDC","OXA")
-heatmap_palette          <- "viridis"
+heatmap_palette          <- c("viridis")
 unclear_species_string   <- "Unclear or Unknown"
 collection_period_groups <- 6L
 ```
@@ -1325,3 +1326,4 @@ for (gene_name in genes_of_interest) {
   )
 }
 ```
+# Sequence Types and SNP Clusters
