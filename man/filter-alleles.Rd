@@ -6,12 +6,13 @@
 \alias{filter_microbigge}
 \title{Filter alleles to prepare data set for analysis}
 \usage{
-filter_isolates_browser(data, filter, remove, deduplicate = TRUE)
+filter_isolates_browser(data, species, filter, remove, deduplicate = TRUE)
 
 filter_microbigge(
   data,
   coverage = 100L,
   identity = 90L,
+  species,
   filter,
   remove,
   deduplicate = TRUE
@@ -19,6 +20,9 @@ filter_microbigge(
 }
 \arguments{
 \item{data}{A dataframe or tibble with an \code{allele} column}
+
+\item{species}{A character vector of \code{species} names to keep. Uses regex,
+vector is collapsed with "|".}
 
 \item{filter}{A character vector of \code{allele} names to keep. Uses regex,
 vector is collapsed with "|".}
@@ -47,25 +51,34 @@ for analysis, all of which are optional:
 
 Additionally, \code{filter_microbigge()} will drop rows not meeting minimum
 thresholds of \code{coverage} and \code{identity}.
-\subsection{Allele calling method The \code{method} column contains codes representing}{
+\subsection{Allele calling method}{
 
-the calling method used for a given allele, some of which correspond to
-"less than perfect" matches and may warrant removal depending on the scope
-and goals of the analysis. Detailed explanations are available at:
+The \code{method} column contains codes representing the calling method used for
+a given allele, some of which correspond to "less than perfect" matches and
+may warrant removal depending on the scope and goals of the analysis.
+
+More detailed explinations of these calling methods and the specific
+parameters used to generate them is available from NCBI at
 \link{https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories}
+and \link{https://github.com/ncbi/amr/wiki/Methods}
 }
 
-\subsection{Coverage and identity These values are produced by AMRFinderPlus as part}{
+\subsection{Coverage and identity}{
 
-of the analysis pipeline:
+These values are produced by AMRFinderPlus as part of the analysis pipeline
+and percentages use the closest sequence in the the Reference Gene Catalog
+used as a reference.
 \itemize{
 \item \code{coverage} is the percentage of the reference sequence covered by the alignment between the target and the reference sequence
 \item \code{identity} is the percentage of identical amino acids or base pairs in the alignment between the target and reference sequence
 }
 
-The default thresholds correspond to those used in Isolates Browser (and
-thus \code{amr.metadata.tsv} files on the NCBI FTP server). See more info at:
+The default \code{identity} threshold corresponds to the AMRFinderPlus default of >=90\% for BLAST matches. (and
+thus \code{amr.metadata.tsv} files on the NCBI FTP server).
+
+More information is available from NCBI at
 \link{https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories}
+and \link{https://github.com/ncbi/amr/wiki/Methods}
 }
 
 \subsection{Deduplication}{
