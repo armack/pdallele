@@ -78,8 +78,7 @@ download_microbigge_bq(
 ## Step Seven - Download Identical Protein Groups Data (NCBI Entrez)
 ```{r, eval = FALSE}
 import_microbigge_gcp(file.path(data_path, "microbigge.tsv")) %>%
-  distinct(protein) %>%
-  pull(protein) %>%
+  possible_unique_proteins() %>%
   download_identical_protein_groups(n = 25, path = data_path)
 ```
 
@@ -87,7 +86,7 @@ import_microbigge_gcp(file.path(data_path, "microbigge.tsv")) %>%
 See `vignette("mlst")` for more information on downloading assemblies and
 determining MLST
 
-Path to NCBI Assembly Summary. This is a very large (~500 MB) file so it may be
+Path to NCBI Assembly Summary. This is a very large (~650 MB) file so it may be
 useful to keep one local copy when downloading data for multiple organisms
 
 ```{r, eval = FALSE}
