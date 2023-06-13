@@ -361,7 +361,7 @@ overview_isolate_counts_by_region <- isolates %>%
   count_isolates(region)
 
 overview_isolate_counts_by_region %>%
-  readr::write_csv(paste0(table_path, "overview_isolate_counts_by_region.csv"))
+  readr::write_csv(file.path(table_path, "overview_isolate_counts_by_region.csv"))
 
 overview_isolate_counts_by_region_plot <-
   overview_isolate_counts_by_region %>%
@@ -511,7 +511,7 @@ ggplot2::ggsave(
 
 #### Map of isolate counts by country
 ```{r, eval = FALSE}
-# Load map data and add ICO3C codes
+# Load map data and add ISO3C codes
 world_map_data <- ggplot2::map_data("world") %>%
   dplyr::mutate(
     iso = countrycode::countrycode(
@@ -895,17 +895,12 @@ for (i in 1:nrow(combinations)) {
     dplyr::arrange(period)
   
   gene_frequency_by_collection_period_2000 %>%
-    select(period, !!gene_filter_type, alleles) %>%
-    write.csv(
-      paste0(
-        table_path,
-        gene_filter,
-        "_",
-        gene_filter_type_text,
-        "_frequency_by_collection_period_2000s.csv"
-      ),
-      row.names = FALSE
-    )
+    select(period,!!gene_filter_type, alleles) %>%
+    readr::write_csv(file.path(
+      table_path,
+      paste0(gene_filter, "_", gene_filter_type_text,
+             "_frequency_by_collection_period_2000s.csv"
+      )))
   
   gene_frequency_by_collection_period_2000_across_groups_plot <-
     gene_frequency_by_collection_period_2000 %>%
