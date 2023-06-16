@@ -120,16 +120,15 @@ min_identity <- 90L
 ## Prepare filtered data sets
 ### Prepare filtered Isolates Browser data set
 ```{r, eval = FALSE}
+isolates_allele_filtered <- isolates_raw %>%
+  filter_isolates_browser(filter = filter_alleles,
+                          deduplicate = TRUE)
+
 isolates <- isolates_raw %>%
   filter_isolates_browser(species = species_of_interest,
                           filter = filter_alleles,
                           remove = remove_allele_types,
                           deduplicate = TRUE)
-
-alleles_filtered <- isolates_raw %>%
-  filter_isolates_browser(filter = filter_alleles,
-                          deduplicate = TRUE)
-
 ```
 
 ### Prepare filtered MicroBIGG-E data set
@@ -147,26 +146,32 @@ mbe <- mbe_raw %>%
 ### Overview
 #### Isolates and genes before and after filtering
 ```{r, eval = FALSE}
-# Initial Isolate and Allele Counts
-overview_unfiltered_isolate_count <- alleles_filtered %>%
+# Unfiltered Isolate and Allele Counts
+overview_raw_isolate_count <- isolates_raw %>%
   dplyr::distinct(biosample) %>%
   nrow()
 
-overview_unfiltered_allele_count <- alleles_filtered %>%
+overview_raw_species <- isolates_raw %>%
+  dplyr::distinct(biosample, .keep_all = TRUE) %>%
+  dplyr::count(species) %>%
+  arrange(species) %>%
+  {paste0(.$species, " (", .$n, ")", collapse = ", ")}
+
+overview_raw_allele_count <- isolates_raw %>%
   nrow()
 
-overview_unfiltered_distinct_named_allele_count <-
-  alleles_filtered %>%
+overview_raw_distinct_named_allele_count <-
+  isolates_raw %>%
   dplyr::distinct(protein, .keep_all = TRUE) %>%
   nrow()
 
-overview_unfiltered_distinct_genes <- alleles_filtered %>%
+overview_raw_distinct_genes <- isolates_raw %>%
   dplyr::distinct(gene) %>%
   dplyr::arrange(gene) %>%
   dplyr::pull() %>%
   paste(collapse = ", ")
 
-overview_removed_alleles <- alleles_filtered %>%
+overview_removed_alleles <- isolates_raw %>%
   dplyr::filter(grepl(paste(remove_allele_types, collapse = "|"), method)) %>%
   dplyr::count(method)
 
@@ -176,10 +181,51 @@ overview_removed_alleles_text <-
           overview_removed_alleles$n) %>%
   paste0(collapse = ", ")
 
-# Cleaned Isolate and Allele Counts
+# Allele filtered Isolate and Allele Counts
+overview_allele_filtered_isolate_count <- isolates_allele_filtered %>%
+  dplyr::distinct(biosample) %>%
+  nrow()
+
+overview_allele_filtered_species <- isolates_allele_filtered %>%
+  dplyr::distinct(biosample, .keep_all = TRUE) %>%
+  dplyr::count(species) %>%
+  arrange(species) %>%
+  {paste0(.$species, " (", .$n, ")", collapse = ", ")}
+
+overview_allele_filtered_allele_count <- isolates_allele_filtered %>%
+  nrow()
+
+overview_allele_filtered_distinct_named_allele_count <-
+  isolates_allele_filtered %>%
+  dplyr::distinct(protein, .keep_all = TRUE) %>%
+  nrow()
+
+overview_allele_filtered_distinct_genes <- isolates_allele_filtered %>%
+  dplyr::distinct(gene) %>%
+  dplyr::arrange(gene) %>%
+  dplyr::pull() %>%
+  paste(collapse = ", ")
+
+overview_removed_alleles <- isolates_allele_filtered %>%
+  dplyr::filter(grepl(paste(remove_allele_types, collapse = "|"), method)) %>%
+  dplyr::count(method)
+
+overview_removed_alleles_text <-
+  sprintf("%s (%i)",
+          overview_removed_alleles$method,
+          overview_removed_alleles$n) %>%
+  paste0(collapse = ", ")
+
+# Final Isolate and Allele Counts
 overview_isolate_count <- isolates %>%
   dplyr::distinct(biosample) %>%
   nrow()
+
+overview_species <- isolates %>%
+  dplyr::distinct(biosample, .keep_all = TRUE) %>%
+  dplyr::count(species) %>%
+  arrange(species) %>%
+  {paste0(.$species, " (", .$n, ")", collapse = ", ")}
 
 overview_allele_count <- isolates %>%
   nrow()
@@ -196,14 +242,24 @@ overview_distinct_genes <- isolates %>%
 
 # Generate text and save to file
 isolates_overview_text <- c(
-  "Unfiltered Isolates:" = overview_unfiltered_isolate_count,
-  "Unfiltered Alleles:" = overview_unfiltered_allele_count,
-  "Unfiltered Distinct Named Alleles:" = overview_unfiltered_distinct_named_allele_count,
-  "Unfiltered Genes Present:" = paste0(overview_unfiltered_distinct_genes, "\n"),
-  "Filtered Isolates:" = overview_isolate_count,
-  "Filtered Alleles:" = overview_allele_count,
-  "Filtered Distinct Named Alleles:" = overview_distinct_named_allele_count,
-  "Filtered Genes Present:" = paste0(overview_distinct_genes, "\n"),
+  "Raw Isolates:" = overview_raw_isolate_count,
+  "Raw Species:" = overview_raw_species,
+  "Raw Alleles:" = overview_raw_allele_count,
+  "Raw Distinct Named Alleles:" = overview_raw_distinct_named_allele_count,
+  "Raw Genes Present:" = overview_raw_distinct_genes,
+  "\n",
+  "Allele Filtered Isolates:" = overview_allele_filtered_isolate_count,
+  "Allele Filtered Species:" = overview_allele_filtered_species,
+  "Allele Filtered Alleles:" = overview_allele_filtered_allele_count,
+  "Allele Filtered Distinct Named Alleles:" = overview_allele_filtered_distinct_named_allele_count,
+  "Allele Filtered Genes Present:" = overview_allele_filtered_distinct_genes,
+  "\n",
+  "Fully Filtered Isolates:" = overview_isolate_count,
+  "Fully Filtered Species:" = overview_species,
+  "Fully Filtered Alleles:" = overview_allele_count,
+  "Fully Filtered Distinct Named Alleles:" = overview_distinct_named_allele_count,
+  "Fully Filtered Genes Present:" = overview_distinct_genes,
+  "\n",
   "Total Alleles Removed:" = sum(overview_removed_alleles$n),
   "Reasons Alleles Removed:" = overview_removed_alleles_text
 )
