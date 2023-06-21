@@ -53,9 +53,9 @@ download_reference_gene_catalog(ftp_refgene_base, refgene_version, data_path)
 ```
 
 ## Step Six - Download MicroBIGG-E Data (Google Cloud)
-Filter by "taxgroup_name" to match the organism group from step one or by
-"scientific_name" to match to a specific genus/species at the isolate level.
-Optionally, filter by "element_symbol" to limit to a specific type of allele,
+Filter by "taxgroup" to match the organism group from step one or by
+"sciname" to match to a specific genus/species at the isolate level.
+Optionally, filter by "element" to limit to a specific type of allele,
 such as "%bla%" to filter only beta-lactamase alleles. Use '%' as a wildcard.
 
 Note that "taxgroup_name" matches organism group names from
