@@ -270,11 +270,13 @@ download_identical_protein_groups <- function(accessions, n = 10, path){
     progress$update((length(accessions) - length(remaining)) / length(accessions))
   }
 
+  .ipg_data_filtered <- .ipg_data %>%
+    dplyr::distinct(.data$ipg, .data$protein, .keep_all = TRUE)
   table_path <- file.path(path, "ipg.tsv")
-  readr::write_tsv(.ipg_data, file = table_path)
+  readr::write_tsv(.ipg_data_filtered, file = table_path)
 
   log <- file(file.path(path,"DatasetDetails.txt"), open="a")
-  write(paste0(Sys.time(), ' - Queried data on ', nrow(.ipg_data),
+  write(paste0(Sys.time(), ' - Retrieved data on ', dplyr::n_distinct(.ipg_data_filtered$ipg),
                ' Identical Protein Groups covering ', length(accessions),
                ' protein accession numbers and saved the results as ',
                basename(table_path)), file = log, append = TRUE)
