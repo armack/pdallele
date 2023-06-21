@@ -38,7 +38,7 @@ version <- select_ftp_version(ftp_results_base, organism)
 
 ## Step Three - Specify a path to save downloaded data
 ```{r, eval = FALSE}
-data_path <- file.path(getwd(), "data")
+data_path <- file.path(getwd(), "data/Pseudomonas")
 ```
 
 ## Step Four - Download AMR and Cluster Data (NCBI FTP)
@@ -70,7 +70,7 @@ using R.
 download_microbigge_bq(
   billing = gcp_billing,
   path = data_path,
-  sciname = "Pseudomonas aeruginosa",
+  taxgroup = "Pseudomonas aeruginosa",
   element = "%bla%"
 )
 ```
