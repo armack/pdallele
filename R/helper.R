@@ -59,7 +59,10 @@ count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   .complete <- data %>%
-    {if (isolates) dplyr::distinct(., .data$biosample, .keep_all = TRUE) else . } %>%
+    {if (isolates) dplyr::group_by(., ...) %>%
+        dplyr::distinct(.data$biosample, .keep_all = TRUE) %>%
+        dplyr::ungroup(.)
+      else . } %>%
     dplyr::count(..., name = name) %>%
     {if(sort) dplyr::mutate(., dplyr::across(c(...), ~forcats::fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
         dplyr::arrange(., dplyr::across(c(...))) else . } %>%
