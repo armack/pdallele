@@ -1145,116 +1145,126 @@ for (i in 1:nrow(combinations)) {
 #### Heatmaps
 ```{r, eval = FALSE}
 
-# By Region
-heatmap_region_data <- isolates %>%
-  dplyr::filter(grepl(gene_filter, gene)) %>%
-  heatmap_data(
-    count = !!gene_filter_type_markdown,
-    category = region_markdown,
-    n = 5
+for (i in 1:nrow(combinations)) {
+  gene_filter <- combinations[[i, "name"]]
+  gene_filter_type <- rlang::sym(combinations[[i, "type"]])
+  gene_filter_type_markdown <-
+    rlang::sym(paste0(combinations[[i, "type"]], "_markdown"))
+  gene_filter_type_text <- combinations[[i, "type"]]
+  gene_filter_label <- combinations[[i, "label"]]
+  heatmap_palette <- combinations[[i, "heatmap_palette"]]
+  
+  # By Region
+  heatmap_region_data <- isolates %>%
+    dplyr::filter(grepl(gene_filter, gene)) %>%
+    heatmap_data(
+      count = !!gene_filter_type_markdown,
+      category = region_markdown,
+      n = 5
+    )
+  
+  heatmap_region <-
+    heatmap_plot(
+      heatmap_region_data,
+      count = !!gene_filter_type_markdown,
+      category = region_markdown,
+      option = heatmap_palette
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0(gene_filter, "_", gene_filter_type_text,
+           "_heatmap_top_5_by_region.svg"
+    )),
+    plot = heatmap_region
   )
-
-heatmap_region <-
-  heatmap_plot(
-    heatmap_region_data,
-    count = !!gene_filter_type_markdown,
-    category = region_markdown,
-    option = heatmap_palette
+  
+  # By Species
+  heatmap_species_data <- isolates %>%
+    dplyr::filter(grepl(gene_filter, gene)) %>%
+    heatmap_data(
+      count = !!gene_filter_type_markdown,
+      category = species_markdown,
+      n = 5
+    )
+  
+  heatmap_species <-
+    heatmap_plot(
+      heatmap_species_data,
+      count = !!gene_filter_type_markdown,
+      category = species_markdown,
+      option = heatmap_palette
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0(gene_filter, "_", gene_filter_type_text,
+           "_heatmap_top_5_by_species.svg"
+    )),
+    plot = heatmap_species
   )
-
-ggplot2::ggsave(filename = file.path(
-  graphic_path,
-  paste0(gene_filter, "_", gene_filter_type_text,
-         "_heatmap_top_5_by_region.svg"
-  )),
-  plot = heatmap_region
-)
-
-# By Species
-heatmap_species_data <- isolates %>%
-  dplyr::filter(grepl(gene_filter, gene)) %>%
-  heatmap_data(
-    count = !!gene_filter_type_markdown,
-    category = species_markdown,
-    n = 5
+  
+  # By Collection Period
+  heatmap_period_data <- isolates %>%
+    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    categorize_integer_groups(source_col = "year",
+                              label_col = "period",
+                              groups = collection_period_groups) %>%
+    remove_unassigned_bla() %>%
+    tidyr::drop_na(period) %>%
+    heatmap_data(
+      count = !!gene_filter_type_markdown,
+      category = period,
+      n = 5
+    )
+  
+  heatmap_period <-
+    heatmap_plot(
+      heatmap_period_data,
+      count = !!gene_filter_type_markdown,
+      category = period,
+      option = heatmap_palette
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0(gene_filter, "_", gene_filter_type_text,
+           "_heatmap_top_5_by_collection_period.svg"
+    )),
+    plot = heatmap_period
   )
-
-heatmap_species <-
-  heatmap_plot(
-    heatmap_species_data,
-    count = !!gene_filter_type_markdown,
-    category = species_markdown,
-    option = heatmap_palette
+  
+  # By Collection Period 2000s
+  heatmap_period_2000s_data <- isolates %>%
+    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    dplyr::filter(year >= 2000) %>%
+    categorize_integer_groups(source_col = "year",
+                              label_col = "period",
+                              groups = collection_period_groups) %>%
+    remove_unassigned_bla() %>%
+    tidyr::drop_na(period) %>%
+    heatmap_data(
+      count = !!gene_filter_type_markdown,
+      category = period,
+      n = 5
+    )
+  
+  heatmap_period_2000s <-
+    heatmap_plot(
+      heatmap_period_2000s_data,
+      count = !!gene_filter_type_markdown,
+      category = period,
+      option = heatmap_palette
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0(gene_filter, "_", gene_filter_type_text,
+           "_heatmap_top_5_by_collection_period_2000s.svg"
+    )),
+    plot = heatmap_period_2000s
   )
-
-ggplot2::ggsave(filename = file.path(
-  graphic_path,
-  paste0(gene_filter, "_", gene_filter_type_text,
-         "_heatmap_top_5_by_species.svg"
-  )),
-  plot = heatmap_species
-)
-
-# By Collection Period
-heatmap_period_data <- isolates %>%
-  filter_attribute(!!gene_filter_type, gene_filter) %>%
-  categorize_integer_groups(source_col = "year",
-                            label_col = "period",
-                            groups = collection_period_groups) %>%
-  remove_unassigned_bla() %>%
-  tidyr::drop_na(period) %>%
-  heatmap_data(
-    count = !!gene_filter_type_markdown,
-    category = period,
-    n = 5
-  )
-
-heatmap_period <-
-  heatmap_plot(
-    heatmap_period_data,
-    count = !!gene_filter_type_markdown,
-    category = period,
-    option = heatmap_palette
-  )
-
-ggplot2::ggsave(filename = file.path(
-  graphic_path,
-  paste0(gene_filter, "_", gene_filter_type_text,
-         "_heatmap_top_5_by_collection_period.svg"
-  )),
-  plot = heatmap_period
-)
-
-# By Collection Period 2000s
-heatmap_period_2000s_data <- isolates %>%
-  filter_attribute(!!gene_filter_type, gene_filter) %>%
-  dplyr::filter(year >= 2000) %>%
-  categorize_integer_groups(source_col = "year",
-                            label_col = "period",
-                            groups = collection_period_groups) %>%
-  remove_unassigned_bla() %>%
-  tidyr::drop_na(period) %>%
-  heatmap_data(
-    count = !!gene_filter_type_markdown,
-    category = period,
-    n = 5
-  )
-
-heatmap_period_2000s <-
-  heatmap_plot(
-    heatmap_period_2000s_data,
-    count = !!gene_filter_type_markdown,
-    category = period,
-    option = heatmap_palette
-  )
-
-ggplot2::ggsave(filename = file.path(
-  graphic_path,
-  paste0(gene_filter, "_", gene_filter_type_text,
-         "_heatmap_top_5_by_collection_period_2000s.svg"
-  )),
-  plot = heatmap_period_2000s
-)
+}
 ```
 
 ## MicroBIGG-E data set
