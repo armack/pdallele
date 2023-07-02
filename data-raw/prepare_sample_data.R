@@ -26,6 +26,12 @@ microbigge_proteins <- microbigge %>%
 
 readr::write_tsv(x = microbigge, file = file.path(getwd(), "inst/extdata/microbigge.tsv"))
 
+## Prepare `cluster_list.tsv` -----
+cluster_list <- readr::read_tsv(file.path(getwd(), "data-raw/cluster_list.tsv")) %>%
+  filter(biosample_acc %in% metadata_biosamples)
+
+readr::write_tsv(x = cluster_list, file = file.path(getwd(), "inst/extdata/cluster_list.tsv"))
+
 ## Prepare `refgene.txt` -----
 refgene <- readr::read_tsv(file.path(getwd(), "data-raw/refgene.tsv")) %>%
   filter(allele %in% microbigge_element_symbols)
