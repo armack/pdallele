@@ -1437,11 +1437,11 @@ for (i in 1:nrow(combinations)) {
     pds_deduplicated_frequency %>%
     top_n_across_groups(!!gene_filter_type,
                         !!gene_filter_type_markdown,
-                        count = alleles,
+                        count = isolates,
                         n = 10) %>%
     donut_plot(
       fill = !!gene_filter_type_markdown,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
@@ -1472,11 +1472,11 @@ for (i in 1:nrow(combinations)) {
     pds_unclustered_frequency %>%
     top_n_across_groups(!!gene_filter_type,
                         !!gene_filter_type_markdown,
-                        count = alleles,
+                        count = isolates,
                         n = 10) %>%
     donut_plot(
       fill = !!gene_filter_type_markdown,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
@@ -1505,11 +1505,11 @@ for (i in 1:nrow(combinations)) {
     pds_deduplicated_unclustered_frequency %>%
     top_n_across_groups(!!gene_filter_type,
                         !!gene_filter_type_markdown,
-                        count = alleles,
+                        count = isolates,
                         n = 10) %>%
     donut_plot(
       fill = !!gene_filter_type_markdown,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
