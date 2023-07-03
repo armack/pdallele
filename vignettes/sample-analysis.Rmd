@@ -764,7 +764,7 @@ for (i in 1:nrow(combinations)) {
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
     filter_attribute(!!gene_filter_type, gene_filter) %>%
-    count_alleles(!!gene_filter_type, !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    count_isolates(!!gene_filter_type, !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
   
   gene_assigned_type_frequency %>%
     readr::write_csv(file.path(
@@ -812,7 +812,7 @@ for (i in 1:nrow(combinations)) {
     filter_exclusive_alleles(species) %>%
     filter_attribute(!!gene_filter_type, gene_filter) %>%
     dplyr::group_by(species) %>%
-    count_alleles(allele)
+    count_isolates(allele)
   
   gene_species_exclusive_allele_counts %>%
     readr::write_csv(file.path(
@@ -880,7 +880,7 @@ for (i in 1:nrow(combinations)) {
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_alleles(period,!!gene_filter_type,!!gene_filter_type_markdown) %>%
+    count_isolates(period,!!gene_filter_type,!!gene_filter_type_markdown) %>%
     relevel_numeric(period) %>%
     dplyr::arrange(period,!!gene_filter_type)
   
@@ -946,7 +946,7 @@ for (i in 1:nrow(combinations)) {
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_alleles(period,!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
+    count_isolates(period,!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
     relevel_numeric(period) %>%
     dplyr::arrange(period)
   
@@ -1005,7 +1005,7 @@ for (i in 1:nrow(combinations)) {
     filter_attribute(!!gene_filter_type, gene_filter) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(region) %>%
-    count_alleles(region,!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    count_isolates(region,!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
   
   gene_frequency_by_region %>%
     dplyr::select(-!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
@@ -1085,7 +1085,7 @@ for (i in 1:nrow(combinations)) {
     dplyr::ungroup() %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(species) %>%
-    count_alleles(species,
+    count_isolates(species,
                   species_markdown,
                   !!gene_filter_type,
                   !!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
@@ -1366,7 +1366,7 @@ for (gene_name in genes_of_interest) {
     remove_assigned_bla() %>%
     dplyr::filter(grepl(gene_name, allele)) %>%
     tidyr::drop_na(ipg) %>%
-    count_alleles(ipg_accession, oxa_family) %>%
+    count_isolates(ipg_accession, oxa_family) %>%
     dplyr::arrange(desc(alleles))
   
   mbe_goi_unassigned_allele_list %>%
@@ -1421,10 +1421,9 @@ for (i in 1:nrow(combinations)) {
     tidyr::drop_na(pds) %>%
     dplyr::distinct(pds, allele, .keep_all = TRUE)
   
-  pds_deduplicated_frequency <- pds_deduplicated %>%
-    count_alleles(!!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")),
-                  name = "isolates")
+  pds_deduplicated_frequency2 <- pds_deduplicated %>%
+    count_isolates(!!gene_filter_type,
+                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
   
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -1457,9 +1456,8 @@ for (i in 1:nrow(combinations)) {
     dplyr::filter(is.na(pds))
     
   pds_unclustered_frequency <- pds_unclustered %>%
-    count_alleles(!!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")),
-                  name = "isolates")
+    count_isolates(!!gene_filter_type,
+                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
   
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -1490,9 +1488,8 @@ for (i in 1:nrow(combinations)) {
   dplyr::bind_rows(pds_unclustered)
   
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
-    count_alleles(!!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")),
-                  name = "isolates")
+    count_isolates(!!gene_filter_type,
+                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
   
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
