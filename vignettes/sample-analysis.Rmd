@@ -1722,7 +1722,7 @@ for (gene_name in genes_of_interest) {
     dplyr::filter(grepl(gene_name, allele)) %>%
     tidyr::drop_na(ipg) %>%
     count_isolates(ipg_accession, oxa_family) %>%
-    dplyr::arrange(desc(alleles))
+    dplyr::arrange(desc(isolates))
   
   mbe_goi_unassigned_allele_list %>%
     readr::write_csv(file.path(
@@ -1731,9 +1731,9 @@ for (gene_name in genes_of_interest) {
     ))
   
   mbe_goi_unassigned_allele_plot <- mbe_goi_unassigned_allele_list %>%
-    top_n_overall(ipg_accession, count = alleles, n = 10) %>%
+    top_n_overall(ipg_accession, count = isolates, n = 10) %>%
     donut_plot(fill = ipg_accession,
-               counts = alleles,
+               counts = isolates,
                legend = "**Allele**")
   
   ggplot2::ggsave(filename = file.path(
@@ -1763,110 +1763,106 @@ overview_pds_frequency %>%
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
-  gene_filter_type <- rlang::sym(combinations[[i, "type"]])
-  gene_filter_type_markdown <-
-    rlang::sym(paste0(combinations[[i, "type"]], "_markdown"))
-  gene_filter_type_text <- combinations[[i, "type"]]
   gene_filter_label <- combinations[[i, "label"]]
 
-  # SNP Cluster Deduplicated - Assigned <gene_filter_type> frequency
+  # SNP Cluster Deduplicated - Assigned allele frequency
   pds_deduplicated <- isolates %>%
     remove_unassigned_bla() %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     tidyr::drop_na(pds) %>%
     dplyr::distinct(pds, allele, .keep_all = TRUE)
   
   pds_deduplicated_frequency <- pds_deduplicated %>%
-    count_isolates(!!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    count_isolates(allele,
+                  !!rlang::sym(paste0("allele", "_markdown")))
   
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_deduplicated.csv")
+      paste0(gene_filter, "_allele_frequency_pds_deduplicated.csv")
     ))
   
   pds_deduplicated_frequency_plot <-
     pds_deduplicated_frequency %>%
-    top_n_across_groups(!!gene_filter_type,
-                        !!gene_filter_type_markdown,
+    top_n_across_groups(allele,
+                        allele_markdown,
                         count = isolates,
                         n = 10) %>%
     donut_plot(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_deduplicated_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_pds_deduplicated_donut.svg")),
     plot = pds_deduplicated_frequency_plot
   ) 
   
-  # SNP Cluster Unclustered Isolates - Assigned <gene_filter_type> frequency
+  # SNP Cluster Unclustered Isolates - Assigned allele frequency
   pds_unclustered <- isolates %>%
     remove_unassigned_bla() %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::filter(is.na(pds))
     
   pds_unclustered_frequency <- pds_unclustered %>%
-    count_isolates(!!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    count_isolates(allele,
+                  !!rlang::sym(paste0("allele", "_markdown")))
   
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_unclustered.csv")
+      paste0(gene_filter, "_allele_frequency_pds_unclustered.csv")
     ))
   
   pds_unclustered_frequency_plot <-
     pds_unclustered_frequency %>%
-    top_n_across_groups(!!gene_filter_type,
-                        !!gene_filter_type_markdown,
+    top_n_across_groups(allele,
+                        allele_markdown,
                         count = isolates,
                         n = 10) %>%
     donut_plot(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_unclustered_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_pds_unclustered_donut.svg")),
     plot = pds_unclustered_frequency_plot
   ) 
 
-  # SNP Cluster Deduplicated + Unclustered - Assigned <gene_filter_type> frequency
+  # SNP Cluster Deduplicated + Unclustered - Assigned allele frequency
   pds_deduplicated_unclustered <- pds_deduplicated %>%
   dplyr::bind_rows(pds_unclustered)
   
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
-    count_isolates(!!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    count_isolates(allele,
+                  !!rlang::sym(paste0("allele", "_markdown")))
   
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_deduplicated_and_unclustered.csv")
+      paste0(gene_filter, "_allele_frequency_pds_deduplicated_and_unclustered.csv")
     ))
   
   pds_deduplicated_unclustered_frequency_plot <-
     pds_deduplicated_unclustered_frequency %>%
-    top_n_across_groups(!!gene_filter_type,
-                        !!gene_filter_type_markdown,
+    top_n_across_groups(allele,
+                        allele_markdown,
                         count = isolates,
                         n = 10) %>%
     donut_plot(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_deduplicated_and_unclustered_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_pds_deduplicated_and_unclustered_donut.svg")),
     plot = pds_deduplicated_unclustered_frequency_plot
   ) 
 }
@@ -1877,12 +1873,11 @@ for (i in 1:nrow(combinations)) {
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
-  gene_filter_type <- rlang::sym(combinations[[i, "type"]])
   
   # List of distinct, assigned protein accessions
   isolates %>%
     remove_unassigned_bla() %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::distinct(protein, .keep_all = TRUE) %>%
     tidyr::drop_na(protein) %>%
     dplyr::pull(protein) %>%
@@ -1892,7 +1887,7 @@ for (i in 1:nrow(combinations)) {
   # List of distinct, unassigned protein accessions
   mbe %>%
     remove_assigned_bla() %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::distinct(ipg, .keep_all = TRUE) %>%
     tidyr::drop_na(protein) %>%
     dplyr::pull(protein) %>%
@@ -1901,4 +1896,3 @@ for (i in 1:nrow(combinations)) {
   
 }
 ```
-
