@@ -48,15 +48,15 @@ The following variables modify aspects of the analysis and output:
 ```{r, eval = FALSE}
 species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("PDC","OXA")
-allele_label             <- "Allele"
-family_label             <- "Family"
+allele_label_base        <- "Allele"
+family_label_base        <- "Family"
 heatmap_palette          <- c("viridis")
 unclear_species_string   <- "Unclear or Unknown"
 collection_period_groups <- 6L
 
 # Generate variables for genes of interest from above settings
 combinations <- tibble::tibble(name = genes_of_interest) %>%
-  dplyr::mutate(label = paste(name, "Allele")) %>%
+  dplyr::mutate(label = paste(name, allele_label_base)) %>%
   dplyr::mutate(heatmap_palette = heatmap_palette)
 
 ```
@@ -1140,6 +1140,8 @@ for (i in 1:nrow(combinations)) {
 
 if("OXA" %in% combinations[["name"]]) {
 
+  oxa_family_label = paste("OXA", family_label_base)
+
   # Distinct assigned OXA family frequency
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
@@ -1161,7 +1163,7 @@ if("OXA" %in% combinations[["name"]]) {
     donut_plot(
       fill = oxa_family_markdown,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1277,7 +1279,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1297,7 +1299,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1337,7 +1339,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1357,7 +1359,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1391,7 +1393,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = region,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1411,7 +1413,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = region,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1431,7 +1433,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = region,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1454,7 +1456,7 @@ if("OXA" %in% combinations[["name"]]) {
                   oxa_family,
                   oxa_family_markdown) %>%
     relevel_numeric(oxa_family, oxa_family_markdown) %>%
-    dplyr::arrange(oxa_family)
+    dplyr::arrange(family)
   
   gene_frequency_by_species %>%
     dplyr::select(-species_markdown,-oxa_family_markdown) %>%
@@ -1472,7 +1474,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = species_markdown,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1492,7 +1494,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = species_markdown,
       counts = alleles,
-      legend = "OXA Family"
+      legend = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
