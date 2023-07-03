@@ -753,7 +753,10 @@ for (i in 1:nrow(combinations)) {
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    count_isolates(allele, allele_markdown)
+    mutate(total_rows = nrow(.)) %>%
+    count_isolates(allele, allele_markdown, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows)
   
   gene_assigned_type_frequency %>%
     readr::write_csv(file.path(
@@ -801,7 +804,10 @@ for (i in 1:nrow(combinations)) {
     filter_exclusive_alleles(species) %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(species) %>%
-    count_isolates(allele)
+    mutate(total_rows = nrow(.)) %>%
+    count_isolates(allele, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows)
   
   gene_species_exclusive_allele_counts %>%
     readr::write_csv(file.path(
@@ -818,7 +824,10 @@ for (i in 1:nrow(combinations)) {
     dplyr::filter(length(unique(allele)) > 1) %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    count_isolates(species)
+    mutate(total_rows = nrow(.)) %>%
+    count_isolates(species, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows)
   
   gene_multiples_overview_by_species %>%
     readr::write_csv(file.path(
@@ -853,7 +862,10 @@ for (i in 1:nrow(combinations)) {
     determine_combinations() %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    count_isolates(combo)
+    mutate(total_rows = nrow(.)) %>%
+    count_isolates(combo, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows)
   
   gene_combination_counts %>%
     readr::write_csv(file.path(
@@ -869,9 +881,13 @@ for (i in 1:nrow(combinations)) {
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_isolates(period,allele,allele_markdown) %>%
+    dplyr::group_by(period) %>%
+    mutate(total_rows = dplyr::n()) %>%
+    count_isolates(period, allele, allele_markdown, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows) %>%
     relevel_numeric(period) %>%
-    dplyr::arrange(period,allele)
+    dplyr::arrange(period, desc(isolates))
   
   gene_frequency_by_collection_period %>%
     dplyr::select(period,allele, isolates) %>%
@@ -926,7 +942,8 @@ for (i in 1:nrow(combinations)) {
     plot = gene_frequency_by_collection_period_overall_plot
   )
   
-  # Full <gene_filter> <gene_filter_type> counts and summary graphics by Collection Period (only for isolates collected since 2000)
+  # Full <gene_filter> <gene_filter_type> counts and summary graphics by
+  # Collection Period (only for isolates collected since 2000)
   gene_frequency_by_collection_period_2000 <- isolates %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::filter(!year < 2000) %>%
@@ -935,9 +952,13 @@ for (i in 1:nrow(combinations)) {
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_isolates(period,allele,allele_markdown) %>%
+    dplyr::group_by(period) %>%
+    mutate(total_rows = dplyr::n()) %>%
+    count_isolates(period, allele, allele_markdown, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows) %>%
     relevel_numeric(period) %>%
-    dplyr::arrange(period)
+    dplyr::arrange(period, desc(isolates))
   
   gene_frequency_by_collection_period_2000 %>%
     select(period,allele, isolates) %>%
@@ -989,12 +1010,18 @@ for (i in 1:nrow(combinations)) {
     plot = gene_frequency_by_collection_period_2000_overall_plot
   )
   
-  # Full <gene_filter> <gene_filter_type> counts and top 10 graphic by WHO Region
+  # Full <gene_filter> <gene_filter_type> counts and top 10 graphic by Region
   gene_frequency_by_region <- isolates %>%
     filter_attribute(allele, gene_filter) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(region) %>%
-    count_isolates(region,allele,allele_markdown)
+    dplyr::group_by(region) %>%
+    mutate(total_rows = dplyr::n()) %>%
+    count_isolates(region, allele, allele_markdown, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows) %>%
+    relevel_numeric(region) %>%
+    dplyr::arrange(region, desc(isolates))
   
   gene_frequency_by_region %>%
     dplyr::select(-allele_markdown) %>%
@@ -1074,15 +1101,16 @@ for (i in 1:nrow(combinations)) {
     dplyr::ungroup() %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(species) %>%
-    count_isolates(species,
-                  species_markdown,
-                  allele,
-                  allele_markdown) %>%
-    relevel_numeric(allele,allele_markdown) %>%
-    dplyr::arrange(allele)
+    dplyr::group_by(species) %>%
+    mutate(total_rows = dplyr::n()) %>%
+    count_isolates(species, species_markdown, allele, allele_markdown, total_rows) %>%
+    mutate(proportion = isolates / total_rows) %>%
+    select(-total_rows) %>%
+    relevel_numeric(species) %>%
+    dplyr::arrange(species, desc(isolates))
   
   gene_frequency_by_species %>%
-    dplyr::select(-species_markdown,-allele_markdown) %>%
+    dplyr::select(-species_markdown, -allele_markdown) %>%
     readr::write_csv(file.path(
       table_path,
       paste0(gene_filter, "_allele", "_frequency_by_species.csv")
