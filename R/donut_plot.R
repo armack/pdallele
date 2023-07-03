@@ -101,8 +101,9 @@ donut_plot_panel <- function(data, fill, counts, facet,
                              count_label = "Alleles", legend_title = "**Allele**",
                              total = TRUE, palette = NULL, nrow = NULL, ncol = NULL){
   .donut_data <- data %>%
+    relevel_numeric({{facet}}) %>%
     dplyr::group_by( {{facet}} ) %>%
-    dplyr::mutate(y_proportion = .data$alleles / sum(.data$alleles)) %>%
+    dplyr::mutate(y_proportion = {{counts}} / sum({{counts}})) %>%
     dplyr::mutate(group_label = dplyr::if_else(is.na(.data$group_total), NA_character_,
                                                paste0(.data$group_total,"<br />", count_label)))
 
