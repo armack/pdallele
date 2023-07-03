@@ -1746,7 +1746,7 @@ for (gene_name in genes_of_interest) {
 
 # Deduplicated Isolates Data
 
-## Overview
+## Overview 
 
 ```{r, eval = FALSE}
 # SNP Cluster Frequency
@@ -1774,7 +1774,8 @@ for (i in 1:nrow(combinations)) {
   
   pds_deduplicated_frequency <- pds_deduplicated %>%
     count_isolates(allele,
-                  !!rlang::sym(paste0("allele", "_markdown")))
+                  !!rlang::sym(paste0("allele", "_markdown"))) %>%
+    mutate(porportion = isolates / nrow(pds_deduplicated))
   
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -1808,7 +1809,8 @@ for (i in 1:nrow(combinations)) {
     
   pds_unclustered_frequency <- pds_unclustered %>%
     count_isolates(allele,
-                  !!rlang::sym(paste0("allele", "_markdown")))
+                  !!rlang::sym(paste0("allele", "_markdown"))) %>%
+    mutate(porportion = isolates / nrow(pds_unclustered))
   
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -1840,7 +1842,8 @@ for (i in 1:nrow(combinations)) {
   
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
     count_isolates(allele,
-                  !!rlang::sym(paste0("allele", "_markdown")))
+                  !!rlang::sym(paste0("allele", "_markdown"))) %>%
+    mutate(porportion = isolates / nrow(pds_deduplicated_unclustered))
   
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -1864,7 +1867,7 @@ for (i in 1:nrow(combinations)) {
     graphic_path,
     paste0(gene_filter, "_allele_frequency_pds_deduplicated_and_unclustered_donut.svg")),
     plot = pds_deduplicated_unclustered_frequency_plot
-  ) 
+  )
 }
 ```
 
@@ -1893,6 +1896,5 @@ for (i in 1:nrow(combinations)) {
     dplyr::pull(protein) %>%
     readr::write_lines(file.path(table_path,
                                  paste0("distinct_unassigned_", gene_filter, "_proteins.txt")))
-  
 }
 ```
