@@ -1456,7 +1456,7 @@ if("OXA" %in% combinations[["name"]]) {
                   oxa_family,
                   oxa_family_markdown) %>%
     relevel_numeric(oxa_family, oxa_family_markdown) %>%
-    dplyr::arrange(family)
+    dplyr::arrange(oxa_family)
   
   gene_frequency_by_species %>%
     dplyr::select(-species_markdown,-oxa_family_markdown) %>%
