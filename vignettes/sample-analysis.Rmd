@@ -48,9 +48,17 @@ The following variables modify aspects of the analysis and output:
 ```{r, eval = FALSE}
 species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("PDC","OXA")
+allele_label             <- "Allele"
+family_label             <- "Family"
 heatmap_palette          <- c("viridis")
 unclear_species_string   <- "Unclear or Unknown"
 collection_period_groups <- 6L
+
+# Generate variables for genes of interest from above settings
+combinations <- tibble::tibble(name = genes_of_interest) %>%
+  dplyr::mutate(label = paste(name, "Allele")) %>%
+  dplyr::mutate(heatmap_palette = heatmap_palette)
+
 ```
 
 ## Filtering alleles and data sets
@@ -735,58 +743,39 @@ species_shared_alleles %>%
 ```
 
 ### Genes of interest
-#### Setup
-
-```{r, eval = FALSE}
-combinations <- tibble::tibble(name = genes_of_interest) %>%
-  dplyr::mutate(type = dplyr::if_else(stringr::str_detect(name, "OXA"), "allele;oxa_family", "allele")) %>%
-  dplyr::mutate(label = dplyr::if_else(
-    stringr::str_detect(name, "OXA"),
-    paste("OXA", c("Allele", "Family"), collapse = ";"),
-    paste(name, "Allele")
-  )) %>%
-  dplyr::mutate(heatmap_palette = heatmap_palette) %>%
-  tidyr::separate_longer_delim(cols = c("type", "label"), delim = ";")
-```
-
-#### Counts and donut plots
+#### Allele counts and donut plots
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
-  gene_filter_type <- rlang::sym(combinations[[i, "type"]])
-  gene_filter_type_markdown <-
-    rlang::sym(paste0(combinations[[i, "type"]], "_markdown"))
-  gene_filter_type_text <- combinations[[i, "type"]]
   gene_filter_label <- combinations[[i, "label"]]
-  heatmap_palette <- combinations[[i, "heatmap_palette"]]
 
   # Distinct assigned <gene_filter_type> frequency
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
-    count_isolates(!!gene_filter_type, !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    filter_attribute(allele, gene_filter) %>%
+    count_isolates(allele, allele_markdown)
   
   gene_assigned_type_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_frequency.csv")
+      paste0(gene_filter, "_allele", "_frequency.csv")
     ))
   
   gene_assigned_type_frequency_plot <-
     gene_assigned_type_frequency %>%
-    top_n_across_groups(!!gene_filter_type,
-                        !!gene_filter_type_markdown,
-                        count = alleles,
+    top_n_across_groups(allele,
+                        allele_markdown,
+                        count = isolates,
                         n = 10) %>%
     donut_plot(
-      fill = !!gene_filter_type_markdown,
-      counts = alleles,
+      fill = allele_markdown,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text, "_frequency_donut.svg")),
+    paste0(gene_filter, "_allele", "_frequency_donut.svg")),
     plot = gene_assigned_type_frequency_plot
   )
   
@@ -794,7 +783,7 @@ for (i in 1:nrow(combinations)) {
   gene_species_exclusive_allele_overview <- isolates %>%
     remove_unassigned_bla() %>%
     filter_exclusive_alleles(species) %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(species) %>%
     dplyr::summarize(alleles = length(unique(allele))) %>%
     dplyr::arrange(desc(alleles))
@@ -802,7 +791,7 @@ for (i in 1:nrow(combinations)) {
   gene_species_exclusive_allele_overview %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text,
+      paste0(gene_filter, "_allele",
              "_species_exclusive_allele_overview.csv"
       )
     ))
@@ -810,21 +799,21 @@ for (i in 1:nrow(combinations)) {
   # List (with counts) of <gene_filter> alleles unique to a single species (in the data set)
   gene_species_exclusive_allele_counts <- isolates %>%
     filter_exclusive_alleles(species) %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(species) %>%
     count_isolates(allele)
   
   gene_species_exclusive_allele_counts %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text,
+      paste0(gene_filter, "_allele",
              "_species_exclusive_allele_counts.csv"
       )
     ))
   
   # Count of isolates with multiple of <gene_filter> by species
   gene_multiples_overview_by_species <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(biosample) %>%
     dplyr::filter(length(unique(allele)) > 1) %>%
     dplyr::ungroup() %>%
@@ -834,14 +823,14 @@ for (i in 1:nrow(combinations)) {
   gene_multiples_overview_by_species %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text,
+      paste0(gene_filter, "_allele",
              "_multiples_overview_by_species.csv"
       )
     ))
   
   # List of isolates with multiple of <gene_filter>
   gene_multiples_by_isolate <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(biosample) %>%
     dplyr::filter(length(unique(allele)) > 1) %>%
     determine_combinations() %>%
@@ -853,12 +842,12 @@ for (i in 1:nrow(combinations)) {
   gene_multiples_by_isolate %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_multiples_by_isolate.csv")
+      paste0(gene_filter, "_allele", "_multiples_by_isolate.csv")
     ))
   
   # Frequency of distinct combinations of multiple of <gene_filter>
   gene_combination_counts <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(biosample) %>%
     dplyr::filter(length(unique(allele)) > 1) %>%
     determine_combinations() %>%
@@ -869,27 +858,27 @@ for (i in 1:nrow(combinations)) {
   gene_combination_counts %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text,"_combination_counts.csv")
+      paste0(gene_filter, "_allele","_combination_counts.csv")
     ))
   
   # Full <gene_filter> <gene_filter_type> counts and summary graphics by Collection Period
   gene_frequency_by_collection_period <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     categorize_integer_groups(source_col = "year",
                               label_col = "period",
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_isolates(period,!!gene_filter_type,!!gene_filter_type_markdown) %>%
+    count_isolates(period,allele,allele_markdown) %>%
     relevel_numeric(period) %>%
-    dplyr::arrange(period,!!gene_filter_type)
+    dplyr::arrange(period,allele)
   
   gene_frequency_by_collection_period %>%
-    dplyr::select(period,!!gene_filter_type, alleles) %>%
+    dplyr::select(period,allele, isolates) %>%
     readr::write_csv(
       file.path(
         table_path,
-        paste0(gene_filter, "_", gene_filter_type_text,
+        paste0(gene_filter, "_allele",
                "_frequency_by_collection_period.csv"
         )
       )
@@ -898,19 +887,19 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_collection_period_across_groups_plot <-
     gene_frequency_by_collection_period %>%
     dplyr::group_by(period) %>%
-    top_n_across_groups(!!gene_filter_type,!!gene_filter_type_markdown,
-                        count = alleles,
+    top_n_across_groups(allele,allele_markdown,
+                        count = isolates,
                         n = 10) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = period,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_across_groups_by_collection_period.svg"
     )),
     plot = gene_frequency_by_collection_period_across_groups_plot
@@ -919,19 +908,19 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_collection_period_overall_plot <-
     gene_frequency_by_collection_period %>%
     dplyr::group_by(period) %>%
-    top_n_overall(!!gene_filter_type,!!gene_filter_type_markdown,
-                  count = alleles,
+    top_n_overall(allele,allele_markdown,
+                  count = isolates,
                   n = 10) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = period,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_overall_by_collection_period.svg"
     )),
     plot = gene_frequency_by_collection_period_overall_plot
@@ -939,41 +928,41 @@ for (i in 1:nrow(combinations)) {
   
   # Full <gene_filter> <gene_filter_type> counts and summary graphics by Collection Period (only for isolates collected since 2000)
   gene_frequency_by_collection_period_2000 <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::filter(!year < 2000) %>%
     categorize_integer_groups(source_col = "year",
                               label_col = "period",
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_isolates(period,!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
+    count_isolates(period,allele,allele_markdown) %>%
     relevel_numeric(period) %>%
     dplyr::arrange(period)
   
   gene_frequency_by_collection_period_2000 %>%
-    select(period,!!gene_filter_type, alleles) %>%
+    select(period,allele, isolates) %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text,
+      paste0(gene_filter, "_allele",
              "_frequency_by_collection_period_2000s.csv"
       )))
   
   gene_frequency_by_collection_period_2000_across_groups_plot <-
     gene_frequency_by_collection_period_2000 %>%
     group_by(period) %>%
-    top_n_across_groups(!!gene_filter_type,!!gene_filter_type_markdown,
-                        count = alleles,
+    top_n_across_groups(allele,allele_markdown,
+                        count = isolates,
                         n = 10) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = period,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_across_groups_by_collection_period_2000s.svg"
     )),
     plot = gene_frequency_by_collection_period_2000_across_groups_plot
@@ -982,19 +971,19 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_collection_period_2000_overall_plot <-
     gene_frequency_by_collection_period_2000 %>%
     dplyr::group_by(period) %>%
-    top_n_overall(!!gene_filter_type,!!gene_filter_type_markdown,
-                  count = alleles,
+    top_n_overall(allele,allele_markdown,
+                  count = isolates,
                   n = 10) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = period,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_overall_by_collection_period_2000s.svg"
     )),
     plot = gene_frequency_by_collection_period_2000_overall_plot
@@ -1002,34 +991,34 @@ for (i in 1:nrow(combinations)) {
   
   # Full <gene_filter> <gene_filter_type> counts and top 10 graphic by WHO Region
   gene_frequency_by_region <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(region) %>%
-    count_isolates(region,!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
+    count_isolates(region,allele,allele_markdown)
   
   gene_frequency_by_region %>%
-    dplyr::select(-!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
+    dplyr::select(-allele_markdown) %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_frequency_by_region.csv")
+      paste0(gene_filter, "_allele", "_frequency_by_region.csv")
     ))
   
   gene_frequency_by_region_overall_10_plot <-
     gene_frequency_by_region %>%
     dplyr::group_by(region) %>%
-    top_n_overall(!!gene_filter_type,!!gene_filter_type_markdown,
-                  count = alleles,
+    top_n_overall(allele,allele_markdown,
+                  count = isolates,
                   n = 10) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = region,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_10_donut_overall_by_region.svg"
     )),
     plot = gene_frequency_by_region_overall_10_plot
@@ -1038,19 +1027,19 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_region_overall_5_plot <-
     gene_frequency_by_region %>%
     group_by(region) %>%
-    top_n_overall(!!gene_filter_type,!!gene_filter_type_markdown,
-                  count = alleles,
+    top_n_overall(allele,allele_markdown,
+                  count = isolates,
                   n = 5) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = region,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_overall_by_region.svg"
     )),
     plot = gene_frequency_by_region_overall_5_plot
@@ -1059,19 +1048,19 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_region_across_regions_5_plot <-
     gene_frequency_by_region %>%
     dplyr::group_by(region) %>%
-    top_n_across_groups(!!gene_filter_type,!!gene_filter_type_markdown,
-                        count = alleles,
+    top_n_across_groups(allele,allele_markdown,
+                        count = isolates,
                         n = 5) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = region,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_across_groups_by_region.svg"
     )),
     plot = gene_frequency_by_region_across_regions_5_plot
@@ -1079,7 +1068,7 @@ for (i in 1:nrow(combinations)) {
   
   # Full <gene_filter> <gene_filter_type> counts by Species (50+ alleles)
   gene_frequency_by_species <- isolates %>%
-    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(species) %>%
     dplyr::filter(n() >= 50) %>%
     dplyr::ungroup() %>%
@@ -1087,34 +1076,34 @@ for (i in 1:nrow(combinations)) {
     tidyr::drop_na(species) %>%
     count_isolates(species,
                   species_markdown,
-                  !!gene_filter_type,
-                  !!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
-    relevel_numeric(!!gene_filter_type,!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
-    dplyr::arrange(!!gene_filter_type)
+                  allele,
+                  allele_markdown) %>%
+    relevel_numeric(allele,allele_markdown) %>%
+    dplyr::arrange(allele)
   
   gene_frequency_by_species %>%
-    dplyr::select(-species_markdown,-!!rlang::sym(paste0(gene_filter_type_text, "_markdown"))) %>%
+    dplyr::select(-species_markdown,-allele_markdown) %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_", gene_filter_type_text, "_frequency_by_species.csv")
+      paste0(gene_filter, "_allele", "_frequency_by_species.csv")
     ))
   
   gene_frequency_by_species_overall_plot <-
     gene_frequency_by_species %>%
     group_by(species_markdown) %>%
-    top_n_overall(!!gene_filter_type,!!gene_filter_type_markdown,
-                  count = alleles,
+    top_n_overall(allele,allele_markdown,
+                  count = isolates,
                   n = 5) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = species_markdown,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text, 
+    paste0(gene_filter, "_allele", 
            "_top_5_donut_overall_by_species.svg"
     )),
     plot = gene_frequency_by_species_overall_plot
@@ -1123,21 +1112,393 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_species_across_groups_plot <-
     gene_frequency_by_species %>%
     dplyr::group_by(species_markdown) %>%
-    top_n_across_groups(!!gene_filter_type,!!gene_filter_type_markdown,
-                        count = alleles,
+    top_n_across_groups(allele,allele_markdown,
+                        count = isolates,
                         n = 5) %>%
     donut_plot_panel(
-      fill = !!gene_filter_type_markdown,
+      fill = allele_markdown,
       facet = species_markdown,
-      counts = alleles,
+      counts = isolates,
       legend = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_", gene_filter_type_text,
+    paste0(gene_filter, "_allele",
            "_top_5_donut_across_groups_by_species.svg"
     )),
+    plot = gene_frequency_by_species_across_groups_plot
+  )
+}
+```
+
+#### OXA family counts and donut plots
+```{r, eval = FALSE}
+# The counting and formatting needed for OXA families is slightly different than
+# that for alleles. Separating the code out simplifies the process and
+# eliminates the need to more complicated logic to handle both cases
+
+if("OXA" %in% combinations[["name"]]) {
+
+  # Distinct assigned OXA family frequency
+  gene_assigned_type_frequency <- isolates %>%
+    remove_unassigned_bla() %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    count_alleles(oxa_family, oxa_family_markdown)
+  
+  gene_assigned_type_frequency %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_frequency.csv"
+    ))
+  
+  gene_assigned_type_frequency_plot <-
+    gene_assigned_type_frequency %>%
+    top_n_across_groups(oxa_family,
+                        oxa_family_markdown,
+                        count = alleles,
+                        n = 10) %>%
+    donut_plot(
+      fill = oxa_family_markdown,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_frequency_donut.svg"),
+    plot = gene_assigned_type_frequency_plot
+  )
+  
+  # Count of OXA families unique to a single species (in the data set)
+  gene_species_exclusive_allele_overview <- isolates %>%
+    remove_unassigned_bla() %>%
+    filter_exclusive_alleles(species) %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::group_by(species) %>%
+    dplyr::summarize(alleles = length(unique(allele))) %>%
+    dplyr::arrange(desc(alleles))
+  
+  gene_species_exclusive_allele_overview %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_species_exclusive_allele_overview.csv"
+    ))
+  
+  # List (with counts) of OXA families unique to a single species (in the data set)
+  gene_species_exclusive_allele_counts <- isolates %>%
+    filter_exclusive_alleles(species) %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::group_by(species) %>%
+    count_alleles(allele)
+  
+  gene_species_exclusive_allele_counts %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_species_exclusive_allele_counts.csv"
+    ))
+  
+  # Count of isolates with multiple OXA families by species
+  gene_multiples_overview_by_species <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::group_by(biosample) %>%
+    dplyr::filter(length(unique(allele)) > 1) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(biosample, .keep_all = TRUE) %>%
+    count_alleles(species)
+  
+  gene_multiples_overview_by_species %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_multiples_overview_by_species.csv"
+    ))
+  
+  # List of isolates with multiple OXA families
+  gene_multiples_by_isolate <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::group_by(biosample) %>%
+    dplyr::filter(length(unique(allele)) > 1) %>%
+    determine_combinations() %>%
+    dplyr::distinct(biosample, .keep_all = TRUE) %>%
+    dplyr::select(biosample, species, combo) %>%
+    relevel_numeric(species, combo) %>%
+    dplyr::arrange(species, combo)
+  
+  gene_multiples_by_isolate %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_multiples_by_isolate.csv"
+    ))
+  
+  # Frequency of distinct combinations of multiple of OXA families
+  gene_combination_counts <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::group_by(biosample) %>%
+    dplyr::filter(length(unique(allele)) > 1) %>%
+    determine_combinations() %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(biosample, .keep_all = TRUE) %>%
+    count_alleles(combo)
+  
+  gene_combination_counts %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_combination_counts.csv"
+    ))
+  
+  # Full OXA family counts and summary graphics by Collection Period
+  gene_frequency_by_collection_period <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    categorize_integer_groups(source_col = "year",
+                              label_col = "period",
+                              groups = collection_period_groups) %>%
+    remove_unassigned_bla() %>%
+    tidyr::drop_na(period) %>%
+    count_alleles(period, oxa_family, oxa_family_markdown) %>%
+    relevel_numeric(period) %>%
+    dplyr::arrange(period, oxa_family)
+  
+  gene_frequency_by_collection_period %>%
+    dplyr::select(period, oxa_family, alleles) %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        "OXA_family_frequency_by_collection_period.csv"
+      )
+    )
+  
+  gene_frequency_by_collection_period_across_groups_plot <-
+    gene_frequency_by_collection_period %>%
+    dplyr::group_by(period) %>%
+    top_n_across_groups(oxa_family, oxa_family_markdown,
+                        count = alleles,
+                        n = 10) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = period,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_across_groups_by_collection_period.svg"
+    ),
+    plot = gene_frequency_by_collection_period_across_groups_plot
+  )
+  
+  gene_frequency_by_collection_period_overall_plot <-
+    gene_frequency_by_collection_period %>%
+    dplyr::group_by(period) %>%
+    top_n_overall(oxa_family, oxa_family_markdown,
+                  count = alleles,
+                  n = 10) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = period,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_overall_by_collection_period.svg"
+    ),
+    plot = gene_frequency_by_collection_period_overall_plot
+  )
+  
+  # Full OXA family counts and summary graphics by Collection Period (only for isolates collected since 2000)
+  gene_frequency_by_collection_period_2000 <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::filter(!year < 2000) %>%
+    categorize_integer_groups(source_col = "year",
+                              label_col = "period",
+                              groups = collection_period_groups) %>%
+    remove_unassigned_bla() %>%
+    tidyr::drop_na(period) %>%
+    count_alleles(period, oxa_family, oxa_family_markdown) %>%
+    relevel_numeric(period) %>%
+    dplyr::arrange(period)
+  
+  gene_frequency_by_collection_period_2000 %>%
+    select(period, oxa_family, alleles) %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_frequency_by_collection_period_2000s.csv"
+      ))
+  
+  gene_frequency_by_collection_period_2000_across_groups_plot <-
+    gene_frequency_by_collection_period_2000 %>%
+    group_by(period) %>%
+    top_n_across_groups(oxa_family, oxa_family_markdown,
+                        count = alleles,
+                        n = 10) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = period,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_across_groups_by_collection_period_2000s.svg"
+    ),
+    plot = gene_frequency_by_collection_period_2000_across_groups_plot
+  )
+  
+  gene_frequency_by_collection_period_2000_overall_plot <-
+    gene_frequency_by_collection_period_2000 %>%
+    dplyr::group_by(period) %>%
+    top_n_overall(oxa_family, oxa_family_markdown,
+                  count = alleles,
+                  n = 10) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = period,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_overall_by_collection_period_2000s.svg"
+    ),
+    plot = gene_frequency_by_collection_period_2000_overall_plot
+  )
+  
+  # Full OXA family counts and top 10 graphic by Region
+  gene_frequency_by_region <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    remove_unassigned_bla() %>%
+    tidyr::drop_na(region) %>%
+    count_alleles(region, oxa_family, oxa_family_markdown)
+  
+  gene_frequency_by_region %>%
+    dplyr::select(-oxa_family_markdown) %>%
+    readr::write_csv(file.path(
+      table_path,
+      "OXA_family_frequency_by_region.csv"
+    ))
+  
+  gene_frequency_by_region_overall_10_plot <-
+    gene_frequency_by_region %>%
+    dplyr::group_by(region) %>%
+    top_n_overall(oxa_family, oxa_family_markdown,
+                  count = alleles,
+                  n = 10) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = region,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_10_donut_overall_by_region.svg"
+    ),
+    plot = gene_frequency_by_region_overall_10_plot
+  )
+  
+  gene_frequency_by_region_overall_5_plot <-
+    gene_frequency_by_region %>%
+    group_by(region) %>%
+    top_n_overall(oxa_family, oxa_family_markdown,
+                  count = alleles,
+                  n = 5) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = region,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_overall_by_region.svg"
+    ),
+    plot = gene_frequency_by_region_overall_5_plot
+  )
+  
+  gene_frequency_by_region_across_regions_5_plot <-
+    gene_frequency_by_region %>%
+    dplyr::group_by(region) %>%
+    top_n_across_groups(oxa_family, oxa_family_markdown,
+                        count = alleles,
+                        n = 5) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = region,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_across_groups_by_region.svg"
+    ),
+    plot = gene_frequency_by_region_across_regions_5_plot
+  )
+  
+  # Full OXA family counts by Species (50+ alleles)
+  gene_frequency_by_species <- isolates %>%
+    filter_attribute(oxa_family, "OXA") %>%
+    dplyr::group_by(species) %>%
+    dplyr::filter(n() >= 50) %>%
+    dplyr::ungroup() %>%
+    remove_unassigned_bla() %>%
+    tidyr::drop_na(species) %>%
+    count_alleles(species,
+                  species_markdown,
+                  oxa_family,
+                  oxa_family_markdown) %>%
+    relevel_numeric(oxa_family, oxa_family_markdown) %>%
+    dplyr::arrange(oxa_family)
+  
+  gene_frequency_by_species %>%
+    dplyr::select(-species_markdown,-oxa_family_markdown) %>%
+    readr::write_csv(file.path(
+      table_path, "OXA_family_frequency_by_species.csv"
+    ))
+  
+  gene_frequency_by_species_overall_plot <-
+    gene_frequency_by_species %>%
+    group_by(species_markdown) %>%
+    top_n_overall(oxa_family, oxa_family_markdown,
+                  count = alleles,
+                  n = 5) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = species_markdown,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_overall_by_species.svg"
+    ),
+    plot = gene_frequency_by_species_overall_plot
+  )
+  
+  gene_frequency_by_species_across_groups_plot <-
+    gene_frequency_by_species %>%
+    dplyr::group_by(species_markdown) %>%
+    top_n_across_groups(oxa_family, oxa_family_markdown,
+                        count = alleles,
+                        n = 5) %>%
+    donut_plot_panel(
+      fill = oxa_family_markdown,
+      facet = species_markdown,
+      counts = alleles,
+      legend = "OXA Family"
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    "OXA_family_top_5_donut_across_groups_by_species.svg"
+    ),
     plot = gene_frequency_by_species_across_groups_plot
   )
 }
@@ -1514,14 +1875,10 @@ for (i in 1:nrow(combinations)) {
     paste0(gene_filter, "_", gene_filter_type_text, "_frequency_pds_deduplicated_and_unclustered_donut.svg")),
     plot = pds_deduplicated_unclustered_frequency_plot
   ) 
-   
-   
 }
-
 ```
 
 ## Alleles Deduplicated by MLST
-
 # Sequences for Downloading
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
