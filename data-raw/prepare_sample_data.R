@@ -45,3 +45,41 @@ ipg <- readr::read_tsv(file.path(getwd(), "data-raw/ipg.tsv")) %>%
 readr::write_tsv(x = ipg, file = file.path(getwd(), "inst/extdata/ipg.tsv"))
 
 # Prepare sample datasets -------------------------------------------------
+
+## File Paths to "extdata"
+isolates_path <- system.file("extdata/amr.metadata.tsv", package = "pdallele")
+cluster_path <- system.file("extdata/cluster_list.tsv", package = "pdallele")
+refgene_path <- system.file("extdata/refgene.tsv", package = "pdallele")
+microbigge_path <- system.file("extdata/microbigge.tsv", package = "pdallele")
+ipg_path <- system.file("extdata/ipg.tsv", package = "pdallele")
+regions_path <- system.file("extdata/regions.csv", package = "pdallele")
+
+## Isolates Browser -----
+isolates_raw <- import_isolates_browser_metadata(isolates_path)
+
+isolates_unfiltered <- isolates_raw %>%
+  na_if_tibble_chr(terms = na_strings) %>%
+  parse_genus_species() %>%
+  reverse_geocode() %>%
+  split_location() %>%
+  import_regions(path = regions_path) %>%
+  import_cluster_list(cluster_path) %>%
+  separate_genotypes(include = "amr") %>%
+  add_reference_gene_catalog(refgene_path) %>%
+  parse_bla_formatting() %>%
+  parse_ib_oxa_family() %>%
+  parse_year()
+
+isolates <- isolates_unfiltered %>%
+  clean_filter_alleles(filter = "bla", remove = remove_allele_types)
+
+## Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) -----
+mbe_raw <- import_microbigge_gcp(microbigge_path)
+
+mbe <- mbe_raw %>%
+  na_if_tibble_chr(terms = na_strings) %>%
+  filter_microbigge(coverage = 100, identity = 100, remove = remove_mbe_allele_types) %>%
+  import_ipg(ipg_path) %>%
+  import_cluster_list(cluster_path) %>%
+  #import_mlst(mlst_path) %>%
+  parse_mbe_oxa_family()
