@@ -1421,7 +1421,7 @@ for (i in 1:nrow(combinations)) {
     tidyr::drop_na(pds) %>%
     dplyr::distinct(pds, allele, .keep_all = TRUE)
   
-  pds_deduplicated_frequency2 <- pds_deduplicated %>%
+  pds_deduplicated_frequency <- pds_deduplicated %>%
     count_isolates(!!gene_filter_type,
                   !!rlang::sym(paste0(gene_filter_type_text, "_markdown")))
   
