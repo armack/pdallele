@@ -1404,7 +1404,6 @@ overview_pds_frequency %>%
 
 ```
 
-
 ## Alleles Deduplicated by SNP Cluster
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
@@ -1525,3 +1524,33 @@ for (i in 1:nrow(combinations)) {
 ```
 
 ## Alleles Deduplicated by MLST
+
+# Sequences for Downloading
+```{r, eval = FALSE}
+for (i in 1:nrow(combinations)) {
+  gene_filter <- combinations[[i, "name"]]
+  gene_filter_type <- rlang::sym(combinations[[i, "type"]])
+  
+  # List of distinct, assigned protein accessions
+  isolates %>%
+    remove_unassigned_bla() %>%
+    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    dplyr::distinct(protein, .keep_all = TRUE) %>%
+    tidyr::drop_na(protein) %>%
+    dplyr::pull(protein) %>%
+    readr::write_lines(file.path(table_path,
+                                 paste0("distinct_assigned_", gene_filter, "_proteins.txt")))  
+  
+  # List of distinct, unassigned protein accessions
+  mbe %>%
+    remove_assigned_bla() %>%
+    filter_attribute(!!gene_filter_type, gene_filter) %>%
+    dplyr::distinct(ipg, .keep_all = TRUE) %>%
+    tidyr::drop_na(protein) %>%
+    dplyr::pull(protein) %>%
+    readr::write_lines(file.path(table_path,
+                                 paste0("distinct_unassigned_", gene_filter, "_proteins.txt")))
+  
+}
+```
+
