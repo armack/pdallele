@@ -64,7 +64,7 @@ count_by_column <- function(data, ..., isolates = FALSE, sort = TRUE,
         dplyr::ungroup(.)
       else . } %>%
     dplyr::count(..., name = name) %>%
-    {if(sort) dplyr::mutate(., dplyr::across(c(...), ~forcats::fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
+    {if(sort) dplyr::mutate(., dplyr::across(c(..., -where(is.numeric)), ~forcats::fct_reorder(., !!rlang::sym(name), .desc = TRUE))) %>%
         dplyr::arrange(., dplyr::across(c(...))) else . } %>%
     {if(identical(na_last, TRUE)) dplyr::arrange(., dplyr::across(c(...), ~ is.na(.)))
       else if(identical(na_last, FALSE)) dplyr::arrange(., dplyr::across(c(...), ~ !is.na(.)))
