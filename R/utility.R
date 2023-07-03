@@ -167,7 +167,8 @@ download_mlst_profile <- function(path, url){
 
 #' Automatically re-parse FastMLST calls using profiles downloaded from PubMLST
 #'
-#' Download correct schema from PubMLST and use to re-parse allele calls from
+#' @description
+#' Download schema from PubMLST and use to re-parse allele calls from
 #' FastMLST. Optionally save the re-parsed file for future use.
 #'
 #' This is primarily useful to handle situations where multiple alleles present
