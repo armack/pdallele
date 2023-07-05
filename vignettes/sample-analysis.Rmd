@@ -753,7 +753,7 @@ for (i in 1:nrow(combinations)) {
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    mutate(total_rows = nrow(.)) %>%
+    mutate(total_rows = dplyr::n()) %>%
     count_isolates(allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -804,7 +804,7 @@ for (i in 1:nrow(combinations)) {
     filter_exclusive_alleles(species) %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(species) %>%
-    mutate(total_rows = nrow(.)) %>%
+    mutate(total_rows = dplyr::n()) %>%
     count_isolates(allele, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -824,7 +824,7 @@ for (i in 1:nrow(combinations)) {
     dplyr::filter(length(unique(allele)) > 1) %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    mutate(total_rows = nrow(.)) %>%
+    mutate(total_rows = dplyr::n()) %>%
     count_isolates(species, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -862,7 +862,7 @@ for (i in 1:nrow(combinations)) {
     determine_combinations() %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    mutate(total_rows = nrow(.)) %>%
+    mutate(total_rows = dplyr::n()) %>%
     count_isolates(combo, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -1174,7 +1174,10 @@ if("OXA" %in% combinations[["name"]]) {
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
     filter_attribute(oxa_family, "OXA") %>%
-    count_alleles(oxa_family, oxa_family_markdown)
+    mutate(total_rows = dplyr::n()) %>%
+    count_alleles(oxa_family, oxa_family_markdown, total_rows) %>%
+    mutate(proportion = alleles / total_rows) %>%
+    select(-total_rows)
   
   gene_assigned_type_frequency %>%
     readr::write_csv(file.path(
@@ -1220,7 +1223,10 @@ if("OXA" %in% combinations[["name"]]) {
     filter_exclusive_alleles(species) %>%
     filter_attribute(oxa_family, "OXA") %>%
     dplyr::group_by(species) %>%
-    count_alleles(allele)
+    mutate(total_rows = dplyr::n()) %>%
+    count_alleles(allele, total_rows) %>%
+    mutate(proportion = alleles / total_rows) %>%
+    select(-total_rows)
   
   gene_species_exclusive_allele_counts %>%
     readr::write_csv(file.path(
@@ -1268,14 +1274,17 @@ if("OXA" %in% combinations[["name"]]) {
     determine_combinations() %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    count_alleles(combo)
+    mutate(total_rows = dplyr::n()) %>%
+    count_alleles(combo, total_rows) %>%
+    mutate(proportion = alleles / total_rows) %>%
+    select(-total_rows)
   
   gene_combination_counts %>%
     readr::write_csv(file.path(
       table_path,
       "OXA_family_combination_counts.csv"
     ))
-  
+
   # Full OXA family counts and summary graphics by Collection Period
   gene_frequency_by_collection_period <- isolates %>%
     filter_attribute(oxa_family, "OXA") %>%
@@ -1284,7 +1293,12 @@ if("OXA" %in% combinations[["name"]]) {
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_alleles(period, oxa_family, oxa_family_markdown) %>%
+    dplyr::group_by(period) %>%
+    dplyr::mutate(total_rows = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
+    mutate(proportion = alleles / total_rows) %>%
+    select(-total_rows) %>%
     relevel_numeric(period) %>%
     dplyr::arrange(period, oxa_family)
   
@@ -1346,7 +1360,12 @@ if("OXA" %in% combinations[["name"]]) {
                               groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
-    count_alleles(period, oxa_family, oxa_family_markdown) %>%
+    dplyr::group_by(period) %>%
+    dplyr::mutate(total_rows = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::mutate(proportion = alleles / total_rows) %>%
+    dplyr::select(-total_rows) %>%
     relevel_numeric(period) %>%
     dplyr::arrange(period)
   
@@ -1402,7 +1421,12 @@ if("OXA" %in% combinations[["name"]]) {
     filter_attribute(oxa_family, "OXA") %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(region) %>%
-    count_alleles(region, oxa_family, oxa_family_markdown)
+    dplyr::group_by(region) %>%
+    dplyr::mutate(total_rows = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    count_alleles(region, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::mutate(proportion = alleles / total_rows) %>%
+    dplyr::select(-total_rows)
   
   gene_frequency_by_region %>%
     dplyr::select(-oxa_family_markdown) %>%
@@ -1479,10 +1503,12 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::ungroup() %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(species) %>%
-    count_alleles(species,
-                  species_markdown,
-                  oxa_family,
-                  oxa_family_markdown) %>%
+    dplyr::group_by(species) %>%
+    mutate(total_rows = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    count_alleles(species, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::mutate(proportion = alleles / total_rows) %>%
+    dplyr::select(-total_rows) %>%
     relevel_numeric(oxa_family, oxa_family_markdown) %>%
     dplyr::arrange(oxa_family)
   
@@ -1657,7 +1683,7 @@ for (i in 1:nrow(combinations)) {
 # Raw Isolate and Allele Counts
 overview_raw_mbe_isolates <- mbe_raw %>%
   dplyr::distinct(biosample) %>%
-  dplyr::summarize(total = n()) %>%
+  dplyr::summarize(total = dplyr::n()) %>%
   as.integer()
 
 overview_raw_mbe_alleles <- mbe_raw %>%
@@ -1679,21 +1705,21 @@ overview_mbe_alleles <- mbe %>%
 overview_mbe_distinct_alleles <- mbe %>%
   tidyr::drop_na(ipg) %>%
   dplyr::distinct(ipg) %>%
-  dplyr::summarize(total = n()) %>%
+  dplyr::summarize(total = dplyr::n()) %>%
   as.integer()
 
 overview_mbe_distinct_assigned_alleles <- mbe %>%
   tidyr::drop_na(ipg) %>%
   remove_unassigned_bla() %>%
   dplyr::distinct(ipg) %>%
-  dplyr::summarize(total = n()) %>%
+  dplyr::summarize(total = dplyr::n()) %>%
   as.integer()
 
 overview_mbe_distinct_unassigned_alleles <- mbe %>%
   tidyr::drop_na(ipg) %>%
   remove_assigned_bla() %>%
   dplyr::distinct(ipg) %>%
-  dplyr::summarize(total = n()) %>%
+  dplyr::summarize(total = dplyr::n()) %>%
   as.integer()
 
 mbe_overview_text <- c(
@@ -1717,14 +1743,14 @@ mbe_distinct_assigned_allele_counts <- mbe %>%
   dplyr::mutate(gene = stringr::str_remove(allele, "-\\d+[a-zA-Z]?$")) %>%
   dplyr::group_by(gene) %>%
   dplyr::distinct(allele) %>%
-  dplyr::summarize(assigned = n())
+  dplyr::summarize(assigned = dplyr::n())
 
 mbe_distinct_unassigned_allele_counts <- mbe %>%
   filter_unassigned_bla() %>%
   dplyr::rename(gene = "allele") %>%
   dplyr::group_by(gene) %>%
   dplyr::distinct(ipg) %>%
-  dplyr::summarize(unassigned = n())
+  dplyr::summarize(unassigned = dplyr::n())
 
 mbe_distinct_allele_counts <- mbe_distinct_assigned_allele_counts %>%
   dplyr::full_join(mbe_distinct_unassigned_allele_counts, by = "gene") %>%
@@ -1951,8 +1977,6 @@ for (i in 1:nrow(combinations)) {
   )
 }
 ```
-
-## Alleles Deduplicated by MLST
 # Sequences for Downloading
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
