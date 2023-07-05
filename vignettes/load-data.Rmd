@@ -46,7 +46,7 @@ microbigge_path   <- file.path(data_path, "microbigge.tsv")
 refgene_path      <- file.path(data_path, "refgene.tsv")
 ipg_path          <- file.path(data_path, "ipg.tsv")
 cluster_path      <- file.path(data_path, "cluster_list.tsv")
-mlst_path         <- file.path(data_path, "mlst.csv")
+mlst_path         <- file.path(data_path, "mlst_reprocessed.csv")
 region_path       <- system.file("extdata/regions.csv", package = "pdallele")
 ```
 
@@ -129,7 +129,7 @@ mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   na_if_tibble_chr(terms = na_strings) %>%
   import_ipg(ipg_path) %>%
   import_cluster_list(cluster_path) %>%
-  #import_mlst(mlst_path) %>%
+  import_mlst(mlst_path) %>%
   parse_mbe_oxa_family()
 ```
 
