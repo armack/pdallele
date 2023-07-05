@@ -120,7 +120,7 @@ pubmlst_listing <- function(url = "https://pubmlst.org/static/data/dbases.xml"){
 parse_mlst_profiles <- function(.calls, .profiles){
 
   call_names <- .calls %>%
-    dplyr::select(-"Genome", -"Scheme", -"ST", - dplyr::any_of(c("clonal_complex"))) %>%
+    dplyr::select(-"Genome", -"Scheme", -"ST", - dplyr::any_of(c("clonal_complex", "species"))) %>%
     names()
   profile_names <- .profiles %>%
     dplyr::select(- dplyr::any_of(c("ST", "clonal_complex", "species"))) %>%
@@ -165,19 +165,19 @@ download_mlst_profile <- function(path, url){
   message(paste("Saved", tools::file_path_sans_ext(basename(path)), "MLST Schema to", path))
 }
 
-#' Automatically re-parse FastMLST calls using profiles downloaded from PubMLST
+#' Automatically reprocess FastMLST calls using profiles downloaded from PubMLST
 #'
 #' @description
-#' Download schema from PubMLST and use to re-parse allele calls from
-#' FastMLST. Optionally save the re-parsed file for future use.
+#' Download schema from PubMLST and use to reprocess allele calls from
+#' FastMLST. Optionally save the reprocessed file for future use.
 #'
 #' This is primarily useful to handle situations where multiple alleles present
 #' in a single strain caused failed MLST typing in the original file.
 #'
 #' @param path location of FastMLST csv output file
-#' @param save should the re-parsed file be saved?
-reparse_mlst <- function(path, save = TRUE){
-  raw_mlst <- utils::read.csv(path)
+#' @param save should the reprocessed file be saved?
+reprocess_mlst <- function(path, save = TRUE){
+  raw_mlst <- readr::read_csv(path, show_col_types = FALSE)
   mlst <- process_mlst(raw_mlst)
 
   pubmlst <- pubmlst_listing() %>%
@@ -195,7 +195,7 @@ reparse_mlst <- function(path, save = TRUE){
     dplyr::pull(url)
 
   profile_path <- paste0(dirname(path), "/", stringr::str_replace_all(Scheme, "#", ""),".tsv")
-  reparsed_path <- paste0(tools::file_path_sans_ext(path), "_reparsed",".csv")
+  reprocessed_path <- paste0(tools::file_path_sans_ext(path), "_reprocessed.csv")
 
   if(!file.exists(profile_path))
     download_mlst_profile(profile_path, url)
@@ -207,10 +207,10 @@ reparse_mlst <- function(path, save = TRUE){
     dplyr::mutate(ST = dplyr::case_when(is.na(ST) ~ NA_character_, TRUE ~ paste0("ST", ST)))
 
   if(save){
-    utils::write.csv(fixed, file = reparsed_path, row.names = FALSE)
-    message(paste0("Saved re-parsed ",
+    utils::write.csv(fixed, file = reprocessed_path, row.names = FALSE)
+    message(paste0("Saved reprocessed ",
                    tools::file_path_sans_ext(path)," to `",
-                   reparsed_path, "`"))
+                   reprocessed_path, "`"))
   }
 
   return(fixed)
