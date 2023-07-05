@@ -1773,18 +1773,71 @@ for (gene_name in genes_of_interest) {
 ```
 
 # Deduplicated Isolates Data
-
-## Overview 
-
+## Isolate Counts by Variable 
 ```{r, eval = FALSE}
 # SNP Cluster Frequency
 overview_pds_frequency <- isolates %>%
-  count_isolates(pds)
+  count_isolates(pds) %>%
+  mutate(proportion = isolates / sum(isolates))
 
 overview_pds_frequency %>%
   readr::write_csv(file.path(table_path, "overview_pds_frequency.csv"))
 
+# MLST Sequence Type Frequency
+overview_mlst_frequency <- mbe %>%
+  count_isolates(mlst)
 
+overview_mlst_frequency %>%
+  readr::write_csv(file.path(table_path, "overview_mlst_frequency.csv"))
+```
+
+## Comparison of PDS and MLST
+```{r, eval = FALSE}
+
+
+```
+
+
+## Alleles Deduplicated by MLST Sequence Type
+```{r, eval = FALSE}
+for (i in 1:nrow(combinations)) {
+  gene_filter <- combinations[[i, "name"]]
+  gene_filter_label <- combinations[[i, "label"]]
+
+  # MLST Deduplicated - Assigned allele frequency
+  mlst_deduplicated <- mbe %>%
+    remove_unassigned_bla() %>%
+    filter_attribute(allele, gene_filter) %>%
+    tidyr::drop_na(mlst) %>%
+    dplyr::distinct(mlst, allele, .keep_all = TRUE)
+  
+  mlst_deduplicated_frequency <- mlst_deduplicated %>%
+    count_isolates(allele) %>%
+    mutate(porportion = isolates / nrow(mlst_deduplicated))
+  
+  mlst_deduplicated_frequency %>%
+    readr::write_csv(file.path(
+      table_path,
+      paste0(gene_filter, "_allele_frequency_mlst_deduplicated.csv")
+    ))
+  
+  mlst_deduplicated_frequency_plot <-
+    mlst_deduplicated_frequency %>%
+    top_n_across_groups(allele,
+                        count = isolates,
+                        n = 10) %>%
+    donut_plot(
+      fill = allele,
+      counts = isolates,
+      legend = gene_filter_label
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0(gene_filter, "_allele_frequency_mlst_deduplicated_donut.svg")),
+    plot = mlst_deduplicated_frequency_plot
+  ) 
+}
 ```
 
 ## Alleles Deduplicated by SNP Cluster
