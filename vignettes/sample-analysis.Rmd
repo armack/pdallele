@@ -1506,7 +1506,7 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::group_by(species) %>%
     mutate(total_rows = dplyr::n()) %>%
     dplyr::ungroup() %>%
-    count_alleles(species, oxa_family, oxa_family_markdown, total_rows) %>%
+    count_alleles(species, species_markdown, oxa_family, oxa_family_markdown, total_rows) %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
     dplyr::select(-total_rows) %>%
     relevel_numeric(oxa_family, oxa_family_markdown) %>%
@@ -1819,8 +1819,21 @@ overview_mlst_frequency %>%
 
 ## Comparison of PDS and MLST
 ```{r, eval = FALSE}
+# Distinct MLST per PDS
+mbe %>%
+  tidyr::drop_na(mlst) %>%
+  dplyr::group_by(pds) %>%
+  dplyr::summarize(distinct_mlst = length(unique(mlst))) %>%
+  dplyr::arrange(desc(distinct_mlst)) %>%
+  readr::write_csv(file.path(table_path, "distinct_mlst_by_pds.csv"))
 
-
+# Distinct PDS per MLST
+mbe %>%
+  tidyr::drop_na(mlst) %>%
+  dplyr::group_by(mlst) %>%
+  dplyr::summarize(distinct_pds = length(unique(pds))) %>%
+  dplyr::arrange(desc(distinct_pds)) %>%
+  readr::write_csv(file.path(table_path, "distinct_pds_by_mlst.csv"))
 ```
 
 
