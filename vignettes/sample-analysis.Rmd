@@ -753,7 +753,7 @@ for (i in 1:nrow(combinations)) {
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -804,7 +804,7 @@ for (i in 1:nrow(combinations)) {
     filter_exclusive_alleles(species) %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::group_by(species) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(allele, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -824,7 +824,7 @@ for (i in 1:nrow(combinations)) {
     dplyr::filter(length(unique(allele)) > 1) %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(species, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -862,7 +862,7 @@ for (i in 1:nrow(combinations)) {
     determine_combinations() %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(combo, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
@@ -882,7 +882,7 @@ for (i in 1:nrow(combinations)) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(period, allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
@@ -953,7 +953,7 @@ for (i in 1:nrow(combinations)) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(period, allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
@@ -1016,7 +1016,7 @@ for (i in 1:nrow(combinations)) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(region) %>%
     dplyr::group_by(region) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(region, allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
@@ -1102,7 +1102,7 @@ for (i in 1:nrow(combinations)) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(species) %>%
     dplyr::group_by(species) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(species, species_markdown, allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
@@ -1174,7 +1174,7 @@ if("OXA" %in% combinations[["name"]]) {
   gene_assigned_type_frequency <- isolates %>%
     remove_unassigned_bla() %>%
     filter_attribute(oxa_family, "OXA") %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_alleles(oxa_family, oxa_family_markdown, total_rows) %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows)
@@ -1223,7 +1223,7 @@ if("OXA" %in% combinations[["name"]]) {
     filter_exclusive_alleles(species) %>%
     filter_attribute(oxa_family, "OXA") %>%
     dplyr::group_by(species) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_alleles(allele, total_rows) %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows)
@@ -1274,7 +1274,7 @@ if("OXA" %in% combinations[["name"]]) {
     determine_combinations() %>%
     dplyr::ungroup() %>%
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     count_alleles(combo, total_rows) %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows)
@@ -1294,7 +1294,7 @@ if("OXA" %in% combinations[["name"]]) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
-    dplyr::mutate(length(unique(biosample))) %>%
+    dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
     mutate(proportion = alleles / total_rows) %>%
@@ -1361,7 +1361,7 @@ if("OXA" %in% combinations[["name"]]) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
-    dplyr::mutate(length(unique(biosample))) %>%
+    dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
@@ -1422,7 +1422,7 @@ if("OXA" %in% combinations[["name"]]) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(region) %>%
     dplyr::group_by(region) %>%
-    dplyr::mutate(length(unique(biosample))) %>%
+    dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(region, oxa_family, oxa_family_markdown, total_rows) %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
@@ -1504,7 +1504,7 @@ if("OXA" %in% combinations[["name"]]) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(species) %>%
     dplyr::group_by(species) %>%
-    mutate(length(unique(biosample))) %>%
+    mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(species, species_markdown, oxa_family, oxa_family_markdown, total_rows) %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
