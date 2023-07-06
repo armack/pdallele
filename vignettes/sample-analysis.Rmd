@@ -1807,7 +1807,16 @@ overview_pds_frequency <- isolates %>%
   mutate(proportion = isolates / sum(isolates))
 
 overview_pds_frequency %>%
-  readr::write_csv(file.path(table_path, "overview_pds_frequency.csv"))
+  readr::write_csv(file.path(table_path, "overview_pds_frequency_isolates.csv"))
+
+# SNP Cluster Frequency
+overview_pds_frequency_mbe <- mbe %>%
+  count_isolates(pds) %>%
+  mutate(proportion = isolates / sum(isolates))
+
+overview_pds_frequency_mbe %>%
+  readr::write_csv(file.path(table_path, "overview_pds_frequency_mbe.csv"))
+
 
 # MLST Sequence Type Frequency
 overview_mlst_frequency <- mbe %>%
