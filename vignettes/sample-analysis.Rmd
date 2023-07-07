@@ -904,6 +904,22 @@ for (i in 1:nrow(combinations)) {
         )
       )
     )
+
+  gene_frequency_by_collection_period_rank <- 
+    gene_frequency_by_collection_period %>%
+    dplyr::select(-isolates, -allele_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = period, values_from = rank)
+  
+  gene_frequency_by_collection_period_rank %>%
+    dplyr::select(-allele_markdown) %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0(gene_filter, "_allele",
+               "_frequency_by_collection_period_rank.csv"
+        )
+      )
+    )
   
   gene_frequency_by_collection_period_across_groups_plot <-
     gene_frequency_by_collection_period %>%
@@ -976,6 +992,22 @@ for (i in 1:nrow(combinations)) {
              "_frequency_by_collection_period_2000s.csv"
       )))
   
+  gene_frequency_by_collection_period_2000_rank <- 
+    gene_frequency_by_collection_period_2000 %>%
+    dplyr::select(-isolates, -allele_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = period, values_from = rank)
+  
+  gene_frequency_by_collection_period_rank_2000 %>%
+    dplyr::select(-allele_markdown) %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0(gene_filter, "_allele",
+               "_frequency_by_collection_period_2000s_rank.csv"
+        )
+      )
+    )
+  
   gene_frequency_by_collection_period_2000_across_groups_plot <-
     gene_frequency_by_collection_period_2000 %>%
     group_by(period) %>%
@@ -1040,6 +1072,21 @@ for (i in 1:nrow(combinations)) {
       table_path,
       paste0(gene_filter, "_allele", "_frequency_by_region.csv")
     ))
+  
+  gene_frequency_by_region_rank <- 
+    gene_frequency_by_region %>%
+    dplyr::select(-isolates, -allele_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = region, values_from = rank)
+  
+  gene_frequency_by_region_rank %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0(gene_filter, "_allele",
+               "_frequency_by_region_rank.csv"
+        )
+      )
+    )
   
   gene_frequency_by_region_overall_10_plot <-
     gene_frequency_by_region %>%
@@ -1129,6 +1176,21 @@ for (i in 1:nrow(combinations)) {
       table_path,
       paste0(gene_filter, "_allele", "_frequency_by_species.csv")
     ))
+
+  gene_frequency_by_species_rank <- 
+    gene_frequency_by_species %>%
+    dplyr::select(-isolates, -allele_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = species, values_from = rank)
+  
+  gene_frequency_by_species_rank %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0(gene_filter, "_allele",
+               "_frequency_by_species_rank.csv"
+        )
+      )
+    )
   
   gene_frequency_by_species_overall_plot <-
     gene_frequency_by_species %>%
