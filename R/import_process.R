@@ -390,16 +390,17 @@ add_reference_gene_catalog <- function(data, path) {
 #'   for further details
 #'
 #' @param data A dataframe or tibble containing`allele` and `gene` columns
+#' @param gene Should the column "gene" also be parsed?
 #' @returns `data` with columns `allele_markdown`, `allele_math`,
 #'   `gene_markdown`, and `gene_math` added
 #' @export
-parse_bla_formatting <- function(data) {
+parse_bla_formatting <- function(data, gene = TRUE) {
 
   .complete <- data %>%
     dplyr::mutate(allele_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$allele, perl = TRUE) ) %>%
     dplyr::mutate(allele_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$allele, perl = TRUE) ) %>%
-    dplyr::mutate(gene_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$gene, perl = TRUE) ) %>%
-    dplyr::mutate(gene_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$gene, perl = TRUE) )
+    { if(gene) dplyr::mutate(., gene_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$gene, perl = TRUE) ) %>%
+        dplyr::mutate(., gene_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$gene, perl = TRUE) ) else . }
 
   return(.complete)
 }
