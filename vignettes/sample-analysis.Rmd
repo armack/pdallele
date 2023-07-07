@@ -911,7 +911,6 @@ for (i in 1:nrow(combinations)) {
     tidyr::pivot_wider(names_from = period, values_from = rank)
   
   gene_frequency_by_collection_period_rank %>%
-    dplyr::select(-allele_markdown) %>%
     readr::write_csv(
       file.path(
         table_path,
@@ -997,8 +996,7 @@ for (i in 1:nrow(combinations)) {
     dplyr::select(-isolates, -allele_markdown, -proportion) %>%
     tidyr::pivot_wider(names_from = period, values_from = rank)
   
-  gene_frequency_by_collection_period_rank_2000 %>%
-    dplyr::select(-allele_markdown) %>%
+  gene_frequency_by_collection_period_2000_rank %>%
     readr::write_csv(
       file.path(
         table_path,
