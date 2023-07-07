@@ -756,7 +756,8 @@ for (i in 1:nrow(combinations)) {
     mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(allele, allele_markdown, total_rows) %>%
     mutate(proportion = isolates / total_rows) %>%
-    select(-total_rows)
+    select(-total_rows) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates)))
   
   gene_assigned_type_frequency %>%
     readr::write_csv(file.path(
@@ -864,6 +865,7 @@ for (i in 1:nrow(combinations)) {
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(combo, total_rows) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows)
   
@@ -882,10 +884,13 @@ for (i in 1:nrow(combinations)) {
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
-    mutate(total_rows = length(unique(biosample))) %>%
+    dplyr::mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(period, allele, allele_markdown, total_rows) %>%
-    mutate(proportion = isolates / total_rows) %>%
-    select(-total_rows) %>%
+    dplyr::group_by(period) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(proportion = isolates / total_rows) %>%
+    dplyr::select(-total_rows) %>%
     relevel_numeric(period) %>%
     dplyr::arrange(period, desc(isolates))
   
@@ -955,6 +960,9 @@ for (i in 1:nrow(combinations)) {
     dplyr::group_by(period) %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(period, allele, allele_markdown, total_rows) %>%
+    dplyr::group_by(period) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    dplyr::ungroup() %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
     relevel_numeric(period) %>%
@@ -1018,6 +1026,9 @@ for (i in 1:nrow(combinations)) {
     dplyr::group_by(region) %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(region, allele, allele_markdown, total_rows) %>%
+    dplyr::group_by(region) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    dplyr::ungroup() %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
     relevel_numeric(region) %>%
@@ -1104,6 +1115,9 @@ for (i in 1:nrow(combinations)) {
     dplyr::group_by(species) %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_isolates(species, species_markdown, allele, allele_markdown, total_rows) %>%
+    dplyr::group_by(species) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    dplyr::ungroup() %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
     relevel_numeric(species) %>%
@@ -1176,6 +1190,7 @@ if("OXA" %in% combinations[["name"]]) {
     filter_attribute(oxa_family, "OXA") %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_alleles(oxa_family, oxa_family_markdown, total_rows) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows)
   
@@ -1225,6 +1240,9 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::group_by(species) %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_alleles(allele, total_rows) %>%
+    dplyr::group_by(species) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
+    dplyr::ungroup() %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows)
   
@@ -1276,6 +1294,7 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::distinct(biosample, .keep_all = TRUE) %>%
     mutate(total_rows = length(unique(biosample))) %>%
     count_alleles(combo, total_rows) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows)
   
@@ -1297,6 +1316,9 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::group_by(period) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
+    dplyr::ungroup() %>%
     mutate(proportion = alleles / total_rows) %>%
     select(-total_rows) %>%
     relevel_numeric(period) %>%
@@ -1364,6 +1386,9 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::group_by(period) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
     dplyr::select(-total_rows) %>%
     relevel_numeric(period) %>%
@@ -1425,6 +1450,9 @@ if("OXA" %in% combinations[["name"]]) {
     dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(region, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::group_by(region) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
     dplyr::select(-total_rows)
   
@@ -1507,6 +1535,9 @@ if("OXA" %in% combinations[["name"]]) {
     mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
     count_alleles(species, species_markdown, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::group_by(species) %>%
+    mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
     dplyr::select(-total_rows) %>%
     relevel_numeric(oxa_family, oxa_family_markdown) %>%
@@ -1861,7 +1892,8 @@ for (i in 1:nrow(combinations)) {
   
   mlst_deduplicated_frequency <- mlst_deduplicated %>%
     count_isolates(allele) %>%
-    mutate(porportion = isolates / nrow(mlst_deduplicated))
+    mutate(porportion = isolates / nrow(mlst_deduplicated)) %>%
+  mutate(rank = dplyr::dense_rank(desc(isolates)))
   
   mlst_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -1904,7 +1936,8 @@ for (i in 1:nrow(combinations)) {
   pds_deduplicated_frequency <- pds_deduplicated %>%
     count_isolates(allele,
                   !!rlang::sym(paste0("allele", "_markdown"))) %>%
-    mutate(porportion = isolates / nrow(pds_deduplicated))
+    mutate(porportion = isolates / nrow(pds_deduplicated)) %>%
+  mutate(rank = dplyr::dense_rank(desc(isolates)))
   
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -1939,7 +1972,8 @@ for (i in 1:nrow(combinations)) {
   pds_unclustered_frequency <- pds_unclustered %>%
     count_isolates(allele,
                   !!rlang::sym(paste0("allele", "_markdown"))) %>%
-    mutate(porportion = isolates / nrow(pds_unclustered))
+    mutate(porportion = isolates / nrow(pds_unclustered)) %>%
+  mutate(rank = dplyr::dense_rank(desc(isolates)))
   
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -1972,7 +2006,8 @@ for (i in 1:nrow(combinations)) {
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
     count_isolates(allele,
                   !!rlang::sym(paste0("allele", "_markdown"))) %>%
-    mutate(porportion = isolates / nrow(pds_deduplicated_unclustered))
+    mutate(porportion = isolates / nrow(pds_deduplicated_unclustered)) %>%
+  mutate(rank = dplyr::dense_rank(desc(isolates)))
   
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
