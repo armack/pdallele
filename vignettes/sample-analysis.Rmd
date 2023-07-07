@@ -1709,7 +1709,6 @@ if("OXA" %in% combinations[["name"]]) {
 
 #### Heatmaps
 ```{r, eval = FALSE}
-
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
   heatmap_palette <- combinations[[i, "heatmap_palette"]]
