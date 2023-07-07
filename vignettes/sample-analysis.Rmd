@@ -1829,7 +1829,7 @@ for (gene_name in genes_of_interest) {
 }
 ```
 
-# Deduplicated Isolates Data
+# Deduplicated MBE Data
 ## Isolate Counts by Variable 
 ```{r, eval = FALSE}
 # SNP Cluster Frequency
@@ -1877,7 +1877,7 @@ mbe %>%
 ```
 
 
-## Alleles Deduplicated by MLST Sequence Type
+## Deduplicated Alleles
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
@@ -1898,7 +1898,7 @@ for (i in 1:nrow(combinations)) {
   mlst_deduplicated_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_allele_frequency_mlst_deduplicated.csv")
+      paste0(gene_filter, "_allele_frequency_mbe_mlst_deduplicated.csv")
     ))
   
   mlst_deduplicated_frequency_plot <-
@@ -1914,20 +1914,12 @@ for (i in 1:nrow(combinations)) {
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_allele_frequency_mlst_deduplicated_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_mbe_mlst_deduplicated_donut.svg")),
     plot = mlst_deduplicated_frequency_plot
   ) 
-}
-```
-
-## Alleles Deduplicated by SNP Cluster
-```{r, eval = FALSE}
-for (i in 1:nrow(combinations)) {
-  gene_filter <- combinations[[i, "name"]]
-  gene_filter_label <- combinations[[i, "label"]]
 
   # SNP Cluster Deduplicated - Assigned allele frequency
-  pds_deduplicated <- isolates %>%
+  pds_deduplicated <- mbe %>%
     remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
     tidyr::drop_na(pds) %>%
@@ -1942,7 +1934,7 @@ for (i in 1:nrow(combinations)) {
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_allele_frequency_pds_deduplicated.csv")
+      paste0(gene_filter, "_allele_frequency_mbe_pds_deduplicated.csv")
     ))
   
   pds_deduplicated_frequency_plot <-
@@ -1959,12 +1951,12 @@ for (i in 1:nrow(combinations)) {
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_allele_frequency_pds_deduplicated_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_mbe_pds_deduplicated_donut.svg")),
     plot = pds_deduplicated_frequency_plot
   ) 
   
   # SNP Cluster Unclustered Isolates - Assigned allele frequency
-  pds_unclustered <- isolates %>%
+  pds_unclustered <- mbe %>%
     remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::filter(is.na(pds))
@@ -1978,7 +1970,7 @@ for (i in 1:nrow(combinations)) {
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_allele_frequency_pds_unclustered.csv")
+      paste0(gene_filter, "_allele_frequency_mbe_pds_unclustered.csv")
     ))
   
   pds_unclustered_frequency_plot <-
@@ -1995,7 +1987,7 @@ for (i in 1:nrow(combinations)) {
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_allele_frequency_pds_unclustered_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_mbe_pds_unclustered_donut.svg")),
     plot = pds_unclustered_frequency_plot
   ) 
 
@@ -2012,7 +2004,7 @@ for (i in 1:nrow(combinations)) {
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_allele_frequency_pds_deduplicated_and_unclustered.csv")
+      paste0(gene_filter, "_allele_frequency_mbe_pds_deduplicated_and_unclustered.csv")
     ))
   
   pds_deduplicated_unclustered_frequency_plot <-
@@ -2029,11 +2021,45 @@ for (i in 1:nrow(combinations)) {
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
-    paste0(gene_filter, "_allele_frequency_pds_deduplicated_and_unclustered_donut.svg")),
+    paste0(gene_filter, "_allele_frequency_mbe_pds_deduplicated_and_unclustered_donut.svg")),
     plot = pds_deduplicated_unclustered_frequency_plot
   )
+# Comparison of Full and Deduplicated Data Sets
+
+  combined_deduplicated_ranks <- mbe %>%
+    remove_unassigned_bla() %>%
+    filter_attribute(allele, gene_filter) %>%
+    dplyr::mutate(total_isolates = length(unique(biosample))) %>%
+    count_isolates(allele, total_isolates) %>%
+    dplyr::mutate(porportion = isolates / total_isolates) %>%
+    dplyr::mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    dplyr::select(allele, full_data_rank = rank) %>%
+    dplyr::full_join(
+      mlst_deduplicated_frequency %>%
+        dplyr::select(allele, mlst_deduplicated_rank = rank),
+      by = "allele") %>%
+    dplyr::full_join(
+      pds_deduplicated_frequency %>%
+        dplyr::select(allele, pds_deduplicated_rank = rank),
+      by = "allele") %>%
+    dplyr::full_join(
+      pds_unclustered_frequency %>%
+        dplyr::select(allele, pds_unclustered_rank = rank),
+      by = "allele") %>%
+    dplyr::full_join(
+      pds_deduplicated_unclustered_frequency %>%
+        dplyr::select(allele, pds_deduplicated_unclustered_rank = rank),
+      by = "allele") 
+  
+  combined_deduplicated_ranks %>%
+    readr::write_csv(file.path(
+      table_path,
+      paste0(gene_filter, "_allele_frequency_mbe_deduplicated_ranks.csv")
+    ))  
+
 }
 ```
+
 # Sequences for Downloading
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
