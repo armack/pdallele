@@ -1394,6 +1394,20 @@ if("OXA" %in% combinations[["name"]]) {
         "OXA_family_frequency_by_collection_period.csv"
       )
     )
+
+  gene_frequency_by_collection_period_rank <- 
+    gene_frequency_by_collection_period%>%
+    dplyr::select(-alleles, -oxa_family_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = period, values_from = rank)
+  
+  gene_frequency_by_collection_period_rank %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0("OXA_family_frequency_by_collection_period_rank.csv"
+        )
+      )
+    )  
   
   gene_frequency_by_collection_period_across_groups_plot <-
     gene_frequency_by_collection_period %>%
@@ -1462,7 +1476,21 @@ if("OXA" %in% combinations[["name"]]) {
       table_path,
       "OXA_family_frequency_by_collection_period_2000s.csv"
       ))
+
+  gene_frequency_by_collection_period_rank_2000 <- 
+    gene_frequency_by_collection_period_2000 %>%
+    dplyr::select(-alleles, -oxa_family_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = period, values_from = rank)
   
+  gene_frequency_by_collection_period_rank_2000 %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0("OXA_family_frequency_by_collection_period_2000s_rank.csv"
+        )
+      )
+    ) 
+    
   gene_frequency_by_collection_period_2000_across_groups_plot <-
     gene_frequency_by_collection_period_2000 %>%
     group_by(period) %>%
@@ -1524,7 +1552,21 @@ if("OXA" %in% combinations[["name"]]) {
       table_path,
       "OXA_family_frequency_by_region.csv"
     ))
+
+  gene_frequency_by_region_rank <- 
+    gene_frequency_by_region %>%
+    dplyr::select(-alleles, -oxa_family_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = region, values_from = rank)
   
+  gene_frequency_by_region_rank %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0("OXA_family_frequency_by_region_rank.csv"
+        )
+      )
+    )   
+    
   gene_frequency_by_region_overall_10_plot <-
     gene_frequency_by_region %>%
     dplyr::group_by(region) %>%
@@ -1610,7 +1652,21 @@ if("OXA" %in% combinations[["name"]]) {
     readr::write_csv(file.path(
       table_path, "OXA_family_frequency_by_species.csv"
     ))
+
+  gene_frequency_by_species_rank <- 
+    gene_frequency_by_species %>%
+    dplyr::select(-alleles, -oxa_family_markdown, -proportion) %>%
+    tidyr::pivot_wider(names_from = species, values_from = rank)
   
+  gene_frequency_by_species_rank %>%
+    readr::write_csv(
+      file.path(
+        table_path,
+        paste0("OXA_family_frequency_by_species_rank.csv"
+        )
+      )
+    )   
+    
   gene_frequency_by_species_overall_plot <-
     gene_frequency_by_species %>%
     group_by(species_markdown) %>%
