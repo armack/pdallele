@@ -50,6 +50,7 @@ species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("PDC","OXA")
 allele_label_base        <- "Allele"
 family_label_base        <- "Family"
+chromosomal_oxa_family   <- "OXA-50"
 heatmap_palette          <- c("viridis")
 unclear_species_string   <- "Unclear or Unknown"
 collection_period_groups <- 6L
@@ -2337,5 +2338,27 @@ for (i in 1:nrow(combinations)) {
     dplyr::pull(protein) %>%
     readr::write_lines(file.path(table_path,
                                  paste0("distinct_unassigned_", gene_filter, "_proteins.txt")))
+}
+
+if(exists("chromosomal_oxa_family")){
+  # List of distinct, assigned protein accessions
+  isolates %>%
+    remove_unassigned_bla() %>%
+    filter_attribute(oxa_family, chromosomal_oxa_family) %>%
+    dplyr::distinct(protein, .keep_all = TRUE) %>%
+    tidyr::drop_na(protein) %>%
+    dplyr::pull(protein) %>%
+    readr::write_lines(file.path(table_path,
+                                 paste0("distinct_assigned_", chromosomal_oxa_family, "_proteins.txt")))  
+  
+  # List of distinct, unassigned protein accessions
+  mbe %>%
+    remove_assigned_bla() %>%
+    filter_attribute(oxa_family, chromosomal_oxa_family) %>%
+    dplyr::distinct(ipg, .keep_all = TRUE) %>%
+    tidyr::drop_na(protein) %>%
+    dplyr::pull(protein) %>%
+    readr::write_lines(file.path(table_path,
+                                 paste0("distinct_unassigned_", chromosomal_oxa_family, "_proteins.txt")))
 }
 ```
