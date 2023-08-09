@@ -451,15 +451,32 @@ parse_ib_oxa_family <- function(data) {
 
 #' Parse `year` from `collection_date`
 #'
-#' @param data A dataframe or tibble with `collection_date` column
+#' @description Parse `year` from `collection_date` with options for handling
+#' (or ignoring, by default) multi-year ranges
+#'
+#' @param data A data frame or tibble with `collection_date` column
+#' @param max_range Maximum number of years in a collection_date range to
+#'   collapse to a single year
+#' @param range_method How to collapse a range to a year: `start` = first year,
+#'   `end` = last year, `floor`/`round`/`ceiling` = determine `mean` and apply
+#'   appropriate function
 #' @returns `data` with column `year` added
 #' @export
 
-parse_year <- function(data) {
+parse_year <- function(data, max_range = 0, range_method = "floor") {
   .complete <- data %>%
-    dplyr::mutate(year = sub("\\d{4}/(\\d{4})", "\\1", .data$collection_date)) %>%
-    dplyr::mutate(year = sub("^.*?(\\d{4}).*?$", "\\1", .data$year)) %>%
-    dplyr::mutate(across("year", as.integer))
+    tidyr::separate_wider_delim(cols = collection_date, delim = "/", names = c("year_start", "year_end"), too_few = "align_start") %>%
+    dplyr::mutate(across(c(year_start, year_end), ~ as.integer(stringr::str_extract(.x, "\\d{4}")))) %>%
+    dplyr::mutate(year = dplyr::case_when(
+      is.na(.data$year_end) ~ .data$year_start,
+      abs(.data$year_end - .data$year_start) <= max_range & range_method == "start" ~ .data$year_start,
+      abs(.data$year_end - .data$year_start) <= max_range & range_method == "end" ~ .data$year_end,
+      abs(.data$year_end - .data$year_start) <= max_range & range_method == "floor" ~ floor((.data$year_start + .data$year_end)/2),
+      abs(.data$year_end - .data$year_start) <= max_range & range_method == "round" ~ floor((.data$year_start + .data$year_end)/2),
+      abs(.data$year_end - .data$year_start) <= max_range & range_method == "ceiling" ~ ceiling((.data$year_start + .data$year_end)/2),
+      TRUE ~ NA_integer_
+    )) %>%
+    dplyr::select(-"year_start", -"year_end")
 
   return(.complete)
 }
