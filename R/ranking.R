@@ -42,7 +42,7 @@ NULL
 #' between `n` (e.g. complete overlap) and `n * n_groups(group_by(data, ...))`
 #' (e.g. no overlap).
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param ... <data-masking> Columns with 'label' values for `count`
 #' @param count Column of values (typically counts) to rank
 #' @param n Number of 'labels' to keep per group (all other values will be

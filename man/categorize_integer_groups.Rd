@@ -14,6 +14,8 @@ categorize_integer_groups(
 )
 }
 \arguments{
+\item{data}{A data frame or tibble}
+
 \item{source_col}{integer column to group}
 
 \item{label_col}{(new) column for group names}
@@ -25,8 +27,6 @@ determine_nearly_equal_integer_groups_lt() to determine boundaries)}
 
 \item{split}{integer vector of boundaries, which is generally the output of
 determine_nearly_equal_integer_groups_lt()}
-
-\item{tibble}{A data frame or tibble}
 }
 \description{
 Companion function to determine_nearly_equal_integer_groups_lt()

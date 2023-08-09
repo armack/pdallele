@@ -7,7 +7,7 @@
 possible_unique_proteins(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble with columns \code{allele} and \code{protein}}
+\item{data}{A data frame or tibble with columns \code{allele} and \code{protein}}
 }
 \value{
 A character vector of accession numbers

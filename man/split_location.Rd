@@ -7,7 +7,7 @@
 split_location(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 }
 \value{
 \code{data} with columns \code{location_broad} and \code{location_detail}

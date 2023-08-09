@@ -7,7 +7,7 @@
 separate_genotypes(data, include)
 }
 \arguments{
-\item{data}{A dataframe or tibble with at least one \code{amr}, \code{stress}, or \code{vir}
+\item{data}{A data frame or tibble with at least one \code{amr}, \code{stress}, or \code{vir}
 column}
 
 \item{include}{Which types of alleles (\code{amr}, \code{stress}, \code{vir}) should be

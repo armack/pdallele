@@ -7,7 +7,7 @@
 na_if_tibble_chr(data, terms)
 }
 \arguments{
-\item{data}{A dataframe or tibble to modify}
+\item{data}{A data frame or tibble to modify}
 
 \item{terms}{A character vector of values to replace with \code{NA_character_}}
 }

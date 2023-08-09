@@ -7,7 +7,7 @@
 import_regions(data, path, warn = FALSE)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 
 \item{path}{Path to a csv file containing at least columns \code{country} and
 \code{region}}

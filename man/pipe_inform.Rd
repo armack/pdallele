@@ -7,7 +7,7 @@
 pipe_inform(data, ...)
 }
 \arguments{
-\item{data}{a dataframe or tibble}
+\item{data}{a data frame or tibble}
 
 \item{...}{parameters to pass to inform()}
 }

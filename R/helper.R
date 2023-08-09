@@ -8,7 +8,7 @@ NULL
 #'
 #' Pass data along the pipeline and invoke rlang::inform() with the desired message
 #'
-#' @param data a dataframe or tibble
+#' @param data a data frame or tibble
 #' @param ... parameters to pass to inform()
 #' @returns unaltered `data`
 #' @seealso [pipe_warn()]
@@ -23,7 +23,7 @@ pipe_inform <- function(data, ...){
 #'
 #' Pass data along the pipeline and invoke rlang::warn() with the desired message
 #'
-#' @param data a dataframe or tibble
+#' @param data a data frame or tibble
 #' @param ... parameters to pass to warn()
 #' @returns unaltered `data`
 #' @seealso [pipe_inform()]
@@ -104,7 +104,7 @@ count_isolates <- function(data, ..., sort = TRUE, na_last = TRUE){
 #' @details
 #' Uses [stringr::str_sort()] with `numeric = TRUE` for sorting.
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param ... <data-masking> Columns to relevel alphanumerically
 #' @family factor releveling
 #' @export
@@ -344,7 +344,7 @@ determine_nearly_equal_integer_groups_lt <- function(values, groups = 4){
 #'
 #' Either groups or split should be provided. Split takes precedence.
 #'
-#' @param tibble A data frame or tibble
+#' @param data A data frame or tibble
 #' @param source_col  integer column to group
 #' @param label_col  (new) column for group names
 #' @param label_sep seperator between upper and lower bondary in lable
@@ -383,7 +383,7 @@ categorize_integer_groups <- function(data, source_col, label_col, label_sep = "
 #'
 #' Used internally to avoid replicating na_last logic across multiple functions
 #'
-#' @param data a dataframe or tibble
+#' @param data a data frame or tibble
 #' @param ... <data-masking> columns to reorder NAs
 #' @param na_last argument to be processed (pass directly from parent function)
 #' @export
@@ -412,7 +412,7 @@ categorize_integer_groups <- function(data, source_col, label_col, label_sep = "
 #' This approach is relatively slow, but serves the purpose without needing to
 #' modify separate_rows directly.
 #'
-#' @param data a dataframe or tibble
+#' @param data a data frame or tibble
 #' @param ... <tidy-select> columns to apply separate_rows to
 #' @param sep Separator delimiting collapsed values.
 #' @param convert If TRUE will automatically run type.convert() on the key
@@ -451,7 +451,7 @@ separate_rows_sequential <- function(data, ..., sep = "[^[:alnum:].]+", convert 
 #'   require deduplication, which can be achieved using Identical Protein Groups
 #'   data.
 #'
-#' @param data A dataframe or tibble with columns `allele` and `protein`
+#' @param data A data frame or tibble with columns `allele` and `protein`
 #' @returns A character vector of accession numbers
 #' @export
 possible_unique_proteins <- function(data){

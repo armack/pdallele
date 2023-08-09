@@ -10,7 +10,7 @@ parse_ib_oxa_family(data)
 parse_mbe_oxa_family(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble containing \code{allele} and \code{name} columns}
+\item{data}{A data frame or tibble containing \code{allele} and \code{name} columns}
 }
 \value{
 \code{data} with columns \code{oxa_family}, \code{oxa_family_markdown}, and

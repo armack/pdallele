@@ -43,7 +43,7 @@ NULL
 #'   for a variety of reasons. Runs `dplyr::distinct(biosample, allele,
 #'   .keep_all = TRUE)`.
 #'
-#' @param data A dataframe or tibble with an `allele` column
+#' @param data A data frame or tibble with an `allele` column
 #' @param species A character vector of `species` names to keep. Uses regex,
 #'   vector is collapsed with "|".
 #' @param filter A character vector of `allele` names to keep. Uses regex,

@@ -7,7 +7,7 @@
 import_cluster_list(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble containing a \code{biosample} column}
+\item{data}{A data frame or tibble containing a \code{biosample} column}
 
 \item{path}{Path to an NCBI Pathogen Detection cluster_list.tsv file'}
 }

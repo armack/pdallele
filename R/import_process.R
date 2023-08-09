@@ -81,7 +81,7 @@ import_isolates_browser_metadata <- function(path) {
 #' be reported later", "-")
 #' ```
 #'
-#' @param data A dataframe or tibble to modify
+#' @param data A data frame or tibble to modify
 #' @param terms A character vector of values to replace with `NA_character_`
 #' @return `data` with matching values matching `terms` replaced by
 #'   `NA_character_`
@@ -108,7 +108,7 @@ na_if_tibble_chr <- function(data, terms) {
 #'   <https://www.ncbi.nlm.nih.gov/biosample/docs/organism/> and
 #'   <https://ena-docs.readthedocs.io/en/latest/faq/taxonomy_requests.html>
 #'
-#' @param data A dataframe or tibble with a `scientific_name` column
+#' @param data A data frame or tibble with a `scientific_name` column
 #' @returns `data` with columns `species`, `species_markdown`, `species_math`,
 #'   `genus`, `genus_markdown`, and `genus_math` added
 #' @export
@@ -137,7 +137,7 @@ parse_genus_species <- function(data) {
 #'   country treating a patient who acquired an infection in another country),
 #'   but is not part of the INSDC standard and is not consistently reliable.
 #'
-#' @param data A dataframe or tibble to containing a `lat_lon` column
+#' @param data A data frame or tibble to containing a `lat_lon` column
 #' @returns `data` with column `lat_lon` replaced by columns `lat` and `lon` and
 #'  missing values for `location` added where possible
 #' @export
@@ -168,7 +168,7 @@ reverse_geocode <- function(data){
 #' Splits INSDC/BioSample geo_loc_name style country:detailed_location format
 #' into location_broad (country) and location_detail (city/area).
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @returns `data` with columns `location_broad` and `location_detail`
 #'   added
 #' @export
@@ -192,7 +192,7 @@ split_location <- function(data) {
 #' (using the column name from the file). This allows the inclusion of multiple
 #' regions or including a region_markdown or similar column
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param path Path to a csv file containing at least columns `country` and
 #'   `region`
 #' @param warn Should a warning message with unmatched countries be shown?
@@ -229,7 +229,7 @@ import_regions <- function(data, path, warn = FALSE) {
 #' Import NCBI **P**athogen **D**etection **S**NP Cluster (PDS) data from `path`
 #' and add a `pds` column containing a PDS accession numbers to `data`.
 #'
-#' @param data A dataframe or tibble containing a `biosample` column
+#' @param data A data frame or tibble containing a `biosample` column
 #' @param path Path to an NCBI Pathogen Detection cluster_list.tsv file'
 #' @returns `data` with column `pds` added
 #' @export
@@ -256,7 +256,7 @@ import_cluster_list <- function(data, path) {
 #'
 #' For more information on FastMLST, see: <>
 #'
-#' @param data A dataframe or tibble containing an `assembly` column
+#' @param data A data frame or tibble containing an `assembly` column
 #' @param path Path to a (reprocessed) FastMLST CSV file
 #' @returns `data` with columns `mlst` and `mlst_errors` added
 
@@ -282,7 +282,7 @@ import_mlst <- function(data, path) {
 #'   * `allele_type` corresponding to the source column (`amr`, `stress`, or `vir`)
 #'   * `method` corresponding to codes used by the NCBI Pathogen Detection Project to describe the method used for calling a given allele. See [clean_filter_alleles()] for details.
 #'
-#' @param data A dataframe or tibble with at least one `amr`, `stress`, or `vir`
+#' @param data A data frame or tibble with at least one `amr`, `stress`, or `vir`
 #'   column
 #' @param include Which types of alleles (`amr`, `stress`, `vir`) should be
 #'   kept? Separate values with '|'.
@@ -349,7 +349,7 @@ import_reference_gene_catalog <- function(path){
 #' Coalesces empty 'gene' column with 'allele' column to deal with missing
 #' Reference Gene genes
 #'
-#' @param data A dataframe or tibble containing `allele` column
+#' @param data A data frame or tibble containing `allele` column
 #' @param path Path to an NCBI ReferenceGeneCatalog.txt file
 #' @returns `data` with columns `gene`, `name`, `type`, `subtype`, `class`,
 #'   `subclass`, and `protein` added
@@ -389,7 +389,7 @@ add_reference_gene_catalog <- function(data, path) {
 #'   See PMID 35380458 "Consensus on β-Lactamase Nomenclature" by Bush et al.
 #'   for further details
 #'
-#' @param data A dataframe or tibble containing`allele` and `gene` columns
+#' @param data A data frame or tibble containing`allele` and `gene` columns
 #' @param gene Should the column "gene" also be parsed?
 #' @returns `data` with columns `allele_markdown`, `allele_math`,
 #'   `gene_markdown`, and `gene_math` added
@@ -423,7 +423,7 @@ parse_bla_formatting <- function(data, gene = TRUE) {
 #'   * `parse_ib_oxa_family()` for Isolates Browser data
 #'   * `parse_mbe_oxa_family()` for MicroBIGG-E data
 #'
-#' @param data A dataframe or tibble containing `allele` and `name` columns
+#' @param data A data frame or tibble containing `allele` and `name` columns
 #' @returns `data` with columns `oxa_family`, `oxa_family_markdown`, and
 #'   `oxa_family_math` added
 #' @export
@@ -474,7 +474,7 @@ parse_year <- function(data) {
 #' This may allow one to focus more on broader diversity by removing duplicates
 #' of successful clones from the dataset
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param ignore_genotype should only a single biosample per cluster be kept,
 #'                        even when multiple genotypes exist?
 
@@ -601,7 +601,7 @@ parse_mbe_oxa_family <- function(data) {
 #' columns corresponding to the IPG UID (`ipg`), IPG Accession Number
 #' (`ipg_accession`), and name of the IPG protein (`iph_name`) to `data`.
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param path path to an NCBI IPG tsv file
 #' @returns `data` with columns `ipg`, `ipg_accession`, and `ipg_name` added
 #' @export

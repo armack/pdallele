@@ -40,7 +40,7 @@ top_n_by_group(
 )
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} Columns with 'label' values for \code{count}}
 

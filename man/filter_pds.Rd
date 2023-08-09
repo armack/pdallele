@@ -8,7 +8,7 @@ non-clustered biosamples)}
 filter_pds(data, ignore_genotype = FALSE)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 
 \item{ignore_genotype}{should only a single biosample per cluster be kept,
 even when multiple genotypes exist?}

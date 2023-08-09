@@ -7,7 +7,7 @@
 import_ipg(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 
 \item{path}{path to an NCBI IPG tsv file}
 }

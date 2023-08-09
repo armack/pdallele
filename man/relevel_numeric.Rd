@@ -7,7 +7,7 @@
 relevel_numeric(data, ...)
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} Columns to relevel alphanumerically}
 }

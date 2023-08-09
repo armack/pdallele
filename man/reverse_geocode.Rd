@@ -7,7 +7,7 @@
 reverse_geocode(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble to containing a \code{lat_lon} column}
+\item{data}{A data frame or tibble to containing a \code{lat_lon} column}
 }
 \value{
 \code{data} with column \code{lat_lon} replaced by columns \code{lat} and \code{lon} and

@@ -19,7 +19,7 @@ filter_microbigge(
 )
 }
 \arguments{
-\item{data}{A dataframe or tibble with an \code{allele} column}
+\item{data}{A data frame or tibble with an \code{allele} column}
 
 \item{species}{A character vector of \code{species} names to keep. Uses regex,
 vector is collapsed with "|".}

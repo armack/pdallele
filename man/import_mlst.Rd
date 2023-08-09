@@ -7,7 +7,7 @@
 import_mlst(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble containing an \code{assembly} column}
+\item{data}{A data frame or tibble containing an \code{assembly} column}
 
 \item{path}{Path to a (reprocessed) FastMLST CSV file}
 }

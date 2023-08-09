@@ -7,7 +7,7 @@
 .resolve_na_last(data, ..., na_last)
 }
 \arguments{
-\item{data}{a dataframe or tibble}
+\item{data}{a data frame or tibble}
 
 \item{...}{\if{html}{\out{<data-masking>}} columns to reorder NAs}
 

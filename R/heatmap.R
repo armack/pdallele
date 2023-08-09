@@ -24,7 +24,7 @@ NULL
 #'
 #' @seealso [heatmap_plot()] to generate a `ggplot2` heatmap plot
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param count <data-masking> Column to count (long axis)
 #' @param category <data-masking> Column to compare across (short axis)
 #' @param n Number of most frequent `count` to include (i.e. top n =)
@@ -107,7 +107,7 @@ heatmap_data <- function(data, count, category, n = 5, facet,
 #'
 #' @seealso [heatmap_data()] to prepare data for plotting as a heatmap
 #'
-#' @param data A dataframe or tibble
+#' @param data A data frame or tibble
 #' @param count <data-masking> Column of counts (long axis)
 #' @param category <data-masking> Column to compare across (short axis)
 #' @param facet Column to facet by.

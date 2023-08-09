@@ -7,7 +7,7 @@
 add_reference_gene_catalog(data, path)
 }
 \arguments{
-\item{data}{A dataframe or tibble containing \code{allele} column}
+\item{data}{A data frame or tibble containing \code{allele} column}
 
 \item{path}{Path to an NCBI ReferenceGeneCatalog.txt file}
 }

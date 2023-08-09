@@ -4,10 +4,12 @@
 \alias{parse_bla_formatting}
 \title{Properly format  \emph{bla} gene/allele names}
 \usage{
-parse_bla_formatting(data)
+parse_bla_formatting(data, gene = TRUE)
 }
 \arguments{
-\item{data}{A dataframe or tibble containing\code{allele} and \code{gene} columns}
+\item{data}{A data frame or tibble containing\code{allele} and \code{gene} columns}
+
+\item{gene}{Should the column "gene" also be parsed?}
 }
 \value{
 \code{data} with columns \code{allele_markdown}, \code{allele_math},

@@ -26,7 +26,7 @@ heatmap_plot(
 )
 }
 \arguments{
-\item{data}{A dataframe or tibble}
+\item{data}{A data frame or tibble}
 
 \item{count}{\if{html}{\out{<data-masking>}} Column of counts (long axis)}
 

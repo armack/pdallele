@@ -7,7 +7,7 @@
 parse_genus_species(data)
 }
 \arguments{
-\item{data}{A dataframe or tibble with a \code{scientific_name} column}
+\item{data}{A data frame or tibble with a \code{scientific_name} column}
 }
 \value{
 \code{data} with columns \code{species}, \code{species_markdown}, \code{species_math},

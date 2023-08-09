@@ -4,14 +4,22 @@
 \alias{parse_year}
 \title{Parse \code{year} from \code{collection_date}}
 \usage{
-parse_year(data)
+parse_year(data, max_range = 0, range_method = "floor")
 }
 \arguments{
-\item{data}{A dataframe or tibble with \code{collection_date} column}
+\item{data}{A data frame or tibble with \code{collection_date} column}
+
+\item{max_range}{Maximum number of years in a collection_date range to
+collapse to a single year}
+
+\item{range_method}{How to collapse a range to a year: \code{start} = first year,
+\code{end} = last year, \code{floor}/\code{round}/\code{ceiling} = determine \code{mean} and apply
+appropriate function}
 }
 \value{
 \code{data} with column \code{year} added
 }
 \description{
-Parse \code{year} from \code{collection_date}
+Parse \code{year} from \code{collection_date} with options for handling
+(or ignoring, by default) multi-year ranges
 }
