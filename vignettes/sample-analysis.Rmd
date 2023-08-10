@@ -331,7 +331,7 @@ overall_gene_frequency_plot <-
   top_n_across_groups(gene, gene_markdown, count = total, n = 10) %>%
   donut_plot(fill = gene_markdown,
              counts = total,
-             legend = "**Gene**")
+             legend_title = "**Gene**")
 
 ggplot2::ggsave(filename = file.path(graphic_path, "overall_gene_frequency.svg"),
                 plot = overall_gene_frequency_plot)
@@ -343,7 +343,7 @@ non_main_gene_frequency_plot <-
   top_n_across_groups(gene, gene_markdown, count = total, n = 10) %>%
   donut_plot(fill = gene_markdown,
              counts = total,
-             legend = "**Gene**")
+             legend_title = "**Gene**")
 
 ggplot2::ggsave(filename = file.path(
   graphic_path,
@@ -401,7 +401,7 @@ overview_isolate_counts_by_species_plot <-
   top_n_across_groups(species_markdown, count = isolates, n = 10) %>%
   donut_plot(fill = species_markdown,
              counts = isolates,
-             legend = "**Species**")
+             legend_title = "**Species**")
 
 ggplot2::ggsave(
   filename = file.path(graphic_path, "overview_isolate_counts_by_species.svg"),
@@ -424,7 +424,7 @@ overview_isolate_counts_by_broad_location_plot <-
     fill = location_broad,
     counts = isolates,
     count_label = "Isolates",
-    legend = "**Country**"
+    legend_title = "**Country**"
   )
 
 ggplot2::ggsave(
@@ -450,7 +450,7 @@ overview_isolate_counts_by_region_plot <-
     fill = region,
     counts = isolates,
     count_label = "Isolates",
-    legend = "**Region**"
+    legend_title = "**Region**"
   )
 
 ggplot2::ggsave(
@@ -485,7 +485,7 @@ overview_isolate_counts_by_collection_year_plot <-
     fill = collected,
     counts = isolates,
     count_label = "Isolates",
-    legend = "**Collection Year**"
+    legend_title = "**Collection Year**"
   )
 
 ggplot2::ggsave(
@@ -514,7 +514,7 @@ overview_isolate_counts_by_collection_period_plot <-
     fill = period,
     counts = isolates,
     count_label = "Isolates",
-    legend = "**Collection Period**"
+    legend_title = "**Collection Period**"
   )
 
 ggplot2::ggsave(
@@ -547,7 +547,7 @@ overview_isolate_counts_by_collection_period_post_2000_plot <-
     fill = period_2000,
     counts = isolates,
     count_label = "Isolates",
-    legend = "**Collection Period**"
+    legend_title = "**Collection Period**"
   )
 
 ggplot2::ggsave(
@@ -573,7 +573,7 @@ overview_isolate_counts_by_host_plot <-
     fill = host,
     counts = isolates,
     count_label = "Isolates",
-    legend = "**Host**"
+    legend_title = "**Host**"
   )
 
 ggplot2::ggsave(
@@ -701,7 +701,7 @@ carbapenemase_presence_by_region <- isolates %>%
   mutate(proportion = carbapenemase_isolates / total_isolates)
 
 carbapenemase_presence_by_region %>%
-  dplyr::selec(-region_markdown) %>%
+  dplyr::select(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_by_region.csv"))
 
 carbapenemase_presence_by_region %>%
@@ -861,7 +861,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1011,7 +1011,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = period,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1032,7 +1032,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = period,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1094,7 +1094,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = period_2000,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1115,7 +1115,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = period_2000,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1174,7 +1174,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = region,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1195,7 +1195,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = region,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1216,7 +1216,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = region,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1278,7 +1278,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = species_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1299,7 +1299,7 @@ for (i in 1:nrow(combinations)) {
       fill = allele_markdown,
       facet = species_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1347,7 +1347,7 @@ if("OXA" %in% combinations[["name"]]) {
     donut_plot(
       fill = oxa_family_markdown,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1492,7 +1492,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1512,7 +1512,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1571,7 +1571,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period_2000,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1591,7 +1591,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = period_2000,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1647,7 +1647,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = region,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1667,7 +1667,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = region,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1687,7 +1687,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = region,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1747,7 +1747,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = species_markdown,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -1767,7 +1767,7 @@ if("OXA" %in% combinations[["name"]]) {
       fill = oxa_family_markdown,
       facet = species_markdown,
       counts = alleles,
-      legend = oxa_family_label
+      legend_title = oxa_family_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2000,7 +2000,7 @@ for (gene_name in genes_of_interest) {
     top_n_overall(ipg_accession, count = isolates, n = 10) %>%
     donut_plot(fill = ipg_accession,
                counts = isolates,
-               legend = "**Allele**")
+               legend_title = "**Allele**")
   
   ggplot2::ggsave(filename = file.path(
     graphic_path,
@@ -2090,7 +2090,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2127,7 +2127,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2163,7 +2163,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2197,7 +2197,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2271,7 +2271,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2307,7 +2307,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
@@ -2341,7 +2341,7 @@ for (i in 1:nrow(combinations)) {
     donut_plot(
       fill = allele_markdown,
       counts = isolates,
-      legend = gene_filter_label
+      legend_title = gene_filter_label
     )
   
   ggplot2::ggsave(filename = file.path(
