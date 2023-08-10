@@ -137,7 +137,19 @@ isolates <- isolates_raw %>%
   filter_isolates_browser(species = species_of_interest,
                           filter = filter_alleles,
                           remove = remove_allele_types,
-                          deduplicate = TRUE)
+                          deduplicate = TRUE) %>%
+  categorize_integer_groups(source_col = "year",
+                            label_col = "period",
+                            groups = collection_period_groups) %>%
+  left_join(
+    isolates_raw %>%
+      dplyr::filter(year >= 2000) %>%
+      dplyr::distinct(biosample, .keep_all = TRUE) %>%
+      categorize_integer_groups(source_col = "year",
+                                label_col = "period_2000",
+                                groups = collection_period_groups) %>%
+      dplyr::select(biosample, period_2000),
+    by = "biosample")
 ```
 
 ### Prepare filtered MicroBIGG-E data set
@@ -484,9 +496,6 @@ ggplot2::ggsave(
 
 # Counts by collection period
 overview_isolate_counts_by_collection_period <- isolates %>%
-  categorize_integer_groups(source_col = "year",
-                            label_col = "period",
-                            groups = collection_period_groups) %>%
   count_isolates(period, sort = FALSE)
 
 overview_isolate_counts_by_collection_period %>%
@@ -518,10 +527,7 @@ ggplot2::ggsave(
 overview_isolate_counts_by_collection_period_post_2000 <-
   isolates %>%
   dplyr::filter(year >= 2000) %>%
-  categorize_integer_groups(source_col = "year",
-                            label_col = "period",
-                            groups = collection_period_groups) %>%
-  count_isolates(period, sort = FALSE)
+  count_isolates(period_2000, sort = FALSE)
 
 overview_isolate_counts_by_collection_period_post_2000 %>%
   readr::write_csv(
@@ -533,10 +539,10 @@ overview_isolate_counts_by_collection_period_post_2000 %>%
 
 overview_isolate_counts_by_collection_period_post_2000_plot <-
   overview_isolate_counts_by_collection_period_post_2000 %>%
-  tidyr::drop_na(period) %>%
-  top_n_across_groups(period, count = isolates, n = 10) %>%
+  tidyr::drop_na(period_2000) %>%
+  top_n_across_groups(period_2000, count = isolates, n = 10) %>%
   donut_plot(
-    fill = period,
+    fill = period_2000,
     counts = isolates,
     count_label = "Isolates",
     legend = "**Collection Period**"
@@ -876,9 +882,6 @@ for (i in 1:nrow(combinations)) {
   # Full <gene_filter> <gene_filter_type> counts and summary graphics by Collection Period
   gene_frequency_by_collection_period <- isolates %>%
     filter_attribute(allele, gene_filter) %>%
-    categorize_integer_groups(source_col = "year",
-                              label_col = "period",
-                              groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
@@ -964,25 +967,22 @@ for (i in 1:nrow(combinations)) {
   # Collection Period (only for isolates collected since 2000)
   gene_frequency_by_collection_period_2000 <- isolates %>%
     filter_attribute(allele, gene_filter) %>%
-    dplyr::filter(!year < 2000) %>%
-    categorize_integer_groups(source_col = "year",
-                              label_col = "period",
-                              groups = collection_period_groups) %>%
+    dplyr::filter(year >= 2000) %>%
     remove_unassigned_bla() %>%
-    tidyr::drop_na(period) %>%
-    dplyr::group_by(period) %>%
+    tidyr::drop_na(period_2000) %>%
+    dplyr::group_by(period_2000) %>%
     mutate(total_rows = length(unique(biosample))) %>%
-    count_isolates(period, allele, allele_markdown, total_rows) %>%
-    dplyr::group_by(period) %>%
+    count_isolates(period_2000, allele, allele_markdown, total_rows) %>%
+    dplyr::group_by(period_2000) %>%
     mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     dplyr::ungroup() %>%
     mutate(proportion = isolates / total_rows) %>%
     select(-total_rows) %>%
-    relevel_numeric(period) %>%
-    dplyr::arrange(period, desc(isolates))
+    relevel_numeric(period_2000) %>%
+    dplyr::arrange(period_2000, desc(isolates))
   
   gene_frequency_by_collection_period_2000 %>%
-    select(period,allele, isolates) %>%
+    select(period_2000, allele, isolates) %>%
     readr::write_csv(file.path(
       table_path,
       paste0(gene_filter, "_allele",
@@ -992,7 +992,7 @@ for (i in 1:nrow(combinations)) {
   gene_frequency_by_collection_period_2000_rank <- 
     gene_frequency_by_collection_period_2000 %>%
     dplyr::select(-isolates, -allele_markdown, -proportion) %>%
-    tidyr::pivot_wider(names_from = period, values_from = rank)
+    tidyr::pivot_wider(names_from = period_2000, values_from = rank)
   
   gene_frequency_by_collection_period_2000_rank %>%
     readr::write_csv(
@@ -1006,13 +1006,13 @@ for (i in 1:nrow(combinations)) {
   
   gene_frequency_by_collection_period_2000_across_groups_plot <-
     gene_frequency_by_collection_period_2000 %>%
-    group_by(period) %>%
+    group_by(period_2000) %>%
     top_n_across_groups(allele,allele_markdown,
                         count = isolates,
                         n = 10) %>%
     donut_plot_panel(
       fill = allele_markdown,
-      facet = period,
+      facet = period_2000,
       counts = isolates,
       legend = gene_filter_label
     )
@@ -1027,13 +1027,13 @@ for (i in 1:nrow(combinations)) {
   
   gene_frequency_by_collection_period_2000_overall_plot <-
     gene_frequency_by_collection_period_2000 %>%
-    dplyr::group_by(period) %>%
+    dplyr::group_by(period_2000) %>%
     top_n_overall(allele,allele_markdown,
                   count = isolates,
                   n = 10) %>%
     donut_plot_panel(
       fill = allele_markdown,
-      facet = period,
+      facet = period_2000,
       counts = isolates,
       legend = gene_filter_label
     )
@@ -1365,9 +1365,6 @@ if("OXA" %in% combinations[["name"]]) {
   # Full OXA family counts and summary graphics by Collection Period
   gene_frequency_by_collection_period <- isolates %>%
     filter_attribute(oxa_family, "OXA") %>%
-    categorize_integer_groups(source_col = "year",
-                              label_col = "period",
-                              groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     dplyr::group_by(period) %>%
@@ -1449,25 +1446,22 @@ if("OXA" %in% combinations[["name"]]) {
   gene_frequency_by_collection_period_2000 <- isolates %>%
     filter_attribute(oxa_family, "OXA") %>%
     dplyr::filter(!year < 2000) %>%
-    categorize_integer_groups(source_col = "year",
-                              label_col = "period",
-                              groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
-    tidyr::drop_na(period) %>%
-    dplyr::group_by(period) %>%
+    tidyr::drop_na(period_2000) %>%
+    dplyr::group_by(period_2000) %>%
     dplyr::mutate(total_rows = length(unique(biosample))) %>%
     dplyr::ungroup() %>%
-    count_alleles(period, oxa_family, oxa_family_markdown, total_rows) %>%
-    dplyr::group_by(period) %>%
+    count_alleles(period_2000, oxa_family, oxa_family_markdown, total_rows) %>%
+    dplyr::group_by(period_2000) %>%
     mutate(rank = dplyr::dense_rank(desc(alleles))) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(proportion = alleles / total_rows) %>%
     dplyr::select(-total_rows) %>%
-    relevel_numeric(period) %>%
-    dplyr::arrange(period)
+    relevel_numeric(period_2000) %>%
+    dplyr::arrange(period_2000)
   
   gene_frequency_by_collection_period_2000 %>%
-    select(period, oxa_family, alleles) %>%
+    select(period_2000, oxa_family, alleles) %>%
     readr::write_csv(file.path(
       table_path,
       "OXA_family_frequency_by_collection_period_2000s.csv"
@@ -1476,7 +1470,7 @@ if("OXA" %in% combinations[["name"]]) {
   gene_frequency_by_collection_period_rank_2000 <- 
     gene_frequency_by_collection_period_2000 %>%
     dplyr::select(-alleles, -oxa_family_markdown, -proportion) %>%
-    tidyr::pivot_wider(names_from = period, values_from = rank)
+    tidyr::pivot_wider(names_from = period_2000, values_from = rank)
   
   gene_frequency_by_collection_period_rank_2000 %>%
     readr::write_csv(
@@ -1489,13 +1483,13 @@ if("OXA" %in% combinations[["name"]]) {
     
   gene_frequency_by_collection_period_2000_across_groups_plot <-
     gene_frequency_by_collection_period_2000 %>%
-    group_by(period) %>%
+    group_by(period_2000) %>%
     top_n_across_groups(oxa_family, oxa_family_markdown,
                         count = alleles,
                         n = 10) %>%
     donut_plot_panel(
       fill = oxa_family_markdown,
-      facet = period,
+      facet = period_2000,
       counts = alleles,
       legend = oxa_family_label
     )
@@ -1509,13 +1503,13 @@ if("OXA" %in% combinations[["name"]]) {
   
   gene_frequency_by_collection_period_2000_overall_plot <-
     gene_frequency_by_collection_period_2000 %>%
-    dplyr::group_by(period) %>%
+    dplyr::group_by(period_2000) %>%
     top_n_overall(oxa_family, oxa_family_markdown,
                   count = alleles,
                   n = 10) %>%
     donut_plot_panel(
       fill = oxa_family_markdown,
-      facet = period,
+      facet = period_2000,
       counts = alleles,
       legend = oxa_family_label
     )
@@ -1762,9 +1756,6 @@ for (i in 1:nrow(combinations)) {
   # By Collection Period
   heatmap_period_data <- isolates %>%
     filter_attribute(allele, gene_filter) %>%
-    categorize_integer_groups(source_col = "year",
-                              label_col = "period",
-                              groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
     heatmap_data(
@@ -1792,14 +1783,11 @@ for (i in 1:nrow(combinations)) {
   heatmap_period_2000s_data <- isolates %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::filter(year >= 2000) %>%
-    categorize_integer_groups(source_col = "year",
-                              label_col = "period",
-                              groups = collection_period_groups) %>%
     remove_unassigned_bla() %>%
-    tidyr::drop_na(period) %>%
+    tidyr::drop_na(period_2000) %>%
     heatmap_data(
       count = allele_markdown,
-      category = period,
+      category = period_2000,
       n = 5
     )
   
@@ -1807,7 +1795,7 @@ for (i in 1:nrow(combinations)) {
     heatmap_plot(
       heatmap_period_2000s_data,
       count = allele_markdown,
-      category = period,
+      category = period_2000,
       option = heatmap_palette
     )
   
