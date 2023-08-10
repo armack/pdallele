@@ -54,7 +54,8 @@ collapsed into \code{other})}
 
 \item{other}{Label for the \code{other} group}
 
-\item{relevel}{should \code{...} be releveled in alphanumeric order?}
+\item{relevel}{should the output be releveld based on ... \code{name},
+values\code{count}, or not at all \code{none}?}
 
 \item{other_pos}{Where should \code{other} sort? Options: \code{first} before ranked
 values, \code{last} after ranked values, \code{drop} drop all non-ranked values.}

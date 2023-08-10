@@ -30,7 +30,8 @@ NULL
 
 donut_plot <- function(data, fill, counts,
                        count_label = "Alleles", legend_title = "**Allele**",
-                       labels = TRUE, total = TRUE, palette = NULL){
+                       labels = TRUE, total = TRUE, palette = NULL,
+                       legend.position = "right"){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   .donut_data <- data %>%
@@ -48,7 +49,8 @@ donut_plot <- function(data, fill, counts,
     ggplot2::geom_col(ggplot2::aes(fill = {{fill}}, x = 2)) +
     ggplot2::coord_polar(theta = "y") +
     ggplot2::xlim(0, 4) +
-    ggplot2::labs(fill = legend_title)
+    ggplot2::labs(fill = legend_title) +
+    ggplot2::theme(legend.position = legend.position)
 
   # Add labels for each arc
   if (labels){
@@ -99,7 +101,8 @@ donut_plot <- function(data, fill, counts,
 
 donut_plot_panel <- function(data, fill, counts, facet,
                              count_label = "Alleles", legend_title = "**Allele**",
-                             total = TRUE, palette = NULL, nrow = NULL, ncol = NULL){
+                             total = TRUE, palette = NULL, nrow = NULL, ncol = NULL,
+                             legend.position = "right"){
   .donut_data <- data %>%
     relevel_numeric({{facet}}) %>%
     dplyr::group_by( {{facet}} ) %>%
@@ -113,7 +116,8 @@ donut_plot_panel <- function(data, fill, counts, facet,
     ggplot2::coord_polar(theta = "y") +
     ggplot2::xlim(0, 2.5) +
     ggplot2::labs(fill = legend_title) +
-    ggplot2::facet_wrap(facets = vars( {{facet}} ), nrow = nrow, ncol = ncol)
+    ggplot2::facet_wrap(facets = vars( {{facet}} ), nrow = nrow, ncol = ncol) +
+    ggplot2::theme(legend.position = legend.position)
 
   if(total){
     plot <- plot +
