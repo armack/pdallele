@@ -109,14 +109,6 @@ isolates_raw <- import_isolates_browser_metadata(isolates_path) %>%
   parse_year()
 ```
 
-Optionally, fix metadata problems:
-```{r, eval = FALSE}
-isolates_raw <- isolates_raw %>%
-  mutate(location_broad = case_match(location_broad,
-                                     "Korea" ~ "South Korea",
-                                     .default = location_broad))
-```
-
 Optionally, save the processed data set:
 ```{r, eval = FALSE}
 isolates_raw %>%
