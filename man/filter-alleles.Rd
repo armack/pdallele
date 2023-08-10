@@ -41,8 +41,9 @@ removed?}
 \code{data} with rows removed according to the selected parameters
 }
 \description{
-Both functions serve three major roles in preparing data sets
-for analysis, all of which are optional:
+Both \code{filter_isolates_browser()} and \code{filter_microbigge()} serve
+three major roles in preparing data sets for analysis, all of which are
+optional:
 \itemize{
 \item keep rows with \code{allele} matching a value in \code{filter}
 \item drop rows with \code{method} matching a value in \code{remove}

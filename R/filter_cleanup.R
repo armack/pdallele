@@ -4,8 +4,9 @@ NULL
 #' @name filter-alleles
 #' @title Filter alleles to prepare data set for analysis
 #'
-#' @description Both functions serve three major roles in preparing data sets
-#'   for analysis, all of which are optional:
+#' @description Both `filter_isolates_browser()` and `filter_microbigge()` serve
+#'   three major roles in preparing data sets for analysis, all of which are
+#'   optional:
 #'    * keep rows with `allele` matching a value in `filter`
 #'    * drop rows with `method` matching a value in `remove`
 #'    * drop rows with duplicate `allele`/`biosample` combinations based on a logical value `deduplicate`
