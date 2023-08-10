@@ -16,8 +16,10 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 ```
-## Introduction
-The following code provides an example of how the `pdallele` package can be used to perform analysis of the alleles present in *Pseudomonas aeruginosa* isolates present in the NCBI Pathogen Detection Project Isolates Browser and MicroBIGG-E databases.
+## Introduction The following code provides an example of how the `pdallele`
+package can be used to perform analysis of the alleles present in *Pseudomonas
+aeruginosa* isolates present in the NCBI Pathogen Detection Project Isolates
+Browser and MicroBIGG-E databases.
 
 ## Analysis settings and preferences
 ### Output directoreis
