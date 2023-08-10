@@ -52,7 +52,8 @@ NULL
 #' @param other Label for the `other` group
 #' @param other_pos Where should `other` sort? Options: `first` before ranked
 #'   values, `last` after ranked values, `drop` drop all non-ranked values.
-#' @param relevel should `...` be releveled in alphanumeric order?
+#' @param relevel should the output be releveld based on ... (`name`),
+#'   values (`count`), or not at all (`none`)?
 #'
 #' @export
 top_n_overall <- function(data, ..., count, n = 10, desc = TRUE,
