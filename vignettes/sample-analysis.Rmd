@@ -704,7 +704,7 @@ carbapenemase_presence_by_region %>%
   dplyr::select(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_by_region.csv"))
 
-carbapenemase_presence_by_region %>%
+carbapenemase_presence_by_region_plot <- carbapenemase_presence_by_region %>%
   mutate(non_carbapenemase_isolates = total_isolates - carbapenemase_isolates) %>%
   dplyr::rename(Present = carbapenemase_isolates, Absent = non_carbapenemase_isolates) %>%
   tidyr::pivot_longer(cols = c(Present, Absent), names_to = "carbapenemase") %>%
@@ -714,6 +714,12 @@ carbapenemase_presence_by_region %>%
   donut_plot_panel(fill = carbapenemase, counts = value, facet = region_markdown,
                    legend_title = "**Carbapenemase**", count_label = "Isolates", nrow = 2,
                    legend.position = "bottom")
+
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0("carbapenemase_presence_by_region.svg")),
+    plot = carbapenemase_presence_by_region_plot
+  )
 
 # Presence Over Time
 carbapenemase_presence_over_time <- isolates %>%
@@ -727,7 +733,6 @@ carbapenemase_presence_over_time <- isolates %>%
   arrange(period)
 
 carbapenemase_presence_over_time %>%
-  dplyr::selec(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_over_time.csv"))
 
 
@@ -743,7 +748,6 @@ carbapenemase_presence_over_time_since_2000 <- isolates %>%
   arrange(period_2000)
 
 carbapenemase_presence_over_time_since_2000 %>%
-  dplyr::selec(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_over_time_since_2000.csv"))
 
 # Allele Counts
@@ -752,7 +756,6 @@ carbapenemase_allele_counts <- isolates %>%
   count_isolates(allele)
 
 carbapenemase_allele_counts %>%
-  dplyr::selec(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_allele_counts.csv"))
 
 # Gene Counts
@@ -761,8 +764,8 @@ carbapenemase_gene_counts <- isolates %>%
   count_isolates(gene)
 
 carbapenemase_gene_counts %>%
-  dplyr::selec(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_gene_counts.csv"))
+
 ```
 
 
