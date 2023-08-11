@@ -28,7 +28,7 @@ ab %>%
   filter(oxa_family == "blaOXA-23") %>%
   count_isolates(region) %>%
   rename(oxa23fam_containing = isolates) %>%
-  left_join(isolates %>% count_isolates(region), by = "region") %>%
+  left_join(ab %>% count_isolates(region), by = "region") %>%
   mutate(proportion = oxa23fam_containing / isolates) %>%
   readr::write_tsv(file = file.path(manual_output_path, "ab_blaOXA23_regional.tsv"))
 ```
