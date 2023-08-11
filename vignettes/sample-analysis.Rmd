@@ -152,6 +152,9 @@ isolates <- isolates_raw %>%
                                 groups = collection_period_groups) %>%
       dplyr::select(biosample, period_2000),
     by = "biosample")
+
+isolates %>%
+  readr::write_tsv(file = file.path(data_path, "isolates_final.tsv"))
 ```
 
 ### Prepare filtered MicroBIGG-E data set
@@ -163,6 +166,9 @@ mbe <- mbe_raw %>%
                     identity = min_identity,
                     remove = remove_mbe_allele_types,
                     deduplicate = TRUE)
+
+mbe %>%
+  readr::write_tsv(file = file.path(data_path, "mbe_final.tsv"))
 ```
 
 ## Isolates Browser data set analysis
