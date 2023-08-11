@@ -1,0 +1,181 @@
+---
+title: "additional-analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{additional-analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+```
+
+These pieces of analysis code either require some level of manual curation,
+require multiple data sets to be loaded at once, are specific to a species, or
+otherwise are not suited for the more automated analysis code provided in the
+sample-analysis vignette.
+
+# Regional Prevalence of blaOXA-23 family alleles in *A. baumannii*
+```{r, eval = FALSE}
+ab %>%
+  filter(oxa_family == "blaOXA-23") %>%
+  count_isolates(region) %>%
+  rename(oxa23fam_containing = isolates) %>%
+  left_join(isolates %>% count_isolates(region), by = "region") %>%
+  mutate(proportion = oxa23fam_containing / isolates) %>%
+  readr::write_tsv(file = file.path(manual_output_path, "ab_blaOXA23_regional.tsv"))
+```
+
+# Regional prevalence of (assumed) acquired blaOXA alleels in *P. aeruginosa*
+```{r, eval = FALSE}
+pa %>%
+  tidyr::drop_na(oxa_family) %>%
+  filter(oxa_family != "blaOXA-50") %>%
+  count_isolates(region) %>%
+  rename(acquired_oxa = isolates) %>%
+  left_join(isolates %>% count_isolates(region), by = "region") %>%
+  mutate(proportion = acquired_oxa / isolates) %>%
+  readr::write_tsv(file = file.path(manual_output_path, "pa_acquired_blaOXA_regional.tsv"))
+```
+
+# Carbapenemases in *A. baumannii* excluding blaOXA-51 family alleles
+```{r, eval = FALSE}
+
+# Allele Counts
+carbapenemase_allele_counts <- ab %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  count_isolates(allele)
+
+carbapenemase_allele_counts %>%
+  readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_allele_counts_without_blaOXA-51_family.csv"))
+
+# Gene Counts (Without blaOXA-51 Family)
+carbapenemase_gene_counts <- ab %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  count_isolates(gene)
+
+carbapenemase_gene_counts %>%
+  readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_gene_counts_without_blaOXA-51_family.csv"))
+
+# Presence by Region
+carbapenemase_presence_by_region <- ab %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  count_isolates(region, region_markdown) %>%
+  rename(carbapenemase_isolates = isolates) %>%
+  left_join(ab %>% count_isolates(region), by = "region") %>%
+  rename(total_isolates = isolates) %>%
+  mutate(proportion = carbapenemase_isolates / total_isolates)
+
+carbapenemase_presence_by_region %>%
+  dplyr::select(-region_markdown) %>%
+  readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_presence_by_region_without_blaOXA-51_family.csv"))
+
+carbapenemase_presence_by_region %>%
+  mutate(non_carbapenemase_isolates = total_isolates - carbapenemase_isolates) %>%
+  dplyr::rename(Present = carbapenemase_isolates, Absent = non_carbapenemase_isolates) %>%
+  tidyr::pivot_longer(cols = c(Present, Absent), names_to = "carbapenemase") %>%
+  tidyr::drop_na(region) %>%
+  group_by(region, region_markdown) %>%
+  top_n_by_group(carbapenemase, count = value, n = 3, relevel = "name") %>%
+  donut_plot_panel(fill = carbapenemase, counts = value, facet = region_markdown,
+                   legend_title = "**Carbapenemase**", count_label = "Isolates", nrow = 2,
+                   legend.position = "bottom")
+
+# Presence Over Time
+carbapenemase_presence_over_time <- ab %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  count_isolates(period) %>%
+  rename(carbapenemase_isolates = isolates) %>%
+  left_join(ab %>% count_isolates(period), by = "period") %>%
+  rename(total_isolates = isolates) %>%
+  mutate(proportion = carbapenemase_isolates / total_isolates) %>%
+  relevel_numeric(period) %>%
+  arrange(period)
+
+carbapenemase_presence_over_time %>%
+  readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_presence_over_time_without_blaOXA-51_family.csv"))
+
+
+# Presence Over Time (Since 2000)
+carbapenemase_presence_over_time_since_2000 <- ab %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  count_isolates(period_2000) %>%
+  rename(carbapenemase_isolates = isolates) %>%
+  left_join(ab %>% count_isolates(period_2000), by = "period_2000") %>%
+  rename(total_isolates = isolates) %>%
+  mutate(proportion = carbapenemase_isolates / total_isolates) %>%
+  relevel_numeric(period_2000) %>%
+  arrange(period_2000)
+
+carbapenemase_presence_over_time_since_2000 %>%
+  readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_presence_over_time_since_2000_without_blaOXA-51_family.csv"))
+
+# Presence by Region
+carbapenemase_presence_by_region <- pa %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  count_isolates(region, region_markdown) %>%
+  rename(carbapenemase_isolates = isolates) %>%
+  left_join(pa %>% count_isolates(region), by = "region") %>%
+  rename(total_isolates = isolates) %>%
+  mutate(proportion = carbapenemase_isolates / total_isolates)
+
+carbapenemase_presence_by_region_plot <- carbapenemase_presence_by_region %>%
+  mutate(non_carbapenemase_isolates = total_isolates - carbapenemase_isolates) %>%
+  dplyr::rename(Present = carbapenemase_isolates, Absent = non_carbapenemase_isolates) %>%
+  tidyr::pivot_longer(cols = c(Present, Absent), names_to = "carbapenemase") %>%
+  tidyr::drop_na(region) %>%
+  group_by(region, region_markdown) %>%
+  top_n_by_group(carbapenemase, count = value, n = 3, relevel = "name") %>%
+  donut_plot_panel(fill = carbapenemase, counts = value, facet = region_markdown,
+                   legend_title = "**Carbapenemase**", count_label = "Isolates", nrow = 2,
+                   legend.position = "bottom")
+
+ggplot2::ggsave(filename = file.path(
+  manual_output_path,
+  paste0("ab_carbapenemase_presence_by_region_no_blaOXA51-family.svg")),
+  plot = carbapenemase_presence_by_region_plot
+)
+
+
+```
+
+# Combined count of isolates by country
+```{r, eval = FALSE}
+combined_country_isolate_counts <- pa %>%
+  count_isolates(location_broad) %>%
+  rename(pa = isolates) %>%
+  full_join(ab %>% count_isolates(location_broad), by = "location_broad") %>%
+  rename(ab = isolates)
+
+combined_country_isolate_counts %>%
+  readr::write_csv(file.path(manual_output_path, "combined_country_isolate_counts.csv"))
+```
+
+# Combined count of isolates by country (only countries with >= 50 isolates for one species)
+```{r, eval = FALSE}
+combined_country_isolate_counts_50plus <- pa %>%
+  count_isolates(location_broad) %>%
+  rename(pa = isolates) %>%
+  full_join(ab %>% count_isolates(location_broad), by = "location_broad") %>%
+  rename(ab = isolates) %>%
+  filter(pa >= 50 | ab >= 50)
+
+combined_country_isolate_counts_50plus %>%
+  readr::write_csv(file.path(manual_output_path, "combined_country_isolate_counts_50plus.csv"))
+```
+
