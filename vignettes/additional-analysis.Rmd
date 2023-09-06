@@ -156,14 +156,26 @@ ggplot2::ggsave(filename = file.path(
 
 # Combined count of isolates by country
 ```{r, eval = FALSE}
-combined_country_isolate_counts <- pa %>%
+combined_country_isolate_counts <- ab %>%
   count_isolates(standardized_country) %>%
+  rename(ab = isolates) %>%
+  full_join(pa %>% count_isolates(standardized_country), by = "standardized_country") %>%
   rename(pa = isolates) %>%
-  full_join(ab %>% count_isolates(standardized_country), by = "standardized_country") %>%
-  rename(ab = isolates)
+  tidyr::replace_na(list(ab = 0L, pa = 0L)) %>%
+  mutate(total = ab + pa) %>%
+  arrange(desc(total)) %>%
+  mutate(standardized_country = forcats::fct_reorder(standardized_country, total, I)) %>%
+  arrange(desc(standardized_country))
 
 combined_country_isolate_counts %>%
   readr::write_csv(file.path(manual_output_path, "combined_country_isolate_counts.csv"))
+
+combined_country_isolate_counts_50plus <- combined_country_isolate_counts %>%
+  filter(pa >= 50 | ab >= 50) %>%
+  tidyr::drop_na(standardized_country)
+
+combined_country_isolate_counts_50plus %>%
+  readr::write_csv(file.path(manual_output_path, "combined_country_isolate_counts_50plus.csv"))
 ```
 
 # Combined count of isolates by country (only countries with >= 50 isolates for one species)
