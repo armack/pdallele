@@ -22,7 +22,7 @@ aeruginosa* isolates present in the NCBI Pathogen Detection Project Isolates
 Browser and MicroBIGG-E databases.
 
 ## Analysis settings and preferences
-### Output directoreis
+### Output directories
 Enter directory paths for output of analysis results. By default, results are
 saved to a `/results` subdirectory under the working directory with `/tables`
 and `/graphics` subdirectories to organize generated files.
@@ -64,6 +64,37 @@ combinations <- tibble::tibble(name = genes_of_interest) %>%
 
 ```
 
+### Manual Country/Territory Name Standardization
+Manually correct country (or territory) names in cases where the INSDC
+controlled vocabulary names don't align well with the name variants used in the
+`countrycode` R package This is optional, but may help to increase the number of
+geographic entities included in later analysis steps.
+
+```{r, eval = FALSE}
+manual_countries <- c(
+  "Ashmore and Cartier Islands" = "Australia",
+  "Baker Island" = "United States Minor Outlying Islands (the)",
+  "Coral Sea Islands" = "Australia",
+  "Europa Island" = "French Southern and Antarctic Lands",
+  "Glorioso Islands" = "French Southern and Antarctic Lands",
+  "Howland Island" = "United States Minor Outlying Islands (the)",
+  "Jan Mayen" = "Svalbard & Jan Mayen",
+  "Jarvis Island" = "United States Minor Outlying Islands (the)",
+  "Johnston Atoll" = "United States Minor Outlying Islands (the)",
+  "Juan de Nova Island" = "French Southern and Antarctic Lands",
+  "Kerguelen Archipelago" = "French Southern and Antarctic Lands",
+  "Kingman Reef" = "United States Minor Outlying Islands (the)",
+  "Micronesia" = "Micronesia (Federated States of)",
+  "Midway Islands" = "United States Minor Outlying Islands (the)",
+  "Navassa Island" = "United States Minor Outlying Islands (the)",
+  "Palmyra Atoll" = "United States Minor Outlying Islands (the)",
+  "Paracel Islands" = "China",
+  "Saint Martin" = "Saint Martin (French Part)",
+  "Tromelin Island" = "French Southern and Antarctic Lands",
+  "Virgin Islands" = "U.S. Virgin Islands",
+  "Wake Island" = "United States Minor Outlying Islands (the)"
+)
+```
 ## Filtering alleles and data sets
 ### Filter alleles by name
 Filter the `allele` column based on a list of regular expressions. Values are
@@ -415,19 +446,19 @@ ggplot2::ggsave(
 )
 
 
-# Isolate Broad Location (Country/Ocean) Counts
-overview_isolate_counts_by_broad_location <- isolates %>%
-  count_isolates(location_broad)
+# Isolate Standardized Country Name Counts
+overview_isolate_counts_by_standardized_country <- isolates %>%
+  count_isolates(standardized_country)
 
-overview_isolate_counts_by_broad_location %>%
+overview_isolate_counts_by_standardized_country %>%
   readr::write_csv(file.path(table_path, "overview_isolate_counts_by_broad_location.csv"))
 
-overview_isolate_counts_by_broad_location_plot <-
-  overview_isolate_counts_by_broad_location %>%
-  tidyr::drop_na(location_broad) %>%
-  top_n_across_groups(location_broad, count = isolates, n = 10) %>%
+overview_isolate_counts_by_standardized_country_plot <-
+  overview_isolate_counts_by_standardized_country %>%
+  tidyr::drop_na(standardized_country) %>%
+  top_n_across_groups(standardized_country, count = isolates, n = 10) %>%
   donut_plot(
-    fill = location_broad,
+    fill = standardized_country,
     counts = isolates,
     count_label = "Isolates",
     legend_title = "**Country**"
@@ -436,9 +467,9 @@ overview_isolate_counts_by_broad_location_plot <-
 ggplot2::ggsave(
   filename = file.path(
     graphic_path,
-    "overview_isolate_counts_by_broad_location.svg"
+    "overview_isolate_counts_by_standardized_country.svg"
   ),
-  plot = overview_isolate_counts_by_broad_location_plot
+  plot = overview_isolate_counts_by_standardized_country_plot
 )
 
 # Isolate Region Counts

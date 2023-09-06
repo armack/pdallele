@@ -93,14 +93,75 @@ na_strings <-
   )
 ```
 
+### Manual Country/Territory Standardization
+Manually correct country (or territory) names and ISO 3166-1 Alpha-3 codes in
+cases where the INSDC controlled vocabulary names don't align well with the name
+variants used in the `countrycode` R package This is optional, but may help to
+increase the number of geographic entities included in later analysis steps.
+
+#### Names
+```{r, eval = FALSE}
+manual_countries <- c(
+  "Ashmore and Cartier Islands" = "Australia",
+  "Baker Island" = "United States Minor Outlying Islands (the)",
+  "Coral Sea Islands" = "Australia",
+  "Europa Island" = "French Southern and Antarctic Lands",
+  "Glorioso Islands" = "French Southern and Antarctic Lands",
+  "Howland Island" = "United States Minor Outlying Islands (the)",
+  "Jan Mayen" = "Svalbard & Jan Mayen",
+  "Jarvis Island" = "United States Minor Outlying Islands (the)",
+  "Johnston Atoll" = "United States Minor Outlying Islands (the)",
+  "Juan de Nova Island" = "French Southern and Antarctic Lands",
+  "Kerguelen Archipelago" = "French Southern and Antarctic Lands",
+  "Kingman Reef" = "United States Minor Outlying Islands (the)",
+  "Micronesia" = "Micronesia (Federated States of)",
+  "Midway Islands" = "United States Minor Outlying Islands (the)",
+  "Navassa Island" = "United States Minor Outlying Islands (the)",
+  "Palmyra Atoll" = "United States Minor Outlying Islands (the)",
+  "Paracel Islands" = "China",
+  "Saint Martin" = "Saint Martin (French Part)",
+  "Tromelin Island" = "French Southern and Antarctic Lands",
+  "Virgin Islands" = "U.S. Virgin Islands",
+  "Wake Island" = "United States Minor Outlying Islands (the)"
+)
+```
+
+#### ISO 3166-1 Alpha-3 Codes
+```{r, eval = FALSE}
+manual_iso3c <- c(
+  "Ashmore and Cartier Islands" = "AUS",
+  "Baker Island" = "UMI",
+  "Coral Sea Islands" = "AUS",
+  "Europa Island" = "ATF",
+  "Glorioso Islands" = "ATF",
+  "Howland Island" = "UMI",
+  "Jan Mayen" = "SJM",
+  "Jarvis Island" = "UMI",
+  "Johnston Atoll" = "UMI",
+  "Juan de Nova Island" = "ATF",
+  "Kerguelen Archipelago" = "ATF",
+  "Kingman Reef" = "UMI",
+  "Micronesia" = "FSM",
+  "Midway Islands" = "UMI",
+  "Navassa Island" = "UMI",
+  "Palmyra Atoll" = "UMI",
+  "Paracel Islands" = "CHN",
+  "Saint Martin" = "MAF",
+  "Tromelin Island" = "ATF",
+  "Virgin Islands" = "VIR",
+  "Wake Island" = "UMI"
+)
+```
+
+
 ## Import Isolates Browser data
 ```{r, eval = FALSE}
 isolates_raw <- import_isolates_browser_metadata(isolates_path) %>%
   na_if_tibble_chr(terms = na_strings) %>%
   parse_genus_species() %>%
   reverse_geocode() %>%
-  split_location() %>%
-  import_regions(path = region_path) %>%
+  split_location(custom_match = manual_countries) %>%
+  import_regions(path = region_path, custom_match = manual_countries) %>%
   import_cluster_list(cluster_path) %>%
   separate_genotypes(include = "amr") %>%
   add_reference_gene_catalog(refgene_path) %>%
