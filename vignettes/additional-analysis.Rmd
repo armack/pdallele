@@ -157,9 +157,9 @@ ggplot2::ggsave(filename = file.path(
 # Combined count of isolates by country
 ```{r, eval = FALSE}
 combined_country_isolate_counts <- pa %>%
-  count_isolates(location_broad) %>%
+  count_isolates(standardized_country) %>%
   rename(pa = isolates) %>%
-  full_join(ab %>% count_isolates(location_broad), by = "location_broad") %>%
+  full_join(ab %>% count_isolates(standardized_country), by = "standardized_country") %>%
   rename(ab = isolates)
 
 combined_country_isolate_counts %>%
@@ -169,9 +169,9 @@ combined_country_isolate_counts %>%
 # Combined count of isolates by country (only countries with >= 50 isolates for one species)
 ```{r, eval = FALSE}
 combined_country_isolate_counts_50plus <- pa %>%
-  count_isolates(location_broad) %>%
+  count_isolates(standardized_country) %>%
   rename(pa = isolates) %>%
-  full_join(ab %>% count_isolates(location_broad), by = "location_broad") %>%
+  full_join(ab %>% count_isolates(standardized_country), by = "standardized_country") %>%
   rename(ab = isolates) %>%
   filter(pa >= 50 | ab >= 50)
 
