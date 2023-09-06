@@ -166,18 +166,29 @@ reverse_geocode <- function(data){
 #' Split location into location_broad and location_detail
 #'
 #' Splits INSDC/BioSample geo_loc_name style country:detailed_location format
-#' into location_broad (country) and location_detail (city/area).
+#' into `location_broad` (country) and `location_detail` (city/area) and adds
+#' `standardized_country` which attempts to account for spelling and language
+#' differences.
 #'
 #' @param data A data frame or tibble
+#' @param custom_match A named character vector correlating original country
+#'   names to standardized country names. Passed to `custom_match` of
+#'   [standardize_countries()].
 #' @returns `data` with columns `location_broad` and `location_detail`
 #'   added
 #' @export
-split_location <- function(data) {
-
-  .complete <- data %>%
+split_location <- function(data, custom_match = NULL) {
+  .partial <- data %>%
     tidyr::separate(location, into = c("location_broad", "location_detail"), sep = ":",
-             extra = "merge", fill = "right", remove = FALSE) %>%
+                    extra = "merge", fill = "right", remove = FALSE) %>%
     dplyr::mutate(location_detail = stringr::str_trim(.data$location_detail, side = "left"))
+
+  .complete <- .partial %>%
+    dplyr::left_join(.partial %>%
+                       distinct(location_broad) %>%
+                       pull() %>%
+                       standardize_countries(custom_match = custom_match),
+                     by = dplyr::join_by(location_broad == original))
 
   return(.complete)
 }
@@ -196,29 +207,23 @@ split_location <- function(data) {
 #' @param path Path to a csv file containing at least columns `country` and
 #'   `region`
 #' @param warn Should a warning message with unmatched countries be shown?
+#' @param custom_match A named character vector correlating original country
+#'   names to standardized country names. Passed to `custom_match` of
+#'   [standardize_countries()].
 #' @returns `data` with column `region` (and possibly others) added
 #' @export
-import_regions <- function(data, path, warn = FALSE) {
+import_regions <- function(data, path, custom_match = NULL, warn = FALSE) {
   if (is.null(path))
     return(data)
 
   regions <- readr::read_csv(file = path, show_col_types = FALSE)
 
-  country_list <- dplyr::distinct(data, .data$location_broad)
-
-  standardized_countries <- country_list %>%
-    dplyr::mutate(
-      std_country = countrycode::countryname(
-        .data$location_broad,
-        destination = "country.name.en",
-        warn = warn
-      )
-    ) %>%
-    dplyr::left_join(regions, by = c("std_country" = "country")) %>%
+  region_key <- standardize_countries(regions %>% distinct(country) %>% pull(), custom_match = custom_match) %>%
+    dplyr::left_join(regions, by = c("original" = "country")) %>%
     tidyr::drop_na()
 
   .complete <- data %>%
-    dplyr::left_join(standardized_countries, by = "location_broad")
+    dplyr::left_join(region_key, by = "standardized_country")
 
   return(.complete)
 }
