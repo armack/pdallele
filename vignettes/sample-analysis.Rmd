@@ -621,29 +621,16 @@ ggplot2::ggsave(
 
 #### Map of isolate counts by country
 ```{r, eval = FALSE}
-# Load map data and add ISO3C codes
-world_map_data <- ggplot2::map_data("world") %>%
-  dplyr::mutate(
-    iso = countrycode::countrycode(
-      region,
-      origin = "country.name.en.regex",
-      destination = "iso3c",
-      warn = FALSE
-    )
-  )
+# Determine standardized names with `countrycode::countrycode()`
+standardized_map_country_names <- ggplot2::map_data("world") %>%
+  dplyr::distinct(region) %>%
+  dplyr::pull() %>%
+  standardize_countries(custom_match = manual_countries)
+
 # Generate the map
-overview_isolate_counts_map <-
-  overview_isolate_counts_by_broad_location %>%
-  dplyr::mutate(
-    iso = countrycode::countrycode(
-      location_broad,
-      origin = "country.name",
-      destination = "iso3c",
-      warn = FALSE
-    )
-  ) %>%
-  tidyr::drop_na(iso) %>%
-  dplyr::right_join(world_map_data, by = "iso", multiple = "all") %>%
+overview_isolate_counts_map <- ggplot2::map_data("world") %>%
+  dplyr::left_join(standardized_map_country_names, by = c("region" = "original")) %>%
+  dplyr::left_join(overview_isolate_counts_by_standardized_country, by = "standardized_country") %>%
   ggplot2::ggplot(ggplot2::aes(long, lat, group = group)) +
   ggplot2::geom_polygon(ggplot2::aes(fill = isolates),
                         color = "white",
