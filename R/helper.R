@@ -478,6 +478,38 @@ possible_unique_proteins <- function(data){
   return(accessions)
 }
 
+#' Standardize country names
+#'
+#' @description
+#' Uses `countrycode` package to attempt to fix spelling errors and account for
+#' non-English country names in order to "standardize" spelling of country
+#' names. Allows the use of `custom_match` to deal with INSDC names that
+#' `countrycode` doesn't handle well.
+#'
+#' Note that only clearly distinguishable entities with an ISO 3166-1 Alpha-3
+#' code are included (meaning oceans, seas, some islands without ISO codes, some
+#' islands shared between multiple countries (e.g. Borneo), and some disputed
+#' territories are dropped).
+#'
+#' @param data A character vector of country names
+#' @param custom_match A named character vector correlating original country
+#'   names to standardized country names. Passed to `custom_match` of
+#'   [countrycode::countrycode()].
+#' @returns A tibble with `original` and `standardized_country` names
+#' @export
+standardize_countries <- function (data, custom_match = NULL){
+  .complete <- tibble::enframe(data, name = NULL, value = "original") %>%
+    dplyr::mutate(country = countrycode::countryname(data, destination = "country.name.en", warn = FALSE)) %>%
+    dplyr::mutate(custom = countrycode::countrycode(data, origin = "country.name",
+                                                    destination = "country.name",
+                                                    custom_match = custom_match, warn = FALSE)) %>%
+    dplyr::mutate(standardized_country = dplyr::coalesce(country, custom)) %>%
+    dplyr::select(original, standardized_country)
+
+  return(.complete)
+}
+
+
 ########## File Handling ##########
 
 #' Ensure directory exists
