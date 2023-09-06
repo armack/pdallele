@@ -4,10 +4,14 @@
 \alias{split_location}
 \title{Split location into location_broad and location_detail}
 \usage{
-split_location(data)
+split_location(data, custom_match = NULL)
 }
 \arguments{
 \item{data}{A data frame or tibble}
+
+\item{custom_match}{A named character vector correlating original country
+names to standardized country names. Passed to \code{custom_match} of
+\code{\link[=standardize_countries]{standardize_countries()}}.}
 }
 \value{
 \code{data} with columns \code{location_broad} and \code{location_detail}
@@ -15,5 +19,7 @@ added
 }
 \description{
 Splits INSDC/BioSample geo_loc_name style country:detailed_location format
-into location_broad (country) and location_detail (city/area).
+into \code{location_broad} (country) and \code{location_detail} (city/area) and adds
+\code{standardized_country} which attempts to account for spelling and language
+differences.
 }

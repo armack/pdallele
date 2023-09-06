@@ -4,13 +4,17 @@
 \alias{import_regions}
 \title{Adds \code{region} column based on \code{location_broad} and a file}
 \usage{
-import_regions(data, path, warn = FALSE)
+import_regions(data, path, custom_match = NULL, warn = FALSE)
 }
 \arguments{
 \item{data}{A data frame or tibble}
 
 \item{path}{Path to a csv file containing at least columns \code{country} and
 \code{region}}
+
+\item{custom_match}{A named character vector correlating original country
+names to standardized country names. Passed to \code{custom_match} of
+\code{\link[=standardize_countries]{standardize_countries()}}.}
 
 \item{warn}{Should a warning message with unmatched countries be shown?}
 }

@@ -13,7 +13,8 @@ donut_plot(
   legend_title = "**Allele**",
   labels = TRUE,
   total = TRUE,
-  palette = NULL
+  palette = NULL,
+  legend.position = "right"
 )
 
 donut_plot_panel(
@@ -26,7 +27,8 @@ donut_plot_panel(
   total = TRUE,
   palette = NULL,
   nrow = NULL,
-  ncol = NULL
+  ncol = NULL,
+  legend.position = "right"
 )
 }
 \arguments{
