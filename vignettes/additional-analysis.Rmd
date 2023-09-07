@@ -178,16 +178,21 @@ combined_country_isolate_counts_50plus %>%
   readr::write_csv(file.path(manual_output_path, "combined_country_isolate_counts_50plus.csv"))
 ```
 
-# Combined count of isolates by country (only countries with >= 50 isolates for one species)
+# Combined count of isolates by region
 ```{r, eval = FALSE}
-combined_country_isolate_counts_50plus <- pa %>%
-  count_isolates(standardized_country) %>%
-  rename(pa = isolates) %>%
-  full_join(ab %>% count_isolates(standardized_country), by = "standardized_country") %>%
+combined_region_isolate_counts <- ab %>%
+  count_isolates(region) %>%
   rename(ab = isolates) %>%
-  filter(pa >= 50 | ab >= 50)
+  full_join(pa %>% count_isolates(region), by = "region") %>%
+  rename(pa = isolates) %>%
+  tidyr::replace_na(list(ab = 0L, pa = 0L)) %>%
+  mutate(total = ab + pa) %>%
+  arrange(desc(total)) %>%
+  mutate(region = forcats::fct_reorder(region, total, I)) %>%
+  arrange(desc(region))
 
-combined_country_isolate_counts_50plus %>%
-  readr::write_csv(file.path(manual_output_path, "combined_country_isolate_counts_50plus.csv"))
+combined_region_isolate_counts %>%
+  readr::write_csv(file.path(manual_output_path, "combined_region_isolate_counts.csv"))
+
 ```
 
