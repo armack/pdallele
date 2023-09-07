@@ -2066,7 +2066,8 @@ overview_pds_frequency_mbe %>%
 
 # MLST Sequence Type Frequency
 overview_mlst_frequency <- mbe %>%
-  count_isolates(mlst)
+  count_isolates(mlst) %>%
+  mutate(proportion = isolates / sum(isolates))
 
 overview_mlst_frequency %>%
   readr::write_csv(file.path(table_path, "overview_mlst_frequency.csv"))
