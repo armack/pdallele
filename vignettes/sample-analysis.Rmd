@@ -426,7 +426,8 @@ overview_distinct_assigned_oxa_family_counts %>%
 ```{r, eval = FALSE}
 # Isolate Species Counts
 overview_isolate_counts_by_species <- isolates %>%
-  count_isolates(species, species_markdown)
+  count_isolates(species, species_markdown) %>%
+  mutate(proportion = isolates / length(unique(.env$isolates$biosample)))
 
 overview_isolate_counts_by_species %>%
   dplyr::select(-species_markdown) %>%
@@ -448,7 +449,8 @@ ggplot2::ggsave(
 
 # Isolate Standardized Country Name Counts
 overview_isolate_counts_by_standardized_country <- isolates %>%
-  count_isolates(standardized_country)
+  count_isolates(standardized_country) %>%
+  mutate(proportion = isolates / length(unique(.env$isolates$biosample)))
 
 overview_isolate_counts_by_standardized_country %>%
   readr::write_csv(file.path(table_path, "overview_isolate_counts_by_broad_location.csv"))
@@ -474,7 +476,8 @@ ggplot2::ggsave(
 
 # Isolate Region Counts
 overview_isolate_counts_by_region <- isolates %>%
-  count_isolates(region)
+  count_isolates(region)%>%
+  mutate(proportion = isolates / length(unique(.env$isolates$biosample)))
 
 overview_isolate_counts_by_region %>%
   readr::write_csv(file.path(table_path, "overview_isolate_counts_by_region.csv"))
@@ -506,6 +509,7 @@ overview_isolate_counts_by_collection_year <- isolates %>%
     )
   ) %>%
   count_isolates(collected, sort = FALSE) %>%
+  mutate(proportion = isolates / length(unique(.env$isolates$biosample))) %>%
   relevel_first_last(collected, first = "Before 2000")
 
 overview_isolate_counts_by_collection_year %>%
