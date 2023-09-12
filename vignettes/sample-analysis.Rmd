@@ -2426,6 +2426,56 @@ for (i in 1:nrow(combinations)) {
 }
 ```
 
+## Stats by BioProject & BioProject Center
+```{r, eval = FALSE}
+## Counts by Region
+overview_bioproject_list_by_region <- isolates %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  count_isolates(region, bioproject, sort = FALSE) %>%
+  group_by(region) %>%
+  mutate(proportion = isolates/sum(isolates)) %>%
+  arrange(region, desc(isolates))
+
+  overview_bioproject_list_by_region %>%
+    readr::write_csv(file.path(table_path, "bioproject_list_by_region.csv"))
+  
+overview_bioproject_center_list_by_region <- isolates %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  count_isolates(region, bioproject_center, sort = FALSE) %>%
+  group_by(region) %>%
+  mutate(proportion = isolates/sum(isolates)) %>%
+  arrange(region, desc(isolates))
+
+  overview_bioproject_list_by_region %>%
+    readr::write_csv(file.path(table_path, "bioproject_center_list_by_region.csv"))
+  
+  overview_bioproject_summary_by_region <- isolates %>%
+  count_isolates(region) %>%
+  left_join(
+    overview_bioproject_list_by_region %>%
+      summarize(
+        n_bp = n(),
+        max_bp_isolates = max(isolates),
+        median_bp_isolates = median(isolates),
+        mean_bp_isolates = round(mean(isolates), digits = 1)
+      ), by = "region"
+  ) %>%
+  left_join(
+    overview_bioproject_center_list_by_region %>%
+      summarize(
+        n_bpc = n(),
+        max_bpc_isolates = max(isolates),
+        median_bpc_isolates = median(isolates),
+        mean_bpc_isolates = round(mean(isolates), digits = 1)
+      ), by = "region"
+  )
+  
+  overview_bioproject_summary_by_region %>%
+    readr::write_csv(file.path(table_path, "overview_bioproject_summary_by_region.csv"))
+
+```
+
+
 ## Deduplicated Alleles - BioProject & BioProject Center
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
