@@ -2049,7 +2049,7 @@ for (gene_name in genes_of_interest) {
 ```
 
 # Deduplicated Data
-## Isolate Counts by Variable 
+## MLST & SNP Cluster Frequency
 ```{r, eval = FALSE}
 # SNP Cluster Frequency
 overview_pds_frequency <- isolates %>%
@@ -2077,7 +2077,7 @@ overview_mlst_frequency %>%
   readr::write_csv(file.path(table_path, "overview_mlst_frequency.csv"))
 ```
 
-## Comparison of PDS and MLST
+## MLST and PDS Cluster Mappings
 ```{r, eval = FALSE}
 # Distinct MLST per PDS
 mbe %>%
@@ -2096,7 +2096,7 @@ mbe %>%
   readr::write_csv(file.path(table_path, "distinct_pds_by_mlst.csv"))
 ```
 
-## Deduplicated Alleles - MBE
+## Deduplicated Alleles - MLST & PDS Cluster - MBE
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
@@ -2279,7 +2279,7 @@ for (i in 1:nrow(combinations)) {
     ))
 }
 ```
-## Deduplicated Alleles - Isolates Browser
+## Deduplicated Alleles - MLST & PDS Cluster - Isolates Browser
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
