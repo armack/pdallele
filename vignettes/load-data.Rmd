@@ -156,7 +156,8 @@ mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   import_cluster_list(cluster_path) %>%
   import_mlst(mlst_path) %>%
   parse_bla_formatting(gene = FALSE) %>%
-  parse_mbe_oxa_family()
+  parse_mbe_oxa_family() %>%
+  parse_year()
 ```
 
 Optionally, save the processed data set:
