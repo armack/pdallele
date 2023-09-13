@@ -547,9 +547,16 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #'
 #' |**Source File**  |**Output Tibble**|
 #' |-----------------|-----------------|
+#' |scientific_name  |species          |
 #' |protein_acc      |protein          |
 #' |biosample_acc    |biosample        |
+#' |collection_date  |collection_date  |
 #' |asm_acc          |assembly         |
+#' |target_acc       |pdt              |
+#' |epi_type         |sample_type      |
+#' |geo_loc_name     |location         |
+#' |host             |host             |
+#' |isolation_source |isolation_source |
 #' |element_symbol   |allele           |
 #' |element_name     |name             |
 #' |amr_method       |method           |
@@ -559,6 +566,7 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #' |start_on_contig  |nuc_start        |
 #' |end_on_contig    |nuc_stop         |
 #' |strand           |strand           |
+#' |-----------------|-----------------|
 #'
 #' @section Obtaining Data: Up to 100,000 rows of data (potentially with an
 #'   additional 50 MB cap) can be downloaded via the web interface at:
@@ -578,7 +586,13 @@ import_microbigge_gcp <- function(path) {
       species = "scientific_name",
       protein = "protein_acc",
       biosample = "biosample_acc",
+      "collection_date",
       assembly = "asm_acc",
+      pdt = "target_acc",
+      sample_type = "epi_type",
+      location = "geo_loc_name",
+      "host",
+      "isolation_source",
       allele = "element_symbol",
       name = "element_name",
       method = "amr_method",
