@@ -559,6 +559,8 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #' |isolation_source |isolation_source |
 #' |element_symbol   |allele           |
 #' |element_name     |name             |
+#' |class            |class            |
+#' |subclass         |subclass         |
 #' |amr_method       |method           |
 #' |pct_ref_coverage |coverage         |
 #' |pct_ref_identity |identity         |
@@ -595,6 +597,8 @@ import_microbigge_gcp <- function(path) {
       "isolation_source",
       allele = "element_symbol",
       name = "element_name",
+      "class",
+      "subclass",
       method = "amr_method",
       coverage = "pct_ref_coverage",
       identity = "pct_ref_identity",
