@@ -2445,7 +2445,7 @@ for (i in 1:nrow(combinations)) {
 }
 ```
 
-## Stats by BioProject & BioProject Center
+## Counts by BioProject
 ```{r, eval = FALSE}
 ## Counts by Region
 overview_bioproject_list_by_region <- isolates %>%
@@ -2495,25 +2495,35 @@ overview_bioproject_center_list_by_region <- isolates %>%
 ```
 
 
-## Deduplicated Alleles - BioProject & BioProject Center
+## Deduplicated Alleles - BioProject - Isolates Browser
 ```{r, eval = FALSE}
+bioproject_combo_biosamples <- isolates %>%
+  determine_combinations() %>%
+  distinct(bioproject, combo, .keep_all = TRUE) %>%
+  pull(biosample)
+
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
   gene_filter_label <- combinations[[i, "label"]]
-
-
+  
   # BioProject Deduplicated - Assigned allele frequency
   bioproject_deduplicated <- isolates %>%
-    remove_unassigned_bla() %>%
+    filter(biosample %in% bioproject_combo_biosamples) %>%
+    filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(bioproject) %>%
-    dplyr::distinct(bioproject, allele, .keep_all = TRUE)
+    tidyr::drop_na(bioproject)
   
   bioproject_deduplicated_frequency <- bioproject_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(bioproject_deduplicated)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    full_join(isolates %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   bioproject_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -2538,68 +2548,6 @@ for (i in 1:nrow(combinations)) {
     paste0(gene_filter, "_allele_frequency_isolates_bioproject_deduplicated_donut.svg")),
     plot = bioproject_deduplicated_frequency_plot
   ) 
-
-    # BioProject Center Deduplicated - Assigned allele frequency
-  bioproject_center_deduplicated <- isolates %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(bioproject_center) %>%
-    dplyr::distinct(bioproject_center, allele, .keep_all = TRUE)
-  
-  bioproject_center_deduplicated_frequency <- bioproject_center_deduplicated %>%
-    {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
-      else count_isolates(., allele, allele_markdown)} %>%
-    mutate(porportion = isolates / nrow(bioproject_center_deduplicated)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
-  
-  bioproject_deduplicated_frequency %>%
-    readr::write_csv(file.path(
-      table_path,
-      paste0(gene_filter, "_allele_frequency_isolates_bioproject_center_deduplicated.csv")
-    ))
-  
-  bioproject_center_deduplicated_frequency_plot <-
-    bioproject_center_deduplicated_frequency %>%
-    top_n_across_groups(allele,
-                        allele_markdown,
-                        count = isolates,
-                        n = 10) %>%
-    donut_plot(
-      fill = allele_markdown,
-      counts = isolates,
-      legend_title = gene_filter_label
-    )
-  
-  ggplot2::ggsave(filename = file.path(
-    graphic_path,
-    paste0(gene_filter, "_allele_frequency_isolates_bioproject_center_deduplicated_donut.svg")),
-    plot = bioproject_center_deduplicated_frequency_plot
-  ) 
-    
-# Comparison of Full and Deduplicated Data Sets
-
-  combined_deduplicated_bioproject_ranks <- isolates %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter) %>%
-    {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
-      else count_isolates(., allele)} %>%
-    dplyr::mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
-    {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank = rank) 
-      else dplyr::select(., allele, full_data_rank = rank)} %>%
-    dplyr::full_join(
-      bioproject_deduplicated_frequency %>%
-        dplyr::select(allele, bioproject_deduplicated_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      bioproject_center_deduplicated_frequency %>%
-        dplyr::select(allele, bioproject_center_deduplicated_rank = rank),
-      by = "allele") 
-  
-  combined_deduplicated_bioproject_ranks %>%
-    readr::write_csv(file.path(
-      table_path,
-      paste0(gene_filter, "_allele_frequency_isolates_deduplicated_bioproject_ranks.csv")
-    ))
 }
 ```
 
