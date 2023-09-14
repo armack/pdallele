@@ -720,20 +720,20 @@ overview_combination_filtered_allele_counts_by_species %>%
 ```{r, eval = FALSE}
 # Presence by Region
 carbapenemase_presence_by_region <- isolates %>%
-  filter(subclass == "CARBAPENEM") %>%
-  distinct(biosample, .keep_all = TRUE) %>%
-  count_isolates(region, region_markdown) %>%
-  rename(carbapenemase_isolates = isolates) %>%
-  left_join(isolates %>% count_isolates(region), by = "region") %>%
-  rename(total_isolates = isolates) %>%
-  mutate(proportion = carbapenemase_isolates / total_isolates)
+  group_by(region, region_markdown) %>%
+  summarize(
+    isolates = n_distinct(biosample),
+    carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
+    carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
+    carbapenemase_isolate_prop = carbapenemase_isolates / isolates
+  )
 
 carbapenemase_presence_by_region %>%
   dplyr::select(-region_markdown) %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_by_region.csv"))
 
 carbapenemase_presence_by_region_plot <- carbapenemase_presence_by_region %>%
-  mutate(non_carbapenemase_isolates = total_isolates - carbapenemase_isolates) %>%
+  mutate(non_carbapenemase_isolates = isolates - carbapenemase_isolates) %>%
   dplyr::rename(Present = carbapenemase_isolates, Absent = non_carbapenemase_isolates) %>%
   tidyr::pivot_longer(cols = c(Present, Absent), names_to = "carbapenemase") %>%
   tidyr::drop_na(region) %>%
@@ -751,29 +751,26 @@ carbapenemase_presence_by_region_plot <- carbapenemase_presence_by_region %>%
 
 # Presence Over Time
 carbapenemase_presence_over_time <- isolates %>%
-  filter(subclass == "CARBAPENEM") %>%
-  count_isolates(period) %>%
-  rename(carbapenemase_isolates = isolates) %>%
-  left_join(isolates %>% count_isolates(period), by = "period") %>%
-  rename(total_isolates = isolates) %>%
-  mutate(proportion = carbapenemase_isolates / total_isolates) %>%
-  relevel_numeric(period) %>%
-  arrange(period)
+  group_by(period) %>%
+  summarize(
+    isolates = n_distinct(biosample),
+    carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
+    carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
+    carbapenemase_isolate_prop = carbapenemase_isolates / isolates
+  )
 
 carbapenemase_presence_over_time %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_over_time.csv"))
 
-
 # Presence Over Time (Since 2000)
 carbapenemase_presence_over_time_since_2000 <- isolates %>%
-  filter(subclass == "CARBAPENEM") %>%
-  count_isolates(period_2000) %>%
-  rename(carbapenemase_isolates = isolates) %>%
-  left_join(isolates %>% count_isolates(period_2000), by = "period_2000") %>%
-  rename(total_isolates = isolates) %>%
-  mutate(proportion = carbapenemase_isolates / total_isolates) %>%
-  relevel_numeric(period_2000) %>%
-  arrange(period_2000)
+  group_by(period_2000) %>%
+  summarize(
+    isolates = n_distinct(biosample),
+    carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
+    carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
+    carbapenemase_isolate_prop = carbapenemase_isolates / isolates
+  )
 
 carbapenemase_presence_over_time_since_2000 %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_over_time_since_2000.csv"))
@@ -795,7 +792,6 @@ carbapenemase_gene_counts %>%
   readr::write_csv(file.path(table_path, "carbapenemase_gene_counts.csv"))
 
 ```
-
 
 ### Comparison by Species
 ```{r, eval = FALSE}
