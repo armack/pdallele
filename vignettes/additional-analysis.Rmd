@@ -165,3 +165,60 @@ combined_region_isolate_counts %>%
 
 ```
 
+# Comparison to POP Study
+```{r, eval = FALSE}
+# Overall presence of carbapenemase genes
+pa %>%
+  filter(year == 2018 | year == 2019) %>%
+  filter(bioproject != "PRJNA824880") %>%
+  summarize(
+    isolates = n_distinct(biosample),
+    carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
+    carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
+    carbapenemase_isolate_proportion = carbapenemase_isolates / isolates
+  )
+
+# Overall presence of carbapenemase genes
+pa %>%
+  filter(year == 2018 | year == 2019) %>%
+  filter(bioproject != "PRJNA824880") %>%
+  group_by(location_broad) %>%
+  summarize(
+    isolates = n_distinct(biosample),
+    carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
+    carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
+    carbapenemase_isolate_proportion = carbapenemase_isolates / isolates
+  ) %>% tibble::view()
+
+# Regional presence of carbapenemase genes
+pa %>%
+  filter(year == 2018 | year == 2019) %>%
+  filter(bioproject != "PRJNA824880") %>%
+  group_by(region) %>%
+  summarize(
+    isolates = n_distinct(biosample),
+    carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
+    carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
+    carbapenemase_isolate_proportion = carbapenemase_isolates / isolates
+  )
+
+# Counts by carbapenemase gene
+pa %>%
+  filter(year == 2018 | year == 2019) %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(bioproject != "PRJNA824880") %>%
+  distinct(biosample, gene) %>%
+  count(gene, name = "isolates") %>%
+  mutate(overall_proportion = isolates / length(unique(pa %>% filter(year == 2018 | year == 2019) %>% pull(biosample)))) %>%
+  mutate(carpabenemase_proportion = isolates / length(unique(pa %>% filter(year == 2018 | year == 2019) %>% filter(subclass == "CARBAPENEM") %>% pull(biosample)))) %>%
+  arrange(desc(isolates))
+
+# Counts by sequence type
+pa_mbe %>%
+  filter(year == 2018 | year == 2019) %>%
+  filter(subclass == "CARBAPENEM") %>%
+  left_join(pa %>% distinct(biosample, bioproject), by = "biosample") %>%
+  filter(bioproject != "PRJNA824880") %>%
+  count_isolates(mlst)
+```
+
