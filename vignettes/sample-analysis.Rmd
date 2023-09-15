@@ -2288,7 +2288,7 @@ for (i in 1:nrow(combinations)) {
   combined_deduplicated_ranks %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_allele_frequency_mbe_deduplicated_ranks.csv")
+      paste0(gene_filter, "_allele_frequency_mbe_mlst_pds_deduplicated_ranks.csv")
     ))
 }
 ```
@@ -2458,16 +2458,6 @@ overview_bioproject_list_by_region <- isolates %>%
   overview_bioproject_list_by_region %>%
     readr::write_csv(file.path(table_path, "bioproject_list_by_region.csv"))
   
-overview_bioproject_center_list_by_region <- isolates %>%
-  distinct(biosample, .keep_all = TRUE) %>%
-  count_isolates(region, bioproject_center, sort = FALSE) %>%
-  group_by(region) %>%
-  mutate(proportion = isolates/sum(isolates)) %>%
-  arrange(region, desc(isolates))
-
-  overview_bioproject_list_by_region %>%
-    readr::write_csv(file.path(table_path, "bioproject_center_list_by_region.csv"))
-  
   overview_bioproject_summary_by_region <- isolates %>%
   count_isolates(region) %>%
   left_join(
@@ -2477,15 +2467,6 @@ overview_bioproject_center_list_by_region <- isolates %>%
         max_bp_isolates = max(isolates),
         median_bp_isolates = median(isolates),
         mean_bp_isolates = round(mean(isolates), digits = 1)
-      ), by = "region"
-  ) %>%
-  left_join(
-    overview_bioproject_center_list_by_region %>%
-      summarize(
-        n_bpc = n(),
-        max_bpc_isolates = max(isolates),
-        median_bpc_isolates = median(isolates),
-        mean_bpc_isolates = round(mean(isolates), digits = 1)
       ), by = "region"
   )
   
@@ -2519,6 +2500,7 @@ for (i in 1:nrow(combinations)) {
     mutate(porportion = isolates / nrow(bioproject_deduplicated)) %>%
     mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     full_join(isolates %>%
+                filter_assigned_bla() %>%
                 filter_attribute(allele, gene_filter) %>%
                 count_isolates(allele) %>%
                 dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
