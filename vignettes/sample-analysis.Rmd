@@ -2094,36 +2094,31 @@ mbe %>%
 
 ## Deduplicated Alleles - MLST & PDS Cluster - MBE
 ```{r, eval = FALSE}
-
-pds_combo_biosamples <- mbe %>%
-  tidyr::drop_na(pds) %>%
-  determine_combinations() %>%
-  distinct(pds, combo, .keep_all = TRUE) %>%
-  bind_rows(isolates %>% filter(is.na(pds)) %>% distinct(biosample, .keep_all = TRUE)) %>%
-  pull(biosample)
-
-mlst_combo_biosamples <- mbe %>%
-  tidyr::drop_na(mlst) %>%
-  determine_combinations() %>%
-  distinct(mlst, combo, .keep_all = TRUE) %>%
-  pull(biosample)
-
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
   gene_filter_label <- combinations[[i, "label"]]
 
   # MLST Deduplicated - Assigned allele frequency
   mlst_deduplicated <- mbe %>%
-    filter(biosample %in% mlst_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
+    filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(mlst)
+    tidyr::drop_na(mlst) %>%
+    tidyr::drop_na(mlst) %>%
+    distinct(mlst, allele, .keep_all = TRUE)
+    
   
   mlst_deduplicated_frequency <- mlst_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(mlst_deduplicated)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   mlst_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -2151,16 +2146,23 @@ for (i in 1:nrow(combinations)) {
 
   # SNP Cluster Deduplicated - Assigned allele frequency
   pds_deduplicated <- mbe %>%
-    filter(biosample %in% pds_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
+    filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(pds)
+    tidyr::drop_na(pds) %>%
+    distinct(pds, allele, .keep_all = TRUE)
   
   pds_deduplicated_frequency <- pds_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(pds_deduplicated)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -2188,8 +2190,7 @@ for (i in 1:nrow(combinations)) {
   
   # SNP Cluster Unclustered Isolates - Assigned allele frequency
   pds_unclustered <- mbe %>%
-    filter(biosample %in% pds_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
+    filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::filter(is.na(pds))
     
@@ -2197,7 +2198,14 @@ for (i in 1:nrow(combinations)) {
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(pds_unclustered)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -2224,16 +2232,21 @@ for (i in 1:nrow(combinations)) {
   ) 
 
   # SNP Cluster Deduplicated + Unclustered - Assigned allele frequency
-  pds_deduplicated_unclustered <- mbe %>%
-    filter(biosample %in% pds_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter)
+  pds_deduplicated_unclustered <- pds_deduplicated %>%
+    bind_rows(pds_unclustered)
   
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(pds_deduplicated_unclustered)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -2294,29 +2307,29 @@ for (i in 1:nrow(combinations)) {
 ```
 ## Deduplicated Alleles - PDS Cluster - Isolates Browser
 ```{r, eval = FALSE}
-
-pds_combo_biosamples <- isolates %>%
-  determine_combinations() %>%
-  distinct(pds, combo, .keep_all = TRUE) %>%
-  bind_rows(isolates %>% filter(is.na(pds)) %>% distinct(biosample, .keep_all = TRUE)) %>%
-  pull(biosample)
-
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
   gene_filter_label <- combinations[[i, "label"]]
 
   # PDS Cluster Deduplicated - Assigned allele frequency
   pds_deduplicated <- isolates %>%
-    filter(biosample %in% pds_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
+    filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(pds)
+    tidyr::drop_na(pds) %>%
+    distinct(pds, allele, .keep_all = TRUE)
   
   pds_deduplicated_frequency <- pds_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(pds_deduplicated)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+  mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   pds_deduplicated_frequency %>%
     readr::write_csv(file.path(
@@ -2344,8 +2357,7 @@ for (i in 1:nrow(combinations)) {
   
   # PDS Cluster Unclustered Isolates - Assigned allele frequency
   pds_unclustered <- isolates %>%
-    filter(biosample %in% pds_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
+    filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::filter(is.na(pds))
     
@@ -2353,7 +2365,14 @@ for (i in 1:nrow(combinations)) {
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(pds_unclustered)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+  mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   pds_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -2380,16 +2399,21 @@ for (i in 1:nrow(combinations)) {
   ) 
 
   # PDS Cluster Deduplicated + Unclustered - Assigned allele frequency
-  pds_deduplicated_unclustered <- isolates %>%
-    filter(biosample %in% pds_combo_biosamples) %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter)
+  pds_deduplicated_unclustered <- pds_deduplicated %>%
+    bind_rows(pds_unclustered)
   
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
     mutate(porportion = isolates / nrow(pds_deduplicated_unclustered)) %>%
-  mutate(rank = dplyr::dense_rank(desc(isolates)))
+  mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    left_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
   
   pds_deduplicated_unclustered_frequency %>%
     readr::write_csv(file.path(
@@ -2478,21 +2502,16 @@ overview_bioproject_list_by_region <- isolates %>%
 
 ## Deduplicated Alleles - BioProject - Isolates Browser
 ```{r, eval = FALSE}
-bioproject_combo_biosamples <- isolates %>%
-  determine_combinations() %>%
-  distinct(bioproject, combo, .keep_all = TRUE) %>%
-  pull(biosample)
-
 for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
   gene_filter_label <- combinations[[i, "label"]]
   
   # BioProject Deduplicated - Assigned allele frequency
   bioproject_deduplicated <- isolates %>%
-    filter(biosample %in% bioproject_combo_biosamples) %>%
     filter_assigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(bioproject)
+    tidyr::drop_na(bioproject) %>%
+    distinct(bioproject, allele, .keep_all = TRUE)
   
   bioproject_deduplicated_frequency <- bioproject_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
