@@ -2041,6 +2041,60 @@ for (gene_name in genes_of_interest) {
     paste0("mbe_unassigned_top10_", gene_name, "_alleles_donut.svg")),
     plot = mbe_goi_unassigned_allele_plot
   )
+  
+  # <gene_name> Allele Counts by PDS Cluster
+  gene_filter_allele_counts_pds <- mbe %>%
+    filter_assigned_bla() %>%
+    filter_attribute(allele, gene_name) %>%
+    group_by(pds) %>%
+    summarize(alleles = n_distinct(allele)) %>%
+    arrange(desc(alleles))
+
+  gene_filter_allele_counts_pds %>%
+    readr::write_csv(file.path(
+      table_path, paste0(gene_name, "_allele_counts_by_pds.csv")
+    ))
+  
+  # <gene_name> Allele Counts by MLST
+  gene_filter_allele_counts_mlst <- mbe %>%
+    filter_assigned_bla() %>%
+    filter_attribute(allele, gene_name) %>%
+    group_by(mlst) %>%
+    summarize(alleles = n_distinct(allele)) %>%
+    arrange(desc(alleles))
+
+  gene_filter_allele_counts_mlst %>%
+    readr::write_csv(file.path(
+      table_path, paste0(gene_name, "_allele_counts_by_mlst.csv")
+    ))
+
+    # <gene_name> MLST Counts by Allele
+  gene_filter_mlst_counts_allele <- mbe %>%
+    filter_assigned_bla() %>%
+    filter_attribute(allele, gene_name) %>%
+    {if(gene_name == "OXA") group_by(., allele, oxa_family) 
+      else group_by(., allele)} %>%
+    summarize(sequence_types = n_distinct(mlst)) %>%
+    arrange(desc(sequence_types))
+  
+  gene_filter_mlst_counts_allele %>%
+    readr::write_csv(file.path(
+      table_path, paste0(gene_name, "_mlst_counts_by_allele.csv")
+    ))  
+  
+      # <gene_name> PDS Counts by Allele
+  gene_filter_pds_counts_allele <- mbe %>%
+    filter_assigned_bla() %>%
+    filter_attribute(allele, gene_name) %>%
+    {if(gene_name == "OXA") group_by(., allele, oxa_family) 
+      else group_by(., allele)} %>%
+    summarize(clusters = n_distinct(pds)) %>%
+    arrange(desc(clusters))
+  
+  gene_filter_pds_counts_allele %>%
+    readr::write_csv(file.path(
+      table_path, paste0(gene_name, "_pds_counts_by_allele.csv")
+    ))  
 }
 ```
 
