@@ -2516,7 +2516,7 @@ for (i in 1:nrow(combinations)) {
   bioproject_deduplicated_frequency <- bioproject_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
-    mutate(porportion = isolates / nrow(bioproject_deduplicated)) %>%
+    mutate(porportion = isolates / length(unique(bioproject_deduplicated))) %>%
     mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     full_join(isolates %>%
                 filter_assigned_bla() %>%
