@@ -274,12 +274,13 @@ determine_combinations <- function(data, filter_terms = NULL){
   . <- NULL # Workaround to suppress `no visible binding for global variable`
   .combos <- data %>%
     {if (!is.null(filter))  dplyr::filter(., grepl(paste(filter_terms, collapse = "|"), .data$allele, ignore.case = TRUE )) else .} %>%
+    relevel_numeric(.data$allele) %>%
+    dplyr::arrange(.data$biosample, .data$allele) %>%
     dplyr::group_by(.data$biosample) %>%
-    dplyr::filter(length(unique(.data$allele)) > 1) %>%
     dplyr::summarize(combo = paste(.data$allele, collapse = ", "), .groups = "drop")
 
   .complete <- data %>%
-    inner_join(.combos, by = "biosample")
+    left_join(.combos, by = "biosample")
 
   return(.complete)
 }
