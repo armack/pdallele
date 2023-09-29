@@ -2293,7 +2293,7 @@ for (i in 1:nrow(combinations)) {
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
-    mutate(proportion = isolates / ((pds_deduplicated %>% distinct(pds, combo) %>% nrow()) ) + (length(unique(pds_unclustered$biosample)))) %>%
+    mutate(proportion = isolates / (((pds_deduplicated %>% distinct(pds, combo) %>% nrow()) ) + (length(unique(pds_unclustered$biosample))))) %>%
     mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     left_join(isolates %>%
                 filter_assigned_bla() %>%
@@ -2675,7 +2675,7 @@ for (i in 1:nrow(combinations)) {
   pds_deduplicated_unclustered_frequency <- pds_deduplicated_unclustered %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
-    mutate(proportion = isolates / (pds_deduplicated %>% distinct(pds, combo) %>% nrow()) + length(unique(pds_unclustered$biosample))) %>%
+    mutate(proportion = isolates / ((pds_deduplicated %>% distinct(pds, combo) %>% nrow()) + length(unique(pds_unclustered$biosample)))) %>%
   mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     left_join(isolates %>%
                 filter_assigned_bla() %>%
