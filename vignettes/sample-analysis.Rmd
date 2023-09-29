@@ -2933,7 +2933,6 @@ overview_bioproject_list_by_region <- isolates %>%
 
 ```
 
-
 ## Deduplicated Alleles - BioProject - Isolates Browser
 ```{r, eval = FALSE}
 for (i in 1:nrow(combinations)) {
@@ -2943,9 +2942,10 @@ for (i in 1:nrow(combinations)) {
   # BioProject Deduplicated - Assigned allele frequency
   bioproject_deduplicated <- isolates %>%
     filter_assigned_bla() %>%
+    determine_combinations() %>%
     filter_attribute(allele, gene_filter) %>%
     tidyr::drop_na(bioproject) %>%
-    distinct(bioproject, allele, .keep_all = TRUE)
+    distinct(bioproject, combo, .keep_all = TRUE)
   
   bioproject_deduplicated_frequency <- bioproject_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
@@ -2982,6 +2982,58 @@ for (i in 1:nrow(combinations)) {
     graphic_path,
     paste0(gene_filter, "_allele_frequency_isolates_bioproject_deduplicated_donut.svg")),
     plot = bioproject_deduplicated_frequency_plot
+  ) 
+}
+```
+
+## Allele Presence and Absence - BioProject - Isolates Browser
+```{r, eval = FALSE}
+for (i in 1:nrow(combinations)) {
+  gene_filter <- combinations[[i, "name"]]
+  gene_filter_label <- combinations[[i, "label"]]
+  
+  # BioProject Deduplicated - Assigned allele frequency
+  bioproject_presence <- isolates %>%
+    filter_assigned_bla() %>%
+    filter_attribute(allele, gene_filter) %>%
+    tidyr::drop_na(bioproject) %>%
+    distinct(bioproject, allele, .keep_all = TRUE)
+  
+  bioproject_presence_frequency <- bioproject_presence %>%
+    {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
+      else count_isolates(., allele, allele_markdown)} %>%
+    mutate(porportion = isolates / length(unique(bioproject_presence$biosample))) %>%
+    mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
+    full_join(isolates %>%
+                filter_assigned_bla() %>%
+                filter_attribute(allele, gene_filter) %>%
+                count_isolates(allele) %>%
+                dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+                select(-isolates),
+              by = "allele")
+  
+  bioproject_presence_frequency %>%
+    readr::write_csv(file.path(
+      table_path,
+      paste0(gene_filter, "_allele_frequency_isolates_bioproject_presence.csv")
+    ))
+  
+  bioproject_presence_frequency_plot <-
+    bioproject_presence_frequency %>%
+    top_n_across_groups(allele,
+                        allele_markdown,
+                        count = isolates,
+                        n = 10) %>%
+    donut_plot(
+      fill = allele_markdown,
+      counts = isolates,
+      legend_title = gene_filter_label
+    )
+  
+  ggplot2::ggsave(filename = file.path(
+    graphic_path,
+    paste0(gene_filter, "_allele_frequency_isolates_bioproject_presence_donut.svg")),
+    plot = bioproject_presence_frequency_plot
   ) 
 }
 ```
