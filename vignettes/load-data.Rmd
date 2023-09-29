@@ -153,6 +153,8 @@ isolates_raw %>%
 mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   na_if_tibble_chr(terms = na_strings) %>%
   import_ipg(ipg_path) %>%
+  split_location(custom_match = manual_countries) %>%
+  import_regions(path = region_path, custom_match = manual_countries) %>%
   import_cluster_list(cluster_path) %>%
   import_mlst(mlst_path) %>%
   parse_bla_formatting(gene = FALSE) %>%
