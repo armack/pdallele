@@ -188,7 +188,7 @@ pa %>%
     carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
     carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
     carbapenemase_isolate_proportion = carbapenemase_isolates / isolates
-  ) %>% tibble::view()
+  )
 
 # Regional presence of carbapenemase genes
 pa %>%
@@ -220,5 +220,118 @@ pa_mbe %>%
   left_join(pa %>% distinct(biosample, bioproject), by = "biosample") %>%
   filter(bioproject != "PRJNA824880") %>%
   count_isolates(mlst)
+```
+
+# Comparison to SNAP Study
+```{r, eval = FALSE}
+# Isolates counts
+ab %>%
+  summarize(
+    pop_2017 = n_distinct(biosample[year == 2017 & bioproject == "PRJNA906166"]),
+    pop_2018 = n_distinct(biosample[year == 2018 & bioproject == "PRJNA906166"]),
+    pop_2019 = n_distinct(biosample[year == 2019 & bioproject == "PRJNA906166"]),
+    pop_total = n_distinct(biosample[bioproject == "PRJNA906166" & year %in% 2017:2019]),
+    nonpop_2017 = n_distinct(biosample[year == 2017 & bioproject != "PRJNA906166"]),
+    nonpop_2018 = n_distinct(biosample[year == 2018 & bioproject != "PRJNA906166"]),
+    nonpop_2019 = n_distinct(biosample[year == 2019 & bioproject != "PRJNA906166"]),
+    nonpop_total = n_distinct(biosample[bioproject != "PRJNA906166" & year %in% 2017:2019]),
+    overall_2017 = n_distinct(biosample[year == 2017]),
+    overall_2018 = n_distinct(biosample[year == 2018]),
+    overall_2019 = n_distinct(biosample[year == 2019]),
+    overall_total = n_distinct(biosample[year %in% 2017:2019])
+  )
+
+#Acquired carbapenemase allele-containing isolate count
+ab %>%
+  filter(year %in% 2017:2019) %>%
+  filter(bioproject != "PRJNA906166") %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  nrow()
+
+#Acquired carbapenemase OXA family counts
+ab %>%
+  filter(year %in% 2017:2019) %>%
+  filter(bioproject != "PRJNA906166") %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  count(oxa_family, allele)
+
+#Acquired carbapenemase gene counts
+ab %>%
+  filter(year %in% 2017:2019) %>%
+  filter(bioproject != "PRJNA906166") %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  count(gene, allele)
+
+
+#blaOXA-23 allele-containing isolate coun
+ab %>%
+  filter(year %in% 2017:2019) %>%
+  filter(bioproject != "PRJNA906166") %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  filter(allele == "blaOXA-23") %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  nrow()
+
+#blaOXA-24 allele-containing isolate coun
+ab %>%
+  filter(year %in% 2017:2019) %>%
+  filter(bioproject != "PRJNA906166") %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  filter(allele == "blaOXA-24") %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  nrow()
+
+#blaOXA-24 family-containing isolate coun
+ab %>%
+  filter(year %in% 2017:2019) %>%
+  filter(bioproject != "PRJNA906166") %>%
+  filter(subclass == "CARBAPENEM") %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
+  filter(oxa_family == "blaOXA-24") %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  nrow()
+
+# Determine SNAP BioProjects
+snap_biosamples <- ab %>%
+  filter(bioproject == "PRJNA906166") %>%
+  distinct(biosample) %>%
+  pull(biosample)
+
+# Sequence types in Overall
+ab_mbe %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  filter(year %in% 2017:2019) %>%
+  count(mlst) %>%
+  mutate(proportion = n / sum(n)) %>%
+  arrange(desc(n))
+
+# Sequence types in USA
+ab_mbe %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
+    distinct(biosample, .keep_all = TRUE) %>%
+  filter(year %in% 2017:2019) %>%
+  filter(location_broad == "USA") %>%
+  count(mlst) %>%
+  mutate(proportion = n / sum(n)) %>%
+  arrange(desc(n))
+
+# Sequence types in South America
+ab_mbe %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
+  distinct(biosample, .keep_all = TRUE) %>%
+  filter(year %in% 2017:2019) %>%
+  filter(region == "South America") %>%
+  count(mlst) %>%
+  mutate(proportion = n / sum(n)) %>%
+  arrange(desc(n))
+
+
 ```
 
