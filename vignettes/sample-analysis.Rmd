@@ -2153,12 +2153,18 @@ for (i in 1:nrow(combinations)) {
   gene_filter_label <- combinations[[i, "label"]]
 
   # MLST Deduplicated - Assigned allele frequency
-  mlst_deduplicated <- mbe %>%
+  mlst_deduplicated_raw <- mbe %>%
     filter_assigned_bla() %>%
     determine_combinations() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(mlst) %>%
-    distinct(mlst, combo, .keep_all = TRUE)
+    tidyr::drop_na(mlst)
+  
+  mlst_deduplicated_biosamples <- mlst_deduplicated_raw %>%
+    distinct(mlst, combo, .keep_all = TRUE) %>%
+    pull(biosample)
+  
+  mlst_deduplicated <- mlst_deduplicated_raw %>%
+    filter(biosample %in% mlst_deduplicated_biosamples)
   
   
   mlst_deduplicated_frequency <- mlst_deduplicated %>%
@@ -2199,12 +2205,19 @@ for (i in 1:nrow(combinations)) {
   ) 
 
   # SNP Cluster Deduplicated - Assigned allele frequency
-  pds_deduplicated <- mbe %>%
+  pds_deduplicated_raw <- mbe %>%
     filter_assigned_bla() %>%
     determine_combinations() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(pds) %>%
-    distinct(pds, combo, .keep_all = TRUE)
+    tidyr::drop_na(pds)
+  
+    pds_deduplicated_biosamples <- pds_deduplicated_raw %>%
+    distinct(pds, combo, .keep_all = TRUE) %>%
+    pull(biosample)
+  
+    pds_deduplicated <- pds_deduplicated_raw %>%
+    filter(biosample %in% pds_deduplicated_biosamples)
+  
   
   pds_deduplicated_frequency <- pds_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
@@ -2329,29 +2342,42 @@ for (i in 1:nrow(combinations)) {
 # Comparison of Full and Deduplicated Data Sets
 
   combined_deduplicated_ranks <- mbe %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter) %>%
-    {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
-      else count_isolates(., allele)} %>%
-    dplyr::mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
-    {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank = rank) 
-      else dplyr::select(., allele, full_data_rank = rank)} %>%
-    dplyr::full_join(
-      mlst_deduplicated_frequency %>%
-        dplyr::select(allele, mlst_deduplicated_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_deduplicated_frequency %>%
-        dplyr::select(allele, pds_deduplicated_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_unclustered_frequency %>%
-        dplyr::select(allele, pds_unclustered_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_deduplicated_unclustered_frequency %>%
-        dplyr::select(allele, pds_deduplicated_unclustered_rank = rank),
-      by = "allele") 
+  remove_unassigned_bla() %>%
+  filter_attribute(allele, gene_filter) %>%
+  {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
+    else count_isolates(., allele)} %>%
+  dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+  dplyr::mutate(full_prop = isolates / mbe %>% remove_unassigned_bla() %>% distinct(biosample) %>% nrow()) %>%
+  {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank, full_prop) 
+    else dplyr::select(., allele, full_data_rank, full_prop)} %>%
+  dplyr::full_join(
+    mlst_deduplicated_frequency %>%
+      dplyr::select(allele, mlst_deduplicated_rank = rank, mlst_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_deduplicated_frequency %>%
+      dplyr::select(allele, pds_deduplicated_rank = rank, pds_dedupe_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_unclustered_frequency %>%
+      dplyr::select(allele, pds_unclustered_rank = rank, pds_unclust_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_deduplicated_unclustered_frequency %>%
+      dplyr::select(allele, pds_deduplicated_unclustered_rank = rank, pds_dedupe_unclust_prop = proportion),
+    by = "allele") %>%
+  mutate(
+    mlst_delta = full_data_rank - mlst_deduplicated_rank,
+    pds_dedupe_delta = full_data_rank - pds_deduplicated_rank,
+    pds_unclust_delta = full_data_rank - pds_unclustered_rank,
+    pds_dedupe_unclust_delta = full_data_rank - pds_deduplicated_unclustered_rank 
+  ) %>%
+  mutate(
+    abs_max_delta = pmax(abs(mlst_delta), abs(pds_dedupe_delta), abs(pds_unclust_delta), abs(pds_dedupe_unclust_delta), na.rm = TRUE) ,
+    max_rank = pmin(full_data_rank, mlst_deduplicated_rank, pds_deduplicated_rank, pds_unclustered_rank, pds_deduplicated_unclustered_rank, na.rm = TRUE),
+    min_rank = pmax(full_data_rank, mlst_deduplicated_rank, pds_deduplicated_rank, pds_unclustered_rank, pds_deduplicated_unclustered_rank, na.rm = TRUE),
+    max_prop = pmax(full_prop, mlst_prop, pds_dedupe_prop, pds_unclust_prop, pds_dedupe_unclust_prop, na.rm = TRUE),
+  )
   
   combined_deduplicated_ranks %>%
     readr::write_csv(file.path(
@@ -2423,7 +2449,7 @@ for (i in 1:nrow(combinations)) {
   pds_presence_frequency <- pds_presence %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
       else count_isolates(., allele, allele_markdown)} %>%
-    mutate(proportion = isolates / length(unique(mlst_presence$pds))) %>%
+    mutate(proportion = isolates / length(unique(pds_presence$pds))) %>%
     mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
     left_join(isolates %>%
                 filter_assigned_bla() %>%
@@ -2542,32 +2568,45 @@ for (i in 1:nrow(combinations)) {
   )
 # Comparison of Full and Deduplicated Data Sets
 
-  combined_deduplicated_ranks <- mbe %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter) %>%
-    {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
-      else count_isolates(., allele)} %>%
-    dplyr::mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
-    {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank = rank) 
-      else dplyr::select(., allele, full_data_rank = rank)} %>%
-    dplyr::full_join(
-      mlst_presence_frequency %>%
-        dplyr::select(allele, mlst_presence_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_presence_frequency %>%
-        dplyr::select(allele, pds_presence_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_unclustered_frequency %>%
-        dplyr::select(allele, pds_unclustered_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_presence_unclustered_frequency %>%
-        dplyr::select(allele, pds_presence_unclustered_rank = rank),
-      by = "allele") 
+  combined_presence_ranks <- mbe %>%
+  remove_unassigned_bla() %>%
+  filter_attribute(allele, gene_filter) %>%
+  {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
+    else count_isolates(., allele)} %>%
+  dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+  dplyr::mutate(full_prop = isolates / mbe %>% remove_unassigned_bla() %>% distinct(biosample) %>% nrow()) %>%
+  {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank, full_prop) 
+    else dplyr::select(., allele, full_data_rank, full_prop)} %>%
+  dplyr::full_join(
+    mlst_presence_frequency %>%
+      dplyr::select(allele, mlst_presence_rank = rank, mlst_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_presence_frequency %>%
+      dplyr::select(allele, pds_presence_rank = rank, pds_presence_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_unclustered_frequency %>%
+      dplyr::select(allele, pds_unclustered_rank = rank, pds_unclust_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_presence_unclustered_frequency %>%
+      dplyr::select(allele, pds_presence_unclustered_rank = rank, pds_presence_unclust_prop = proportion),
+    by = "allele") %>%
+  mutate(
+    mlst_delta = full_data_rank - mlst_presence_rank,
+    pds_presence_delta = full_data_rank - pds_presence_rank,
+    pds_unclust_delta = full_data_rank - pds_unclustered_rank,
+    pds_presence_unclust_delta = full_data_rank - pds_presence_unclustered_rank 
+  ) %>%
+  mutate(
+    abs_max_delta = pmax(abs(mlst_delta), abs(pds_presence_delta), abs(pds_unclust_delta), abs(pds_presence_unclust_delta), na.rm = TRUE) ,
+    max_rank = pmin(full_data_rank, mlst_presence_rank, pds_presence_rank, pds_unclustered_rank, pds_presence_unclustered_rank, na.rm = TRUE),
+    min_rank = pmax(full_data_rank, mlst_presence_rank, pds_presence_rank, pds_unclustered_rank, pds_presence_unclustered_rank, na.rm = TRUE),
+    max_prop = pmax(full_prop, mlst_prop, pds_presence_prop, pds_unclust_prop, pds_presence_unclust_prop, na.rm = TRUE),
+  )
   
-  combined_deduplicated_ranks %>%
+  combined_presence_ranks %>%
     readr::write_csv(file.path(
       table_path,
       paste0(gene_filter, "_allele_frequency_mbe_mlst_pds_presence_ranks.csv")
@@ -2581,12 +2620,18 @@ for (i in 1:nrow(combinations)) {
   gene_filter_label <- combinations[[i, "label"]]
 
   # PDS Cluster Deduplicated - Assigned allele frequency
-  pds_deduplicated <- isolates %>%
+  pds_deduplicated_raw <- isolates %>%
     filter_assigned_bla() %>%
     determine_combinations() %>%
     filter_attribute(allele, gene_filter) %>%
-    tidyr::drop_na(pds) %>%
-    distinct(pds, combo, .keep_all = TRUE)
+    tidyr::drop_na(pds)
+  
+  pds_deduplicated_biosamples <- pds_deduplicated_raw %>%
+    distinct(pds, combo, .keep_all = TRUE) %>%
+    pull(biosample)
+  
+  pds_deduplicated <- pds_deduplicated_raw %>%
+    filter(biosample %in% pds_deduplicated_biosamples)
   
   pds_deduplicated_frequency <- pds_deduplicated %>%
     {if(gene_filter == "OXA") count_isolates(., allele, allele_markdown, oxa_family) 
@@ -2711,25 +2756,37 @@ for (i in 1:nrow(combinations)) {
 # Comparison of Full and Deduplicated Data Sets
 
   combined_deduplicated_ranks <- isolates %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter) %>%
-    {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
-      else count_isolates(., allele)} %>%
-    dplyr::mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
-    {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank = rank) 
-      else dplyr::select(., allele, full_data_rank = rank)} %>%
-    dplyr::full_join(
-      pds_deduplicated_frequency %>%
-        dplyr::select(allele, pds_deduplicated_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_unclustered_frequency %>%
-        dplyr::select(allele, pds_unclustered_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_deduplicated_unclustered_frequency %>%
-        dplyr::select(allele, pds_deduplicated_unclustered_rank = rank),
-      by = "allele") 
+  remove_unassigned_bla() %>%
+  filter_attribute(allele, gene_filter) %>%
+  {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
+    else count_isolates(., allele)} %>%
+  dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+  dplyr::mutate(full_prop = isolates / .env$isolates %>% remove_unassigned_bla() %>% distinct(biosample) %>% nrow()) %>%
+  {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank, full_prop) 
+    else dplyr::select(., allele, full_data_rank, full_prop)} %>%
+  dplyr::full_join(
+    pds_deduplicated_frequency %>%
+      dplyr::select(allele, pds_deduplicated_rank = rank, pds_dedupe_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_unclustered_frequency %>%
+      dplyr::select(allele, pds_unclustered_rank = rank, pds_unclust_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_deduplicated_unclustered_frequency %>%
+      dplyr::select(allele, pds_deduplicated_unclustered_rank = rank, pds_dedupe_unclust_prop = proportion),
+    by = "allele") %>%
+  mutate(
+    pds_dedupe_delta = full_data_rank - pds_deduplicated_rank,
+    pds_unclust_delta = full_data_rank - pds_unclustered_rank,
+    pds_dedupe_unclust_delta = full_data_rank - pds_deduplicated_unclustered_rank 
+  ) %>%
+  mutate(
+    abs_max_delta = pmax(abs(pds_dedupe_delta), abs(pds_unclust_delta), abs(pds_dedupe_unclust_delta), na.rm = TRUE) ,
+    max_rank = pmin(full_data_rank, pds_deduplicated_rank, pds_unclustered_rank, pds_deduplicated_unclustered_rank, na.rm = TRUE),
+    min_rank = pmax(full_data_rank, pds_deduplicated_rank, pds_unclustered_rank, pds_deduplicated_unclustered_rank, na.rm = TRUE),
+    max_prop = pmax(full_prop, pds_dedupe_prop, pds_unclust_prop, pds_dedupe_unclust_prop, na.rm = TRUE),
+  )
   
   combined_deduplicated_ranks %>%
     readr::write_csv(file.path(
@@ -2875,30 +2932,42 @@ for (i in 1:nrow(combinations)) {
 # Comparison of Full and Deduplicated Data Sets
 
   combined_deduplicated_ranks <- isolates %>%
-    remove_unassigned_bla() %>%
-    filter_attribute(allele, gene_filter) %>%
-    {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
-      else count_isolates(., allele)} %>%
-    dplyr::mutate(rank = dplyr::dense_rank(desc(isolates))) %>%
-    {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank = rank) 
-      else dplyr::select(., allele, full_data_rank = rank)} %>%
-    dplyr::full_join(
-      pds_presence_frequency %>%
-        dplyr::select(allele, pds_presence_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_unclustered_frequency %>%
-        dplyr::select(allele, pds_unclustered_rank = rank),
-      by = "allele") %>%
-    dplyr::full_join(
-      pds_presence_unclustered_frequency %>%
-        dplyr::select(allele, pds_presence_unclustered_rank = rank),
-      by = "allele") 
+  remove_unassigned_bla() %>%
+  filter_attribute(allele, gene_filter) %>%
+  {if(gene_filter == "OXA") count_isolates(., allele, oxa_family) 
+    else count_isolates(., allele)} %>%
+  dplyr::mutate(full_data_rank = dplyr::dense_rank(desc(isolates))) %>%
+  dplyr::mutate(full_prop = isolates / .env$isolates %>% remove_unassigned_bla() %>% distinct(biosample) %>% nrow()) %>%
+  {if(gene_filter == "OXA") dplyr::select(., allele, oxa_family, full_data_rank, full_prop) 
+    else dplyr::select(., allele, full_data_rank, full_prop)} %>%
+  dplyr::full_join(
+    pds_presence_frequency %>%
+      dplyr::select(allele, pds_presence_rank = rank, pds_presence_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_unclustered_frequency %>%
+      dplyr::select(allele, pds_unclustered_rank = rank, pds_unclust_prop = proportion),
+    by = "allele") %>%
+  dplyr::full_join(
+    pds_presence_unclustered_frequency %>%
+      dplyr::select(allele, pds_presence_unclustered_rank = rank, pds_presence_unclust_prop = proportion),
+    by = "allele") %>%
+  mutate(
+    pds_presence_delta = full_data_rank - pds_presence_rank,
+    pds_unclust_delta = full_data_rank - pds_unclustered_rank,
+    pds_presence_unclust_delta = full_data_rank - pds_presence_unclustered_rank 
+  ) %>%
+  mutate(
+    abs_max_delta = pmax(abs(pds_presence_delta), abs(pds_unclust_delta), abs(pds_presence_unclust_delta), na.rm = TRUE) ,
+    max_rank = pmin(full_data_rank, pds_presence_rank, pds_unclustered_rank, pds_presence_unclustered_rank, na.rm = TRUE),
+    min_rank = pmax(full_data_rank, pds_presence_rank, pds_unclustered_rank, pds_presence_unclustered_rank, na.rm = TRUE),
+    max_prop = pmax(full_prop, pds_presence_prop, pds_unclust_prop, pds_presence_unclust_prop, na.rm = TRUE),
+  )
   
   combined_deduplicated_ranks %>%
     readr::write_csv(file.path(
       table_path,
-      paste0(gene_filter, "_allele_frequency_isolates_deduplicated_ranks.csv")
+      paste0(gene_filter, "_allele_frequency_isolates_presence_ranks.csv")
     ))
 }
 ```
