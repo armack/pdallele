@@ -177,7 +177,8 @@ download_mlst_profile <- function(path, url){
 #' @param path location of FastMLST csv output file
 #' @param save should the reprocessed file be saved?
 reprocess_mlst <- function(path, save = TRUE){
-  raw_mlst <- readr::read_csv(path, show_col_types = FALSE)
+  raw_mlst <- readr::read_csv(path, show_col_types = FALSE,
+                              col_types = readr::cols(.default = readr::col_character()))
   mlst <- process_mlst(raw_mlst)
 
   pubmlst <- pubmlst_listing() %>%

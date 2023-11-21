@@ -583,7 +583,8 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 
 import_microbigge_gcp <- function(path) {
   .complete <-
-    readr::read_tsv(file = path, show_col_types = FALSE) %>%
+    readr::read_tsv(file = path, show_col_types = FALSE,
+                    col_types = "ccccciicccccccccddccciiicccccccccccdiiccciccc") %>%
     dplyr::select(
       species = "scientific_name",
       protein = "protein_acc",
