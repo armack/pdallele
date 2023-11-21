@@ -64,32 +64,34 @@ region_path       <- system.file("extdata/regions.csv", package = "pdallele")
 The following suggestions come from examining nearly 50,000 *Acinetobacter*
 and *Pseudomonas* isolates present in the Pathogen Detection Project databases.
 It is by no means a complete list, but can serve as a starting point for
-cleaning data sets. The list is case-insensitive.
+cleaning data sets. The list is case-insensitive, uses grepl() and supports the
+associated regex commands, and is combined using "|" when searching.
 
 ```{r, eval = FALSE}
 na_strings <-
   c(
-    "na",
+    "^na$",
     "n/a",
-    "missing",
-    "none",
-    "unknown",
-    "unknow",
+    "^missing",
+    "^none",
+    "^unknown",
+    "^unknow",
     "unspecified",
     "not known",
     "not applicable",
     "not_applicable",
     "not provided",
     "not available",
+    "not given",
     "not determined",
     "not specified",
     "not recorded",
     "no data",
     "notfound",
-    "null",
+    "^null",
     "not collected",
-    "not available: to be reported later",
-    "-"
+    "not available",
+    "^-$"
   )
 ```
 
