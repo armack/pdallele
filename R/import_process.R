@@ -91,7 +91,11 @@ na_if_tibble_chr <- function(data, terms) {
   .complete <- data %>%
     dplyr::mutate(across(
       dplyr::where(is.character),
-      ~ dplyr::if_else(stringr::str_to_lower(.) %in% stringr::str_to_lower(terms), NA_character_, .)
+      ~ dplyr::if_else(
+        grepl(
+          stringr::str_c(stringr::str_to_lower(na_strings), collapse = "|"),
+          stringr::str_to_lower(.)),
+        NA_character_, .)
     ))
 
   return(.complete)
