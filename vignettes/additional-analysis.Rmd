@@ -334,4 +334,77 @@ ab_mbe %>%
 
 
 ```
+# Generate list of alleles to download for sequence comparisons
+```{r, eval = FALSE}
+# Load Reference Gene Catalog file
+rgc <- readr::read_delim(file.path(data_path, "refgene.tsv"), delim = "\t", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
+
+# ADC
+adc_rgc <- rgc %>%
+  dplyr::select(allele, gene_family, refseq_protein_accession) %>%
+  dplyr::filter(gene_family == "blaADC") %>%
+  dplyr::pull(refseq_protein_accession)
+
+adc_mbe <- ab_mbe %>%
+  filter_unassigned_bla() %>%
+  dplyr::filter(grepl("blaADC", allele)) %>%
+  distinct(ipg_accession) %>%
+  dplyr::pull(ipg_accession)
+
+readr::write_lines(na.omit(c(adc_rgc, adc_mbe)),
+                   file = file.path(manual_output_path, "protein_accessions_adc.txt"))
+  
+# OXA-51 Family
+oxa_51_rgc <- rgc %>%
+  dplyr::mutate(oxa_family = dplyr::case_when(
+    grepl('family', product_name) ~ stringr::str_extract(product_name, "OXA-\\d+?(?= family)"),
+    TRUE ~ stringr::str_extract(product_name, "OXA-\\d+")
+  )) %>%
+  dplyr::select(allele, oxa_family, refseq_protein_accession) %>%
+  dplyr::filter(oxa_family == "OXA-51") %>%
+  dplyr::pull(refseq_protein_accession)
+
+oxa_51_mbe <- ab_mbe %>%
+  filter_unassigned_bla() %>%
+  dplyr::filter(oxa_family == "OXA-51") %>%
+  distinct(ipg_accession) %>%
+  dplyr::pull(ipg_accession)
+
+readr::write_lines(na.omit(c(oxa_51_rgc, oxa_51_mbe)),
+                   file = file.path(manual_output_path, "protein_accessions_oxa-51.txt"))
+
+# PDC
+pdc_rgc <- rgc %>%
+  dplyr::select(allele, gene_family, refseq_protein_accession) %>%
+  dplyr::filter(gene_family == "blaPDC") %>%
+  dplyr::pull(refseq_protein_accession)
+
+pdc_mbe <- pa_mbe %>%
+  filter_unassigned_bla() %>%
+  dplyr::filter(grepl("blaPDC", allele)) %>%
+  distinct(ipg_accession) %>%
+  dplyr::pull(ipg_accession)
+
+readr::write_lines(na.omit(c(pdc_rgc, pdc_mbe)),
+                   file = file.path(manual_output_path, "protein_accessions_pdc.txt"))
+
+# OXA-50 Family
+oxa_50_rgc <- rgc %>%
+  dplyr::mutate(oxa_family = dplyr::case_when(
+    grepl('family', product_name) ~ stringr::str_extract(product_name, "OXA-\\d+?(?= family)"),
+    TRUE ~ stringr::str_extract(product_name, "OXA-\\d+")
+  )) %>%
+  dplyr::select(allele, oxa_family, refseq_protein_accession) %>%
+  dplyr::filter(oxa_family == "OXA-50") %>%
+  dplyr::pull(refseq_protein_accession)
+
+oxa_50_mbe <- pa_mbe %>%
+  filter_unassigned_bla() %>%
+  dplyr::filter(oxa_family == "OXA-50") %>%
+  distinct(ipg_accession) %>%
+  dplyr::pull(ipg_accession)
+
+readr::write_lines(na.omit(c(oxa_50_rgc, oxa_50_mbe)),
+                   file = file.path(manual_output_path, "protein_accessions_oxa-50.txt"))
+```
 
