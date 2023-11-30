@@ -1820,6 +1820,7 @@ for (i in 1:nrow(combinations)) {
   
   # By Region
   heatmap_region_data <- isolates %>%
+    remove_unassigned_bla() %>%
     dplyr::filter(grepl(gene_filter, gene)) %>%
     heatmap_data(
       count = allele_markdown,
@@ -1844,6 +1845,7 @@ for (i in 1:nrow(combinations)) {
   
   # By Species
   heatmap_species_data <- isolates %>%
+    remove_unassigned_bla() %>%
     dplyr::filter(grepl(gene_filter, gene)) %>%
     heatmap_data(
       count = allele_markdown,
@@ -1868,6 +1870,7 @@ for (i in 1:nrow(combinations)) {
   
   # By Collection Period
   heatmap_period_data <- isolates %>%
+    remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
     remove_unassigned_bla() %>%
     tidyr::drop_na(period) %>%
@@ -1894,6 +1897,7 @@ for (i in 1:nrow(combinations)) {
   
   # By Collection Period 2000s
   heatmap_period_2000s_data <- isolates %>%
+    remove_unassigned_bla() %>%
     filter_attribute(allele, gene_filter) %>%
     dplyr::filter(year >= 2000) %>%
     remove_unassigned_bla() %>%
