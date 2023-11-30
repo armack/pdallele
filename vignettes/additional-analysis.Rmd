@@ -354,8 +354,8 @@ adc_rgc <- rgc %>%
 adc_mbe <- ab_mbe %>%
   filter_unassigned_bla() %>%
   dplyr::filter(grepl("blaADC", allele)) %>%
-  distinct(ipg_accession) %>%
-  dplyr::pull(ipg_accession)
+  distinct(ipg_accession, .keep_all = TRUE) %>%
+  dplyr::pull(protein)
 
 readr::write_lines(na.omit(c(adc_rgc, adc_mbe)),
                    file = file.path(manual_output_path, "protein_accessions_adc.txt"))
@@ -373,8 +373,8 @@ oxa_51_rgc <- rgc %>%
 oxa_51_mbe <- ab_mbe %>%
   filter_unassigned_bla() %>%
   dplyr::filter(oxa_family == "OXA-51") %>%
-  distinct(ipg_accession) %>%
-  dplyr::pull(ipg_accession)
+  distinct(ipg_accession, .keep_all = TRUE) %>%
+  dplyr::pull(protein)
 
 readr::write_lines(na.omit(c(oxa_51_rgc, oxa_51_mbe)),
                    file = file.path(manual_output_path, "protein_accessions_oxa-51.txt"))
@@ -388,8 +388,8 @@ pdc_rgc <- rgc %>%
 pdc_mbe <- pa_mbe %>%
   filter_unassigned_bla() %>%
   dplyr::filter(grepl("blaPDC", allele)) %>%
-  distinct(ipg_accession) %>%
-  dplyr::pull(ipg_accession)
+  distinct(ipg_accession, .keep_all = TRUE) %>%
+  dplyr::pull(protein)
 
 readr::write_lines(na.omit(c(pdc_rgc, pdc_mbe)),
                    file = file.path(manual_output_path, "protein_accessions_pdc.txt"))
@@ -407,8 +407,8 @@ oxa_50_rgc <- rgc %>%
 oxa_50_mbe <- pa_mbe %>%
   filter_unassigned_bla() %>%
   dplyr::filter(oxa_family == "OXA-50") %>%
-  distinct(ipg_accession) %>%
-  dplyr::pull(ipg_accession)
+  distinct(ipg_accession, .keep_all = TRUE) %>%
+  dplyr::pull(protein)
 
 readr::write_lines(na.omit(c(oxa_50_rgc, oxa_50_mbe)),
                    file = file.path(manual_output_path, "protein_accessions_oxa-50.txt"))
