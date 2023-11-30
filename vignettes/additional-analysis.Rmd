@@ -81,7 +81,7 @@ carbapenemase_presence_by_region %>%
   dplyr::select(-region_markdown) %>%
   readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_presence_by_region_without_blaOXA-51_family.csv"))
 
-carbapenemase_presence_by_region %>%
+ab_carbapenemase_presence_by_region_without_blaOXA51_family_plot <- carbapenemase_presence_by_region %>%
   mutate(non_carbapenemase_isolates = isolates - carbapenemase_isolates) %>%
   dplyr::rename(Present = carbapenemase_isolates, Absent = non_carbapenemase_isolates) %>%
   tidyr::pivot_longer(cols = c(Present, Absent), names_to = "carbapenemase") %>%
@@ -91,6 +91,12 @@ carbapenemase_presence_by_region %>%
   donut_plot_panel(fill = carbapenemase, counts = value, facet = region_markdown,
                    legend_title = "**Carbapenemase**", count_label = "Isolates", nrow = 2,
                    legend.position = "bottom")
+
+  ggplot2::ggsave(filename = file.path(
+    manual_output_path,
+    paste0("ab_carbapenemase_presence_by_region_without_blaOXA-51_family.svg")),
+    plot = ab_carbapenemase_presence_by_region_without_blaOXA51_family_plot
+  )
 
 # Presence Over Time
 carbapenemase_presence_over_time <- ab %>%
