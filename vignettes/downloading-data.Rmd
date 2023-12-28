@@ -156,7 +156,7 @@ output must be in CSV format.
 
 #### Reprocessing FastMLST Output Run the following command, where
 `raw_mlst_path` is the path to the CSV output of FastMLST. This will
-automatically save a reprocessed CSV file with "_reprocessed" appeneded in the
+automatically save a reprocessed CSV file with "_reprocessed" appended in the
 same directory. This reprocessed file should be used when loading data for
 analysis using `pdallele`.
 ```{r, eval = FALSE}
