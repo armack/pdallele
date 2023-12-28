@@ -2131,6 +2131,44 @@ overview_mlst_frequency %>%
   readr::write_csv(file.path(table_path, "overview_mlst_frequency.csv"))
 ```
 
+## MLST Rankings
+```{r, eval = FALSE}
+# MLST by Region
+mlst_region <- mbe %>%
+  tidyr::drop_na(region) %>%
+  count_isolates(region, mlst)
+
+readr::write_csv(mlst_region, file.path(table_path, "overview_mlst_region.csv"))
+
+# MLST Ranks by Region
+mlst_region_ranks <- mlst_region %>%
+  dplyr::group_by(region) %>%
+  dplyr::mutate(rank = dense_rank(desc(isolates))) %>%
+  dplyr::select(-isolates) %>%
+  tidyr::pivot_wider(names_from = region, values_from = rank)
+
+readr::write_csv(mlst_region_ranks, file.path(table_path, "overview_mlst_region_ranks.csv"))
+
+# MLST Ranks by Collection Period (Post 2000)
+mlst_period_2000 <- mbe %>%
+  dplyr::left_join(isolates %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+  tidyr::drop_na(period_2000) %>%
+  count_isolates(period_2000, mlst)
+
+readr::write_csv(mlst_period_2000, file.path(table_path, "overview_mlst_collection_period_2000.csv"))
+
+# MLST Ranks by Collection Period (Post 2000)
+mlst_period_2000_ranks <- mlst_period_2000 %>%
+  dplyr::group_by(period_2000) %>%
+  dplyr::mutate(rank = dense_rank(desc(isolates))) %>%
+  dplyr::select(-isolates) %>%
+  tidyr::pivot_wider(names_from = period_2000, values_from = rank)
+
+readr::write_csv(mlst_period_2000_ranks, file.path(table_path, "overview_mlst_collection_period_2000_ranks.csv"))
+
+```
+
+
 ## MLST and PDS Cluster Mappings
 ```{r, eval = FALSE}
 # Distinct MLST per PDS
