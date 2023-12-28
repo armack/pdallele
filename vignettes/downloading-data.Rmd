@@ -130,16 +130,36 @@ genomes %>%
   readr::write_lines(file = file.path(data_path, "assemblies_to_download.txt"))
 ```
 
-### Download and unzip assemblies
-This can be accomplished using any tool that allows bulk downloading from a list
-of URLs. The following examples utilize the command line/terminal.
+### Download and unzip assemblies This can be accomplished using any tool that
+allows bulk downloading and unzipping from a list of URLs. This can easily be
+acomplished using the command line or terminal tools.
 
-#### Linux or MacOS
+### Determine Sequence Types
+Sequence types should be determiend using FastMLST, which is available from
+https://github.com/EnzoAndree/FastMLST and described in "FastMLST: A Multi-core
+Tool for Multilocus Sequence Typing of Draft Genome Assemblies" by
+Guerrero-Araya et al. available at
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8637782/.
 
-#### Windows
-##### Download
-##### Decompress
+The output from FastMLST can be easily reprocessed using the following
+procedure to provide more granular detail about individual isolates and to
+update sequence types to newer versions of the database without needing to
+re-run FastMLST.
 
-### Determine MLST
-Proceed to `vignette("mlst")` for more information on determining MLST sequence
-types and processing the output of FastMLST.
+#### Running FastMLST
+See the official documentation for FastMLST at
+https://github.com/EnzoAndree/FastMLST/blob/master/README.md for guidance on how
+to run FastMLST and the various options available.
+
+The only specific requirement for use with the `pdallele` package is that the
+output must be in CSV format.
+
+#### Reprocessing FastMLST Output Run the following command, where
+`raw_mlst_path` is the path to the CSV output of FastMLST. This will
+automatically save a reprocessed CSV file with "_reprocessed" appeneded in the
+same directory. This reprocessed file should be used when loading data for
+analysis using `pdallele`.
+```{r, eval = FALSE}
+
+reprocess_mlst(raw_mlst_path)
+```

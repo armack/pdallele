@@ -17,4 +17,28 @@ knitr::opts_chunk$set(
 ```{r setup}
 ```
 
-Unfortunately, determining MLST for 
+## Introduction
+Sequence types should be determiend using FastMLST, which is available from
+https://github.com/EnzoAndree/FastMLST and described in "FastMLST: A Multi-core
+Tool for Multilocus Sequence Typing of Draft Genome Assemblies" by
+Guerrero-Araya et al. available at
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8637782/.
+
+The output from FastMLST can be easilly reprocessed using the following
+procedure to provide more granular detail about indodidual isolates and to
+update sequence types to newer versions of the database without needing to
+re-run FastMLST.
+
+## Running FastMLST
+See the official focumentation for FastMLST at
+https://github.com/EnzoAndree/FastMLST/blob/master/README.md for guidence on how
+to run FastMLST and the various options available.
+
+The only specific requirment for use with the `pdallele` package is that the
+output must be in CSV format.
+
+## Reprocessing FastMLST Output
+```{r, eval = FALSE}
+
+mlst <- reprocess_mlst("/Users/armack/Library/CloudStorage/OneDrive-CaseWesternReserveUniversity/Allele Distribution Data/Pseudomonas/2023-11-15/pa_mlst.csv")
+```
