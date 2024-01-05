@@ -68,10 +68,11 @@ carbapenemase_gene_counts %>%
 
 # Presence by Region
 carbapenemase_presence_by_region <- ab %>%
-  filter(!grepl("blaOXA-51", oxa_family)) %>%
   group_by(region, region_markdown) %>%
+  mutate(isolates = n_distinct(biosample)) %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
   summarize(
-    isolates = n_distinct(biosample),
+    isolates = mean(isolates),
     carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
     carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
     carbapenemase_isolate_proportion = carbapenemase_isolates / isolates
@@ -100,10 +101,11 @@ ab_carbapenemase_presence_by_region_without_blaOXA51_family_plot <- carbapenemas
 
 # Presence Over Time
 carbapenemase_presence_over_time <- ab %>%
-  filter(!grepl("blaOXA-51", oxa_family)) %>%
   group_by(period) %>%
+  mutate(isolates = n_distinct(biosample)) %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
   summarize(
-    isolates = n_distinct(biosample),
+    isolates = mean(isolates),
     carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
     carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
     carbapenemase_isolate_prop = carbapenemase_isolates / isolates
@@ -114,11 +116,12 @@ carbapenemase_presence_over_time %>%
 
 
 # Presence Over Time (Since 2000)
-carbapenemase_presence_over_time_since_2000 <- ab %>%
-  filter(!grepl("blaOXA-51", oxa_family)) %>%
+ab %>%
   group_by(period_2000) %>%
+  mutate(isolates = n_distinct(biosample)) %>%
+  filter(!grepl("blaOXA-51", oxa_family)) %>%
   summarize(
-    isolates = n_distinct(biosample),
+    isolates = mean(isolates),
     carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
     carbapenemase_isolates = n_distinct(biosample[subclass == "CARBAPENEM"]),
     carbapenemase_isolate_prop = carbapenemase_isolates / isolates
