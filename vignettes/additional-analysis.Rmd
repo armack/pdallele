@@ -227,6 +227,50 @@ pa_mbe %>%
   filter(bioproject != "PRJNA824880") %>%
   count_isolates(mlst)
 ```
+# Comparison to TEST Study
+```{r, eval = FALSE}
+# Isolates counts (Note that years are not provided in the BioSample metadata for the TEST isolates)
+ab %>%
+  summarize(
+    test_total = n_distinct(biosample[bioproject == "PRJEB27899"]),
+    nontest_total_2012_2016 = n_distinct(biosample[bioproject != "PRJEB27899" & year %in% 2012:2016]),
+    test_prop = test_total / nontest_total_2012_2016
+  )
+
+# Presence of blaOXA-23 and blaOXA-40 families
+
+ab %>%
+  filter(bioproject != "PRJEB27899" & year %in% 2012:2016) %>%
+  count_isolates(oxa_family) %>%
+  mutate(prop = isolates / (ab %>% filter(bioproject != "PRJEB27899" & year %in% 2012:2016) %>% distinct(biosample) %>% nrow()))
+
+# Presence of blaNDM-1 and blaIMP-26
+ab %>%
+  filter(bioproject != "PRJEB27899" & year %in% 2012:2016) %>%
+  filter(allele %in% c("blaNDM-1", "blaIMP-26")) %>%
+  count_isolates(allele) %>%
+  mutate(prop = isolates / (ab %>% filter(bioproject != "PRJEB27899" & year %in% 2012:2016) %>% distinct(biosample) %>% nrow()))
+
+# Novel balOXA-51 Family Alleles
+test_biosamples <- ab %>%
+  filter(bioproject != "PRJEB27899" & year %in% 2012:2016) %>%
+  distinct(biosample) %>%
+  pull(biosample)
+
+ab_mbe %>%
+  filter(biosample %in% test_biosamples) %>%
+  filter(oxa_family == "OXA-51") %>%
+  filter_assigned_bla %>%
+  distinct(ipg) %>%
+  nrow()
+
+# Count of ST
+ab_mbe %>%
+  filter(biosample %in% test_biosamples) %>%
+  count_isolates(mlst) %>%
+  mutate(prop = isolates / sum(isolates)) %>%
+  arrange(desc(isolates))
+```
 
 # Comparison to SNAP Study
 ```{r, eval = FALSE}
