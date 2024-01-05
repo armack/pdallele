@@ -1,8 +1,8 @@
 ---
-title: "Loading Data for Analysis"
+title: "Processing Data for Analysis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{load-data}
+  %\VignetteIndexEntry{processing-data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
