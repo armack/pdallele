@@ -29,11 +29,20 @@ two slightly different import functions.
 \details{
 The following columns are included in the output:\tabular{ll}{
    \strong{Source File} \tab \strong{Output Tibble} \cr
+   scientific_name \tab species \cr
    protein_acc \tab protein \cr
    biosample_acc \tab biosample \cr
+   collection_date \tab collection_date \cr
    asm_acc \tab assembly \cr
+   target_acc \tab pdt \cr
+   epi_type \tab sample_type \cr
+   geo_loc_name \tab location \cr
+   host \tab host \cr
+   isolation_source \tab isolation_source \cr
    element_symbol \tab allele \cr
    element_name \tab name \cr
+   class \tab class \cr
+   subclass \tab subclass \cr
    amr_method \tab method \cr
    pct_ref_coverage \tab coverage \cr
    pct_ref_identity \tab identity \cr
@@ -41,6 +50,7 @@ The following columns are included in the output:\tabular{ll}{
    start_on_contig \tab nuc_start \cr
    end_on_contig \tab nuc_stop \cr
    strand \tab strand \cr
+   ----------------- \tab ----------------- \cr
 }
 }
 \section{Obtaining Data}{
