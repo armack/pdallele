@@ -129,6 +129,38 @@ carbapenemase_presence_over_time_since_2000 %>%
 
 ```
 
+# ADCs of Particular Interest
+```{r, eval = FALSE}
+# blaADC-223 Time Increase MLST
+ab_mbe %>%
+  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+  tidyr::drop_na(period_2000) %>%
+  dplyr::filter(allele == "blaADC-223") %>%
+  count_isolates(mlst, period_2000)
+
+# blaADC-182 MLST
+ab_mbe %>%
+  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+  tidyr::drop_na(period_2000) %>%
+  dplyr::filter(allele == "blaADC-182") %>%
+  count_isolates(mlst)
+
+# blaADC-183 MLST
+ab_mbe %>%
+  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+  tidyr::drop_na(period_2000) %>%
+  dplyr::filter(allele == "blaADC-183") %>%
+  count_isolates(mlst)
+
+# blaADC-235 MLST
+ab_mbe %>%
+  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+  tidyr::drop_na(period_2000) %>%
+  dplyr::filter(allele == "blaADC-235") %>%
+  count_isolates(mlst)
+```
+
+
 # Combined count of isolates by country
 ```{r, eval = FALSE}
 combined_country_isolate_counts <- ab %>%
