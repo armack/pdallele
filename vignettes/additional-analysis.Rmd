@@ -116,7 +116,7 @@ carbapenemase_presence_over_time %>%
 
 
 # Presence Over Time (Since 2000)
-ab %>%
+carbapenemase_presence_over_time_since_2000 <- ab %>%
   group_by(period_2000) %>%
   mutate(isolates = n_distinct(biosample)) %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
