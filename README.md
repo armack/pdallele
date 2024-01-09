@@ -5,7 +5,8 @@
 
 The goal of pdallele is to simplify the downloading, cleanup, and analysis of
 [NCBI Pathogen Detection](https://www.ncbi.nlm.nih.gov/pathogens/) data,
-primarailly for exploring antimicrobial resistance.
+primarailly for exploring the diversity and distribution antimicrobial resistance
+alleles across large numbers of bacterial isolates.
 
 ## Installation
 
