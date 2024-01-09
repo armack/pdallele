@@ -1,6 +1,7 @@
 # pdallele
 
 <!-- badges: start -->
+[![DOI](https://zenodo.org/badge/642998583.svg)](https://zenodo.org/doi/10.5281/zenodo.10476134)
 <!-- badges: end -->
 
 The goal of pdallele is to simplify the downloading, cleanup, and analysis of
@@ -32,3 +33,8 @@ Data downloading, processing, and cleanup was performed as outlined in
 The code used for analysis and generation of tables and figures is included in
 `vignette("sample-analysis"", package = "pdallele")` and
 `vignette("additional-analysis", package = "pdallele")`.
+
+## Citation
+This code is available on Zenodo at https://zenodo.org/doi/10.5281/zenodo.10476134 and by DOI 10.5281/zenodo.10476135
+
+Citation information for the preprint and final versions of the manuscript will added when available
