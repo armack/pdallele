@@ -3041,6 +3041,13 @@ overview_bioproject_list_by_region <- isolates %>%
   
   overview_bioproject_summary_by_region %>%
     readr::write_csv(file.path(table_path, "overview_bioproject_summary_by_region.csv"))
+  
+  overview_bioproject_distinct_count <- isolates %>%
+    distinct(bioproject, .keep_all = TRUE) %>%
+    count_isolates()
+  
+  overview_bioproject_distinct_count %>%
+    readr::write_lines(file.path(table_path, "overview_bioproject_distinct_count.txt"))  
 
 ```
 
