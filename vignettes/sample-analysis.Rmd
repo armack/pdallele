@@ -791,6 +791,13 @@ carbapenemase_gene_counts <- isolates %>%
 carbapenemase_gene_counts %>%
   readr::write_csv(file.path(table_path, "carbapenemase_gene_counts.csv"))
 
+total_carbapenemase_counts <- isolates %>%
+  filter(subclass == "CARBAPENEM") %>%
+  count_isolates()
+  
+total_carbapenemase_counts %>%
+  readr::write_lines(file.path(table_path, "carbapenemase_total_isolates.txt"))
+
 ```
 
 ### Comparison by Species
@@ -2034,6 +2041,21 @@ for (gene_name in genes_of_interest) {
       paste0("mbe_unassigned_", gene_name, "_alleles.csv")
     ))
   
+  if(gene_name == "OXA"){
+    mbe_goi_unassigned_family_list <- mbe %>%
+      remove_assigned_bla() %>%
+      dplyr::filter(grepl(gene_name, allele)) %>%
+      tidyr::drop_na(ipg) %>%
+      count_isolates(oxa_family) %>%
+      dplyr::arrange(desc(isolates))
+    
+    mbe_goi_unassigned_family_list %>%
+      readr::write_csv(file.path(
+        table_path,
+        paste0("mbe_unassigned_", gene_name, "_families.csv")
+      ))   
+  }
+  
   mbe_goi_unassigned_allele_plot <- mbe_goi_unassigned_allele_list %>%
     top_n_overall(ipg_accession, count = isolates, n = 10) %>%
     donut_plot(fill = ipg_accession,
@@ -2046,6 +2068,7 @@ for (gene_name in genes_of_interest) {
     plot = mbe_goi_unassigned_allele_plot
   )
   
+
   # <gene_name> Allele Counts by PDS Cluster
   gene_filter_allele_counts_pds <- mbe %>%
     filter_assigned_bla() %>%
