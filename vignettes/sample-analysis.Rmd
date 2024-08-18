@@ -146,7 +146,7 @@ filtered by `coverage` and `identity`, allowing for fine-tuning of how "strict"
 the allele calls used in the analysis should be.
 
 * `coverage` is the percentage of the reference sequence covered by the alignment between the target and the reference sequence
-* `identity` is the percentage of identical amino acids or base pairs in the alignment betweeb the target and reference sequence
+* `identity` is the percentage of identical amino acids or base pairs in the alignment between the target and reference sequence
 
 The suggested `min_identity` is based on the thresholds used by AMRFinderPlus
 and Isolates Browser for BLAST-based allele calls
@@ -156,7 +156,7 @@ analysis.
 
 ```{r, eval = FALSE}
 min_coverage <- 100L
-min_identity <- 90L
+min_identity <- 100L
 ```
 
 ## Prepare filtered data sets
