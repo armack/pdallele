@@ -631,6 +631,8 @@ parse_mbe_oxa_family <- function(data) {
       TRUE ~ stringr::str_extract(ipg_name, "OXA-\\d+")
     )) %>%
     dplyr::mutate(oxa_family = dplyr::coalesce(.data$ipg_oxa_family, .data$mbe_oxa_family)) %>%
+    dplyr::select(-ipg_oxa_family, -mbe_oxa_family) %>%
+    dplyr::mutate(oxa_family = dplyr::if_else(is.na(oxa_family), NA_character_, paste0("bla", oxa_family))) %>%
     dplyr::mutate(oxa_family_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>",
                                             .data$oxa_family, perl = TRUE) ) %>%
     dplyr::mutate(oxa_family_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]",
