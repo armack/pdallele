@@ -86,7 +86,7 @@ import_microbigge_gcp(file.path(data_path, "microbigge.tsv")) %>%
 See `vignette("mlst")` for more information on downloading assemblies and
 determining MLST
 
-Path to NCBI Assembly Summary. This is a very large (~650 MB) file so it may be
+Path to NCBI Assembly Summary. This is a very large (~975 MB as of August 2024) file so it may be
 useful to keep one local copy when downloading data for multiple organisms
 
 ```{r, eval = FALSE}
