@@ -208,6 +208,20 @@ combined_region_isolate_counts %>%
 
 # Comparison to POP Study
 ```{r, eval = FALSE}
+# Portion of isolates
+pa %>%
+  summarize(
+    pop_2018 = n_distinct(biosample[year == 2018 & bioproject == "PRJNA824880"]),
+    pop_2019 = n_distinct(biosample[year == 2019 & bioproject == "PRJNA824880"]),
+    pop_total = n_distinct(biosample[bioproject == "PRJNA824880" & year %in% 2018:2019]),
+    nonpop_2018 = n_distinct(biosample[year == 2018 & bioproject != "PRJNA824880"]),
+    nonpop_2019 = n_distinct(biosample[year == 2019 & bioproject != "PRJNA824880"]),
+    nonpop_total = n_distinct(biosample[bioproject != "PRJNA824880" & year %in% 2018:2019]),
+    overall_2018 = n_distinct(biosample[year == 2018]),
+    overall_2019 = n_distinct(biosample[year == 2019]),
+    overall_total = n_distinct(biosample[year %in% 2018:2019])
+  )
+
 # Overall presence of carbapenemase genes
 pa %>%
   filter(year == 2018 | year == 2019) %>%
@@ -223,7 +237,7 @@ pa %>%
 pa %>%
   filter(year == 2018 | year == 2019) %>%
   filter(bioproject != "PRJNA824880") %>%
-  group_by(location_broad) %>%
+  group_by(region) %>%
   summarize(
     isolates = n_distinct(biosample),
     carbapenemase_alleles = length(allele[subclass == "CARBAPENEM"]),
@@ -312,14 +326,14 @@ ab_mbe %>%
 # Isolates counts
 ab %>%
   summarize(
-    pop_2017 = n_distinct(biosample[year == 2017 & bioproject == "PRJNA906166"]),
-    pop_2018 = n_distinct(biosample[year == 2018 & bioproject == "PRJNA906166"]),
-    pop_2019 = n_distinct(biosample[year == 2019 & bioproject == "PRJNA906166"]),
-    pop_total = n_distinct(biosample[bioproject == "PRJNA906166" & year %in% 2017:2019]),
-    nonpop_2017 = n_distinct(biosample[year == 2017 & bioproject != "PRJNA906166"]),
-    nonpop_2018 = n_distinct(biosample[year == 2018 & bioproject != "PRJNA906166"]),
-    nonpop_2019 = n_distinct(biosample[year == 2019 & bioproject != "PRJNA906166"]),
-    nonpop_total = n_distinct(biosample[bioproject != "PRJNA906166" & year %in% 2017:2019]),
+    snap_2017 = n_distinct(biosample[year == 2017 & bioproject == "PRJNA906166"]),
+    snap_2018 = n_distinct(biosample[year == 2018 & bioproject == "PRJNA906166"]),
+    snap_2019 = n_distinct(biosample[year == 2019 & bioproject == "PRJNA906166"]),
+    snap_total = n_distinct(biosample[bioproject == "PRJNA906166" & year %in% 2017:2019]),
+    nonsnap_2017 = n_distinct(biosample[year == 2017 & bioproject != "PRJNA906166"]),
+    nonsnap_2018 = n_distinct(biosample[year == 2018 & bioproject != "PRJNA906166"]),
+    nonsnap_2019 = n_distinct(biosample[year == 2019 & bioproject != "PRJNA906166"]),
+    nonsnap_total = n_distinct(biosample[bioproject != "PRJNA906166" & year %in% 2017:2019]),
     overall_2017 = n_distinct(biosample[year == 2017]),
     overall_2018 = n_distinct(biosample[year == 2018]),
     overall_2019 = n_distinct(biosample[year == 2019]),
@@ -341,7 +355,7 @@ ab %>%
   filter(bioproject != "PRJNA906166") %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
-  count(oxa_family, allele)
+  count(oxa_family)
 
 #Acquired carbapenemase gene counts
 ab %>%
@@ -491,5 +505,30 @@ oxa_50_mbe <- pa_mbe %>%
 
 readr::write_lines(na.omit(c(oxa_50_rgc, oxa_50_mbe)),
                    file = file.path(manual_output_path, "protein_accessions_oxa-50.txt"))
+```
+
+# ADC-33 with OXA-23
+```{r, eval = FALSE}
+adc33_biosamples <- ab %>%
+  filter_assigned_bla() %>%
+  dplyr::filter(allele == "blaADC-33") %>%
+  dplyr::pull(biosample)
+  
+adc33_oxa23 <- ab %>%
+  filter_assigned_bla() %>%
+  dplyr::filter(biosample %in% adc33_biosamples) %>%
+  dplyr::filter(oxa_family == "blaOXA-23") %>%
+  dplyr::distinct(biosample) %>%
+  nrow()
+
+adc33_oxa23_text <- c(
+  paste0("Total blaADC-33: ",length(adc33_biosamples)),
+  paste0("With blaOXA-23 Family Members: ", adc33_oxa23),
+  paste0("Proportion: ",adc33_oxa23 / length(adc33_biosamples)) 
+)
+
+readr::write_lines(adc33_oxa23_text,
+                   file = file.path(manual_output_path, "adc-33_oxa-23.txt"))
+
 ```
 
