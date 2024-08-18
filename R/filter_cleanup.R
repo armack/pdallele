@@ -5,11 +5,15 @@ NULL
 #' @title Filter alleles to prepare data set for analysis
 #'
 #' @description Both `filter_isolates_browser()` and `filter_microbigge()` serve
-#'   three major roles in preparing data sets for analysis, all of which are
+#'   four major roles in preparing data sets for analysis, all of which are
 #'   optional:
+#'    * keep rows with `species` matching a value in `species`
 #'    * keep rows with `allele` matching a value in `filter`
 #'    * drop rows with `method` matching a value in `remove`
 #'    * drop rows with duplicate `allele`/`biosample` combinations based on a logical value `deduplicate`
+#'
+#'   Note that filtering requiring a specific blaOXA Family in an isolates is
+#'   handled separetely using `filter_oxa_family()`.
 #'
 #'   Additionally, `filter_microbigge()` will drop rows not meeting minimum
 #'   thresholds of `coverage` and `identity`.
@@ -19,7 +23,7 @@ NULL
 #'   a given allele, some of which correspond to "less than perfect" matches and
 #'   may warrant removal depending on the scope and goals of the analysis.
 #'
-#'   More detailed explinations of these calling methods and the specific
+#'   More detailed explanations of these calling methods and the specific
 #'   parameters used to generate them is available from NCBI at
 #'   [https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories]
 #'   and [https://github.com/ncbi/amr/wiki/Methods]
