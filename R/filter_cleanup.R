@@ -91,3 +91,30 @@ filter_microbigge <- function(data, coverage = 100L, identity = 100L, species, f
 
   return(.complete)
 }
+
+#' Filter isolates by presence of blaOXA Families
+#'
+#' Keep only isolates containing the blaOXA family (or families) listed in the
+#' character fector `family`. Filters based on BioSamples.
+#'
+#' @param data A data frame or tibble
+#' @param family A character vector of (potentially partial) blaOXA family names
+#'   to keep. Collapsed with '|' and filtered with [grepl()].
+#' @export
+filter_oxa_family <- function(data, family){
+  has_family <- !missing(family)
+
+  if(has_family){
+    keep_biosamples <- data %>%
+      filter(grepl(paste(family, collapse = "|"), oxa_family)) %>%
+      distinct(biosample) %>%
+      pull(biosample)
+
+    .complete <- data %>%
+      filter(biosample %in% keep_biosamples)
+
+    return(.complete)
+  } else {
+    return(data)
+  }
+}
