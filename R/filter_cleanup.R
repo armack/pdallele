@@ -32,9 +32,6 @@ NULL
 #'   * `coverage` is the percentage of the reference sequence covered by the alignment between the target and the reference sequence
 #'   * `identity` is the percentage of identical amino acids or base pairs in the alignment between the target and reference sequence
 #'
-#'   The default `identity` threshold corresponds to the AMRFinderPlus default of >=90% for BLAST matches. (and
-#'   thus `amr.metadata.tsv` files on the NCBI FTP server).
-#'
 #'   More information is available from NCBI at
 #'   [https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories]
 #'   and [https://github.com/ncbi/amr/wiki/Methods]
@@ -73,7 +70,7 @@ filter_isolates_browser <- function(data, species, filter, remove, deduplicate =
 #' @param coverage Minimum percent coverage to keep
 #' @param identity Minimum percent identity to keep
 #' @export
-filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, filter, remove, deduplicate = TRUE) {
+filter_microbigge <- function(data, coverage = 100L, identity = 100L, species, filter, remove, deduplicate = TRUE) {
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   has_species <- !missing(species)
