@@ -198,7 +198,7 @@ mbe <- mbe_raw %>%
                     identity = min_identity,
                     remove = remove_mbe_allele_types,
                     deduplicate = TRUE) %>%
-  filter_oxa_family(chromosomal_oxa_family)
+  filter_required_alleles(genes = genes_of_interest, family = chromosomal_oxa_family)
 
 mbe %>%
   readr::write_tsv(file = file.path(data_path, "mbe_final.tsv"))
