@@ -92,29 +92,47 @@ filter_microbigge <- function(data, coverage = 100L, identity = 100L, species, f
   return(.complete)
 }
 
-#' Filter isolates by presence of blaOXA Families
+#' Filter isolates by presence of genes and blaOXA Families
 #'
-#' Keep only isolates containing the blaOXA family (or families) listed in the
-#' character fector `family`. Filters based on BioSamples.
+#' Keep only isolates containing the gene(s) and blaOXA family (or families) listed in the
+#' character vectors `genes` and  `family`. Filters based on BioSamples.
 #'
 #' @param data A data frame or tibble
+#' @param genes A character vector of (potentially partial) gene names
+#'   to keep. Collapsed with '|' and filtered with [grepl()] on `allele`.
 #' @param family A character vector of (potentially partial) blaOXA family names
-#'   to keep. Collapsed with '|' and filtered with [grepl()].
+#'   to keep. Collapsed with '|' and filtered with [grepl()] on `oxa_family`.
 #' @export
-filter_oxa_family <- function(data, family){
+filter_required_alleles <- function(data, genes, family){
+  has_genes <- !missing(genes)
   has_family <- !missing(family)
 
-  if(has_family){
-    keep_biosamples <- data %>%
-      filter(grepl(paste(family, collapse = "|"), oxa_family)) %>%
-      distinct(biosample) %>%
-      pull(biosample)
+  keep_biosamples <- data %>%
+    distinct(biosample) %>%
+    pull(biosample)
 
-    .complete <- data %>%
-      filter(biosample %in% keep_biosamples)
-
-    return(.complete)
-  } else {
-    return(data)
+  if(has_genes){
+    for(gene in genes){
+      keep_biosamples <- data %>%
+        filter(biosample %in% keep_biosamples) %>%
+        filter(grepl(paste(gene, collapse = "|"), allele, ignore.case = TRUE)) %>%
+        distinct(biosample) %>%
+        pull(biosample)
+    }
   }
+
+  if(has_family){
+    for(fam in family){
+      keep_biosamples <- data %>%
+        filter(biosample %in% keep_biosamples) %>%
+        filter(grepl(paste(fam, collapse = "|"), oxa_family, ignore.case = TRUE)) %>%
+        distinct(biosample) %>%
+        pull(biosample)
+    }
+  }
+
+  .complete <- data %>%
+    filter(biosample %in% keep_biosamples)
+
+  return(.complete)
 }
