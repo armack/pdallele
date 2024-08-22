@@ -641,6 +641,22 @@ parse_mbe_oxa_family <- function(data) {
   return(.complete)
 }
 
+#' Parse MBE `gene` names from `allele`
+#'
+#' @description Uses regular expressions to extract gene names from allele names
+#'   (e.g., by removing asisgned numbers)
+#'
+#' @param data A data frame or tibble containing an `allele` column
+#' @returns `data` with column `gene` added
+#' @export
+
+parse_gene_names <- function(data){
+  .complete <- data %>%
+    mutate(gene = if_else(!is.na(allele), stringr::str_extract(allele, "bla(?:[a-zA-Z0-9]|\\-(?=[a-zA-Z]))*"), NA_character_))
+
+  return(.complete)
+}
+
 ########## Identical Protein Group Import and Processing ##########
 
 #' Import Identical Protein Groups data
