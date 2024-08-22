@@ -481,7 +481,7 @@ parse_year <- function(data, max_range = 0, range_method = "floor") {
       abs(.data$year_end - .data$year_start) <= max_range & range_method == "start" ~ .data$year_start,
       abs(.data$year_end - .data$year_start) <= max_range & range_method == "end" ~ .data$year_end,
       abs(.data$year_end - .data$year_start) <= max_range & range_method == "floor" ~ floor((.data$year_start + .data$year_end)/2),
-      abs(.data$year_end - .data$year_start) <= max_range & range_method == "round" ~ floor((.data$year_start + .data$year_end)/2),
+      abs(.data$year_end - .data$year_start) <= max_range & range_method == "round" ~ round((.data$year_start + .data$year_end)/2),
       abs(.data$year_end - .data$year_start) <= max_range & range_method == "ceiling" ~ ceiling((.data$year_start + .data$year_end)/2),
       TRUE ~ NA_integer_
     )) %>%
