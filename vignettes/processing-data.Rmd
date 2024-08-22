@@ -159,7 +159,8 @@ mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   import_regions(path = region_path, custom_match = manual_countries) %>%
   import_cluster_list(cluster_path) %>%
   import_mlst(mlst_path) %>%
-  parse_bla_formatting(gene = FALSE) %>%
+  parse_gene_names() %>%
+  parse_bla_formatting(gene = TRUE) %>%
   parse_mbe_oxa_family() %>%
   parse_year()
 ```
