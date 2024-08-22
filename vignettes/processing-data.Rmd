@@ -162,7 +162,9 @@ mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   parse_gene_names() %>%
   parse_bla_formatting(gene = TRUE) %>%
   parse_mbe_oxa_family() %>%
-  parse_year()
+  parse_year() %>%
+  dplyr::rename(scientific_name = species) %>%
+  parse_genus_species()
 ```
 
 Optionally, save the processed data set:
