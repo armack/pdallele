@@ -115,10 +115,10 @@ filter_required_alleles <- function(data, genes, family){
     pull(biosample)
 
   if(has_genes){
-    for(gene in genes){
+    for(current in genes){
       keep_biosamples <- data %>%
         filter(biosample %in% keep_biosamples) %>%
-        filter(grepl(paste(gene, collapse = "|"), allele, ignore.case = TRUE)) %>%
+        filter(grepl(paste(current, collapse = "|"), allele, ignore.case = TRUE)) %>%
         distinct(biosample) %>%
         pull(biosample)
     }
