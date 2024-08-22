@@ -77,20 +77,30 @@ filter_isolates_browser <- function(data, species, filter, remove, deduplicate =
 #' @param coverage Minimum percent coverage to keep
 #' @param identity Minimum percent identity to keep
 #' @export
-filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, filter, remove, deduplicate = TRUE) {
+filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, filter, remove, exclude, min_gene_count = 1, deduplicate = TRUE) {
   . <- NULL # Workaround to suppress `no visible binding for global variable`
 
   has_species <- !missing(species)
   has_filter <- !missing(filter)
   has_remove <- !missing(remove)
+  has_exclude <- !missing(exclude)
 
-  .complete <- data %>%
+  .partial <- data %>%
     dplyr::filter("coverage" >= coverage) %>%
     dplyr::filter("identity" >= identity) %>%
     {if(has_species) dplyr::filter(., grepl(paste(.env$species, collapse = "|"), .data$species)) else . } %>%
     {if(has_filter) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$allele)) else . } %>%
     {if(has_remove) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
+    {if(has_exclude) dplyr::filter(., !grepl(paste(exclude, collapse = "|"), .data$gene)) else .} %>%
     {if(deduplicate) dplyr::distinct(dplyr::arrange(., .data$protein), .data$biosample, .data$allele, .data$ipg, .keep_all = TRUE) else . }
+
+  genes_to_include <- .partial %>%
+    count(gene) %>%
+    filter(n >= min_gene_count) %>%
+    pull(gene)
+
+  .complete <- .partial %>%
+    filter(gene %in% genes_to_include)
 
   return(.complete)
 }
