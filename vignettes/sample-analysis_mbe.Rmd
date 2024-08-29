@@ -436,9 +436,9 @@ ggplot2::ggsave(
 
 
 # Isolate Standardized Country Name Counts
-overview_isolate_counts_by_standardized_country <- isolates %>%
+overview_isolate_counts_by_standardized_country <- mbe %>%
   count_isolates(standardized_country) %>%
-  mutate(proportion = isolates / length(unique(.env$isolates$biosample)))
+  mutate(proportion = isolates / length(unique(.env$mbe$biosample)))
 
 overview_isolate_counts_by_standardized_country %>%
   readr::write_csv(file.path(table_path, "overview_isolate_counts_by_broad_location.csv"))
@@ -463,9 +463,9 @@ ggplot2::ggsave(
 )
 
 # Isolate Region Counts
-overview_isolate_counts_by_region <- isolates %>%
+overview_isolate_counts_by_region <- mbe %>%
   count_isolates(region)%>%
-  mutate(proportion = isolates / length(unique(.env$isolates$biosample)))
+  mutate(proportion = isolates / length(unique(.env$mbe$biosample)))
 
 overview_isolate_counts_by_region %>%
   readr::write_csv(file.path(table_path, "overview_isolate_counts_by_region.csv"))
@@ -487,7 +487,7 @@ ggplot2::ggsave(
 )
 
 # Isolate Collection Year Counts
-overview_isolate_counts_by_collection_year <- isolates %>%
+overview_isolate_counts_by_collection_year <- mbe %>%
   mutate(
     collected = case_when(
       year < 2000 ~ "Before 2000",
@@ -497,7 +497,7 @@ overview_isolate_counts_by_collection_year <- isolates %>%
     )
   ) %>%
   count_isolates(collected, sort = FALSE) %>%
-  mutate(proportion = isolates / length(unique(.env$isolates$biosample))) %>%
+  mutate(proportion = isolates / length(unique(.env$mbe$biosample))) %>%
   relevel_first_last(collected, first = "Before 2000")
 
 overview_isolate_counts_by_collection_year %>%
@@ -526,7 +526,7 @@ ggplot2::ggsave(
 )
 
 # Counts by collection period
-overview_isolate_counts_by_collection_period <- isolates %>%
+overview_isolate_counts_by_collection_period <- mbe %>%
   count_isolates(period, sort = FALSE)
 
 overview_isolate_counts_by_collection_period %>%
@@ -556,7 +556,7 @@ ggplot2::ggsave(
 
 # Counts by collection period (post 2000)
 overview_isolate_counts_by_collection_period_post_2000 <-
-  isolates %>%
+  mbe %>%
   dplyr::filter(year >= 2000) %>%
   count_isolates(period_2000, sort = FALSE)
 
@@ -588,7 +588,7 @@ ggplot2::ggsave(
 )
 
 # Isolate Host Counts
-overview_isolate_counts_by_host <- isolates %>%
+overview_isolate_counts_by_host <- mbe %>%
   count_isolates(host)
 
 overview_isolate_counts_by_host %>%
@@ -646,7 +646,7 @@ ggplot2::ggsave(
 #### Allele combinations
 ```{r, eval = FALSE}
 # All genes
-overview_combination_allele_list <- isolates %>%
+overview_combination_allele_list <- mbe %>%
   determine_combinations()
 
 # All combinations overall
@@ -668,38 +668,20 @@ overview_combination_allele_counts_by_species %>%
     "overview_combination_allele_counts_by_species.csv"
   ))
 
-# Genes of interest
-overview_combination_filtered_allele_list <- isolates %>%
-  determine_combinations(filter = genes_of_interest)
+# Intrinsic genes
+overview_intrinsic_allele_list <- mbe %>%
+  filter(gene_type == "Intrinsic") %>%
+  determine_combinations()
 
 # Genes of interest overall
-overview_combination_filtered_allele_counts <-
-  overview_combination_filtered_allele_list %>%
+overview_combination_intrinsic_allele_counts <-
+  overview_intrinsic_allele_list %>%
   count_isolates(combo)
 
-overview_combination_filtered_allele_counts %>%
+overview_combination_intrinsic_allele_counts %>%
   readr::write_csv(file.path(
     table_path,
-    paste0(
-      "overview_combination_",
-      paste0(genes_of_interest, collapse = "_"),
-      "_allele_counts.csv"
-    )
-  ))
-
-# Genes of interest by species
-overview_combination_filtered_allele_counts_by_species <-
-  overview_combination_filtered_allele_list %>%
-  count_isolates(species, combo)
-
-overview_combination_filtered_allele_counts_by_species %>%
-  readr::write_csv(file.path(
-    table_path,
-    paste0(
-      "overview_combination_",
-      paste0(genes_of_interest, collapse = "_"),
-      "_allele_counts_by_species.csv"
-    )
+      "overview_combination_intrinsic_allele_counts.csv"
   ))
 
 ```
@@ -707,7 +689,7 @@ overview_combination_filtered_allele_counts_by_species %>%
 ### Carbapenemase Genes
 ```{r, eval = FALSE}
 # Presence by Region
-carbapenemase_presence_by_region <- isolates %>%
+carbapenemase_presence_by_region <- mbe %>%
   group_by(region, region_markdown) %>%
   summarize(
     isolates = n_distinct(biosample),
@@ -738,7 +720,7 @@ carbapenemase_presence_by_region_plot <- carbapenemase_presence_by_region %>%
   )
 
 # Presence Over Time
-carbapenemase_presence_over_time <- isolates %>%
+carbapenemase_presence_over_time <- mbe %>%
   group_by(period) %>%
   summarize(
     isolates = n_distinct(biosample),
@@ -751,7 +733,7 @@ carbapenemase_presence_over_time %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_over_time.csv"))
 
 # Presence Over Time (Since 2000)
-carbapenemase_presence_over_time_since_2000 <- isolates %>%
+carbapenemase_presence_over_time_since_2000 <- mbe %>%
   group_by(period_2000) %>%
   summarize(
     isolates = n_distinct(biosample),
@@ -764,7 +746,7 @@ carbapenemase_presence_over_time_since_2000 %>%
   readr::write_csv(file.path(table_path, "carbapenemase_presence_over_time_since_2000.csv"))
 
 # Allele Counts
-carbapenemase_allele_counts <- isolates %>%
+carbapenemase_allele_counts <- mbe %>%
   filter(subclass == "CARBAPENEM") %>%
   count_isolates(allele)
 
@@ -772,14 +754,14 @@ carbapenemase_allele_counts %>%
   readr::write_csv(file.path(table_path, "carbapenemase_allele_counts.csv"))
 
 # Gene Counts
-carbapenemase_gene_counts <- isolates %>%
+carbapenemase_gene_counts <- mbe %>%
   filter(subclass == "CARBAPENEM") %>%
   count_isolates(gene)
 
 carbapenemase_gene_counts %>%
   readr::write_csv(file.path(table_path, "carbapenemase_gene_counts.csv"))
 
-total_carbapenemase_counts <- isolates %>%
+total_carbapenemase_counts <- mbe %>%
   filter(subclass == "CARBAPENEM") %>%
   count_isolates()
   
@@ -791,7 +773,7 @@ total_carbapenemase_counts %>%
 ### Comparison by Species
 ```{r, eval = FALSE}
 # List of genes by species
-species_gene_list <- isolates %>%
+species_gene_list <- mbe %>%
   dplyr::group_by(species) %>%
   dplyr::summarize(genes = paste(sort(unique(gene)), collapse = ", "))
 
@@ -799,7 +781,7 @@ species_gene_list %>%
   readr::write_csv(file.path(table_path, "species_gene_list.csv"))
 
 # List and count of genes by species
-species_gene_counts <- isolates %>%
+species_gene_counts <- mbe %>%
   count_alleles(species, gene) %>%
   relevel_numeric(species, gene) %>%
   dplyr::arrange(species, gene)
@@ -808,7 +790,7 @@ species_gene_counts %>%
   readr::write_csv(file.path(table_path, "species_gene_counts.csv"))
 
 # List and count of alleles by species
-species_allele_counts <- isolates %>%
+species_allele_counts <- mbe %>%
   count_alleles(species, allele) %>%
   relevel_numeric(species, allele) %>%
   dplyr::arrange(species, allele)
@@ -817,7 +799,7 @@ species_allele_counts %>%
   readr::write_csv(file.path(table_path, "species_allele_counts.csv"))
 
 # Count of exclusive alleles by Species within data set
-species_exclusive_allele_overview <- isolates %>%
+species_exclusive_allele_overview <- mbe %>%
   filter_exclusive_alleles(species) %>%
   group_by(species) %>%
   dplyr::summarize(alleles = length(unique(allele))) %>%
@@ -829,7 +811,7 @@ species_exclusive_allele_overview %>%
   readr::write_csv(file.path(table_path, "species_exclusive_allele_overview.csv"))
 
 # List and count of exclusive alleles by Species
-species_exclusive_allele_counts <- isolates %>%
+species_exclusive_allele_counts <- mbe %>%
   filter_exclusive_alleles(species) %>%
   count_alleles(species, allele) %>%
   relevel_numeric(species, allele) %>%
@@ -839,7 +821,7 @@ species_exclusive_allele_counts %>%
   readr::write_csv(file.path(table_path, "species_exclusive_allele_counts.csv"))
 
 # Alleles present in multiple species (Excluding Unclear or Unknown)
-species_shared_alleles <- isolates %>%
+species_shared_alleles <- mbe %>%
   dplyr::filter(!grepl(unclear_species_string, species)) %>%
   filter_shared_alleles(species) %>%
   dplyr::group_by(allele) %>%
