@@ -407,9 +407,9 @@ parse_bla_formatting <- function(data, gene = TRUE) {
 
   .complete <- data %>%
     dplyr::mutate(allele_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$allele, perl = TRUE) ) %>%
-    dplyr::mutate(allele_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$allele, perl = TRUE) ) %>%
-    { if(gene) dplyr::mutate(., gene_markdown = sub("^bla(.*?)$", "<i>bla</i><sub>\\1</sub>", .data$gene, perl = TRUE) ) %>%
-        dplyr::mutate(., gene_math = sub("^bla(.*?)$", "italic\\(bla\\)\\[\\1\\]", .data$gene, perl = TRUE) ) else . }
+    dplyr::mutate(allele_math = sub("^bla(.*?)", "italic\\(bla\\)\\[\\1\\]", .data$allele, perl = TRUE) ) %>%
+    { if(gene) dplyr::mutate(., gene_markdown = sub("(.*?)bla([^ ]*)( ?)(.*?)", "\\1<i>bla</i><sub>\\2</sub>\\3\\4", .data$gene, perl = TRUE) ) %>%
+        dplyr::mutate(., gene_math = sub("(.*?)bla([^ ]*)( ?)(.*?)", "\\1italic\\(bla\\)\\[\\2\\]\\3\\4", .data$gene, perl = TRUE) ) else . }
 
   return(.complete)
 }
