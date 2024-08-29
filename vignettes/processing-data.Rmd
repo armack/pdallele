@@ -160,11 +160,12 @@ mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
   import_cluster_list(cluster_path) %>%
   import_mlst(mlst_path) %>%
   parse_gene_names() %>%
-  parse_bla_formatting(gene = TRUE) %>%
   parse_mbe_oxa_family() %>%
   parse_year() %>%
   dplyr::rename(scientific_name = species) %>%
-  parse_genus_species()
+  parse_genus_species() %>%
+  parse_intrinsic_acquired(genes = intrinsic_genes, oxa_families = intrinsic_oxa_families) %>%
+  parse_bla_formatting(gene = TRUE)
 ```
 
 Optionally, save the processed data set:
