@@ -374,9 +374,9 @@ ggplot2::ggsave(filename = file.path(graphic_path, "overall_gene_frequency.svg")
                 plot = overall_gene_frequency_plot)
 
 # Non-main Gene Frequency Plot
-non_main_gene_frequency_plot <-
-  overview_total_allele_counts_by_gene %>%
-  dplyr::filter(!grepl(paste0(genes_of_interest, collapse = "|"), gene)) %>%
+acquired_gene_frequency_plot <-
+  overview_combined_allele_counts_by_gene %>%
+  dplyr::filter(gene_type == "Acquired") %>%
   top_n_across_groups(gene, gene_markdown, count = total, n = 10) %>%
   donut_plot(fill = gene_markdown,
              counts = total,
@@ -384,50 +384,50 @@ non_main_gene_frequency_plot <-
 
 ggplot2::ggsave(filename = file.path(
   graphic_path,
-  paste0(paste("non", genes_of_interest, sep = "-", collapse = "_"),
-         "_gene_frequency.svg")
+  "acquired_gene_frequency.svg"
 ),
-plot = non_main_gene_frequency_plot)
+plot = acquired_gene_frequency_plot)
 ```
 
 #### Distinct, assigned alleles and families
 ```{r, eval = FALSE}
 # List and count of distinct assigned alleles
-overview_distinct_assigned_allele_counts <- isolates %>%
+overview_distinct_assigned_allele_counts <- mbe %>%
   remove_unassigned_bla() %>%
   count_alleles(gene,
                 gene_markdown,
                 allele,
                 allele_markdown,
                 oxa_family,
-                oxa_family_markdown) %>%
+                oxa_family_markdown,
+                gene_type) %>%
   relevel_numeric(allele) %>%
   dplyr::arrange(allele)
 
 overview_distinct_assigned_allele_counts %>%
-  dplyr::select(gene, allele, oxa_family, alleles) %>%
+  dplyr::select(gene, allele, oxa_family, gene_type, alleles) %>%
   readr::write_csv(file.path(table_path, "overview_distinct_named_allele_counts.csv"),
                    na = "")
 
 # List and count of distinct asigned oxa families
-overview_distinct_assigned_oxa_family_counts <- isolates %>%
+overview_distinct_assigned_oxa_family_counts <- mbe %>%
   remove_unassigned_bla() %>%
   tidyr::drop_na(oxa_family) %>%
-  count_alleles(gene, gene_markdown, oxa_family, oxa_family_markdown) %>%
+  count_alleles(gene, gene_markdown, oxa_family, oxa_family_markdown, gene_type) %>%
   relevel_numeric(oxa_family) %>%
   dplyr::arrange(oxa_family)
 
 overview_distinct_assigned_oxa_family_counts %>%
-  dplyr::select(gene, oxa_family, alleles) %>%
+  dplyr::select(gene, oxa_family, gene_type, alleles) %>%
   readr::write_csv(file.path(table_path, "overview_distinct_named_family_counts.csv"))
 ```
 
 #### Isolate counts by variable
 ```{r, eval = FALSE}
 # Isolate Species Counts
-overview_isolate_counts_by_species <- isolates %>%
+overview_isolate_counts_by_species <- mbe %>%
   count_isolates(species, species_markdown) %>%
-  mutate(proportion = isolates / length(unique(.env$isolates$biosample)))
+  mutate(proportion = isolates / length(unique(.env$mbe$biosample)))
 
 overview_isolate_counts_by_species %>%
   dplyr::select(-species_markdown) %>%
