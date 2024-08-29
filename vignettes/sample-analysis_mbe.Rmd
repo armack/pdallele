@@ -203,6 +203,12 @@ overview_raw_isolate_count <- mbe_raw %>%
   dplyr::distinct(biosample) %>%
   nrow()
 
+overview_raw_species <- mbe_raw %>%
+  dplyr::distinct(biosample, .keep_all = TRUE) %>%
+  dplyr::count(species) %>%
+  arrange(species) %>%
+  {paste0(.$species, " (", .$n, ")", collapse = ", ")}
+
 overview_raw_allele_count <- mbe_raw %>%
   nrow()
 
@@ -320,29 +326,35 @@ close(file_con)
 #### Allele and family overview and counts
 ```{r, eval = FALSE}
 # Allele counts by gene and assigned/unassigned status
-overview_total_allele_counts_by_gene <- isolates %>%
-  count_alleles(gene, gene_markdown, name = "total")
+overview_total_allele_counts_by_gene <- mbe %>%
+  count_alleles(gene, gene_markdown, gene_type, name = "total")
 
-overview_assigned_allele_counts_by_gene <- isolates %>%
+overview_assigned_allele_counts_by_gene <- mbe %>%
   remove_unassigned_bla() %>%
   count_alleles(gene, gene_markdown, name = "assigned")
 
-overview_unassigned_allele_counts_by_gene <- isolates %>%
+overview_unassigned_allele_counts_by_gene <- mbe %>%
   remove_assigned_bla() %>%
   count_alleles(gene, gene_markdown, name = "unassigned")
 
-overview_distinct_allele_counts_by_gene <- isolates %>%
-  remove_unassigned_bla() %>%
+overview_distinct_assigned_allele_counts_by_gene <- mbe %>%
+  filter_assigned_bla() %>%
   dplyr::distinct(allele, .keep_all = TRUE) %>%
-  count_alleles(gene, gene_markdown, name = "distinct")
+  count_alleles(gene, gene_markdown, name = "distinct_assigned")
 
-overview_combined_allele_counts_by_gene <-
-  overview_total_allele_counts_by_gene %>%
+overview_distinct_unassigned_allele_counts_by_gene <- mbe %>%
+  filter_unassigned_bla() %>%
+  dplyr::distinct(ipg, .keep_all = TRUE) %>%
+  count_alleles(gene, gene_markdown, name = "distinct_unassigned")
+
+overview_combined_allele_counts_by_gene <- overview_total_allele_counts_by_gene %>%
   dplyr::left_join(overview_assigned_allele_counts_by_gene,
                    by = c("gene", "gene_markdown")) %>%
-  dplyr::left_join(overview_distinct_allele_counts_by_gene,
+  dplyr::left_join(overview_distinct_assigned_allele_counts_by_gene,
                    by = c("gene", "gene_markdown")) %>%
   dplyr::left_join(overview_unassigned_allele_counts_by_gene,
+                   by = c("gene", "gene_markdown")) %>%
+    dplyr::left_join(overview_distinct_unassigned_allele_counts_by_gene,
                    by = c("gene", "gene_markdown"))
 
 overview_combined_allele_counts_by_gene %>%
