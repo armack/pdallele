@@ -1486,10 +1486,8 @@ if("OXA" %in% combinations[["name"]]) {
         readr::write_csv(
           file.path(
             table_path,
-            paste0("OXA_family_frequency_by_collection_period_rank.csv"
-            )
-          )
-        )  
+            paste0(gene_type_label, "_OXA_family_frequency_by_collection_period_rank.csv")
+        ))  
       
       gene_frequency_by_collection_period_across_groups_plot <-
         gene_frequency_by_collection_period %>%
@@ -1627,7 +1625,7 @@ if("OXA" %in% combinations[["name"]]) {
         dplyr::select(-oxa_family_markdown) %>%
         readr::write_csv(file.path(
           table_path,
-          paste0(gene_type_label, "_OXA_family_frequency_by_region.csv"_
+          paste0(gene_type_label, "_OXA_family_frequency_by_region.csv")
         ))
       
       gene_frequency_by_region_rank <- 
