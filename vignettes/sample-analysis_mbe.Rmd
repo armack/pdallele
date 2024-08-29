@@ -52,7 +52,8 @@ species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("PDC","OXA")
 allele_label_base        <- "Allele"
 family_label_base        <- "Family"
-chromosomal_oxa_family   <- "OXA-50"
+intrinsic_genes          <- c("blaPDC")
+intrinsic_oxa_families   <- c("blaOXA-50")
 heatmap_palette          <- c("viridis")
 unclear_species_string   <- "Unclear or Unknown"
 collection_period_groups <- 6L
