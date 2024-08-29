@@ -652,7 +652,32 @@ parse_mbe_oxa_family <- function(data) {
 
 parse_gene_names <- function(data){
   .complete <- data %>%
-    mutate(gene = if_else(!is.na(allele), stringr::str_extract(allele, "bla(?:[a-zA-Z0-9]|\\-(?=[a-zA-Z]))*"), NA_character_))
+    dplyr::mutate(gene = if_else(!is.na(allele), stringr::str_extract(allele, "bla(?:[a-zA-Z0-9]|\\-(?=[a-zA-Z]))*"), NA_character_))
+
+  return(.complete)
+}
+
+#' Parse whether `gene` and `oxa_family` are likely intrinsic or acquired
+#'
+#' @description Generates a logical column `gene_type` listing whether an allele
+#' is `intrinsic` or `acquired` based on input lists of `genes` and
+#' `oxa_families` considered to be intrinsic.
+#'
+#' @param data A data frame or tibble containing an `allele` column
+#' @param genes character vector of intrinsic genes
+#' @param oxa_families character vector of intrinsic OXA families
+#' @returns `data` with logical column `gene_type` added
+#' @export
+
+parse_intrinsic_acquired <- function(data, genes = c(), oxa_families = c()){
+
+  .complete <- data %>%
+    dplyr::mutate(gene_type = dplyr::if_else(gene %in% genes | oxa_family %in% oxa_families, "Intrinsic", "Acquired")) %>%
+    dplyr::mutate(gene = case_when(
+      oxa_family %in% oxa_families ~ "blaOXA (Intrinsic)",
+      gene == "blaOXA" ~ "blaOXA (Acquired)",
+      TRUE ~ gene
+    ))
 
   return(.complete)
 }
