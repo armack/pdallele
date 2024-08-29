@@ -15,6 +15,8 @@ filter_microbigge(
   species,
   filter,
   remove,
+  exclude,
+  min_gene_count = 1,
   deduplicate = TRUE
 )
 }
@@ -42,13 +44,17 @@ removed?}
 }
 \description{
 Both \code{filter_isolates_browser()} and \code{filter_microbigge()} serve
-three major roles in preparing data sets for analysis, all of which are
+four major roles in preparing data sets for analysis, all of which are
 optional:
 \itemize{
+\item keep rows with \code{species} matching a value in \code{species}
 \item keep rows with \code{allele} matching a value in \code{filter}
 \item drop rows with \code{method} matching a value in \code{remove}
 \item drop rows with duplicate \code{allele}/\code{biosample} combinations based on a logical value \code{deduplicate}
 }
+
+Note that filtering requiring a specific blaOXA Family in an isolates is
+handled separetely using \code{filter_oxa_family()}.
 
 Additionally, \code{filter_microbigge()} will drop rows not meeting minimum
 thresholds of \code{coverage} and \code{identity}.
@@ -58,7 +64,7 @@ The \code{method} column contains codes representing the calling method used for
 a given allele, some of which correspond to "less than perfect" matches and
 may warrant removal depending on the scope and goals of the analysis.
 
-More detailed explinations of these calling methods and the specific
+More detailed explanations of these calling methods and the specific
 parameters used to generate them is available from NCBI at
 \link{https://www.ncbi.nlm.nih.gov/pathogens/pathogens_help/#genotype-categories}
 and \link{https://github.com/ncbi/amr/wiki/Methods}
