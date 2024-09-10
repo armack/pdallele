@@ -553,6 +553,7 @@ filter_pds <- function(data, ignore_genotype = FALSE){
 #' |-----------------|-----------------|
 #' |scientific_name  |species          |
 #' |protein_acc      |protein          |
+#' |bioproject_acc   |bioproject       |
 #' |biosample_acc    |biosample        |
 #' |collection_date  |collection_date  |
 #' |asm_acc          |assembly         |
@@ -592,6 +593,7 @@ import_microbigge_gcp <- function(path) {
     dplyr::select(
       species = "scientific_name",
       protein = "protein_acc",
+      bioproject = "bioproject_acc",
       biosample = "biosample_acc",
       "collection_date",
       assembly = "asm_acc",
