@@ -2075,6 +2075,30 @@ for (gene_name in genes_of_interest) {
 }
 ```
 
+# Acquired Gene Counts
+
+```{r, eval = FALSE}
+acquired_gene_alleles <- mbe %>%
+  filter(gene_type == "Acquired")
+
+acquired_gene_counts <- acquired_gene_alleles %>%
+  count_isolates(gene, oxa_family) %>%
+  dplyr::arrange(desc(isolates)) %>%
+  mutate(prop = isolates / (mbe %>% distinct(biosample) %>% nrow()))
+
+readr::write_csv(acquired_gene_counts, file.path(table_path, "overview_acquired_gene_counts.csv"))
+
+
+acquired_allele_counts <- acquired_gene_alleles %>%
+  count_isolates(allele, oxa_family) %>%
+  dplyr::arrange(desc(isolates)) %>%
+  mutate(prop = isolates / (mbe %>% distinct(biosample) %>% nrow()))
+
+readr::write_csv(acquired_allele_counts, file.path(table_path, "overview_acquired_allele_counts.csv"))
+
+```
+
+
 # Deduplicated and Allele Presence Data
 ## MLST & PDS Cluster Frequency
 ```{r, eval = FALSE}
