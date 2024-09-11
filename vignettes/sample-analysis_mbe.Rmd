@@ -50,6 +50,7 @@ The following variables modify aspects of the analysis and output:
 ```{r, eval = FALSE}
 species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("blaPDC","blaOXA")
+exclude_genes            <- c("blaI", "blaR1")
 allele_label_base        <- "Allele"
 family_label_base        <- "Family"
 intrinsic_genes          <- c("blaPDC")
@@ -116,17 +117,6 @@ The suggested defaults below remove calls made using Hidden Markov Models
 (which are further from their reference their targets than BLAST-based calling
 methods) and alleles for which clear problems are present (e.g. partial alleles,
 truncation by contig boundaries, and internal stop codons).
-
-#### Isolates Browser
-```{r, eval = FALSE}
-remove_allele_types <-
-  c(
-    "HMM",
-    "MISTRANSLATION",
-    "PARTIAL$",
-    "PARTIAL_END_OF_CONTIG"
-  )
-```
 
 #### MicroBIGG-E
 ```{r, eval = FALSE}
@@ -2795,7 +2785,7 @@ for (i in 1:nrow(combinations)) {
   gene_filter <- combinations[[i, "name"]]
   
   # List of distinct, assigned protein accessions
-  isolates %>%
+  mbe %>%
     remove_unassigned_bla() %>%
     {if(gene_filter == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families)
       else filter_attribute(., allele, gene_filter)} %>%
