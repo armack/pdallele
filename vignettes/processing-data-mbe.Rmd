@@ -1,0 +1,160 @@
+---
+title: "Processing Data for Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{processing-data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+```
+## Introduction 
+Many of the analysis functions included in this package require data in specific
+formats and/or with specific column names. Importing data and generating
+data sets according to this guide can simplify the analysis process.
+
+Following this guide prepares two data sets:
+
+* `isolates` uses Isolates Browser data and provides overview information on all covered alleles for all isolates of an organism of choice in the Pathogen Detection Project. This data set contains more isolates but does not allow the differentiation of distinct unassigned alleles.
+* `mbe` uses Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) data, which represents the subset of Isolates Browser data for which whole genome assemblies are available in GenBank. This data set contains fewer isolates but allows the differentiation of MLST sequence types and differentiation of distinct, unassigned alleles, enabling additional dimensions of analysis.
+
+## Intrinsic *bla* Genes
+Define intrinisic genes and families for labeling purposes
+```{r, eval = FALSE}
+intrinsic_genes          <- c("blaPDC")
+intrinsic_oxa_families   <- c("blaOXA-51")
+```
+
+## Data Directory
+Specify path to the directory containing data files for analysis. These files
+can easily be downloaded/generated using the included download functions (see
+`vignette("downloading-data")` for details).
+
+```{r, eval = FALSE}
+data_path <- file.path(getwd(), "data")
+```
+
+Specify the names of the individual data files within the data set directory.
+The file names and paths  below reflect the defaults for data downloaded using
+the included downloading functions (with the exception of `mlst.csv` which
+requires additional processing).
+
+```{r, eval = FALSE}
+isolates_path     <- file.path(data_path, "amr.metadata.tsv")
+microbigge_path   <- file.path(data_path, "microbigge.tsv")
+refgene_path      <- file.path(data_path, "refgene.tsv")
+ipg_path          <- file.path(data_path, "ipg.tsv")
+cluster_path      <- file.path(data_path, "cluster_list.tsv")
+mlst_path         <- file.path(data_path, "mlst_reprocessed.csv")
+region_path       <- system.file("extdata/regions.csv", package = "pdallele")
+```
+
+### File/Path Descriptions
+* `isolates_path` is an Isolates Browser tab-separated values (TSV) file for the organism of interest (a `PDG_Accession.Version.amr.metadata.tsv` file), downloaded from the NCBI FTP server 
+* `microbigge_path` MicroBIGG-E TSV file downloaded from the Google Cloud Platform
+* `refgene_path` is an Reference Gene Catalog TXT/TSV file downloaded from the NCBI FTP server (a `ReferenceGeneCatalog.txt` file)
+* `ipg_path` is an Identical Protein Groups file covering the organism and alleles of interest, downloaded using the included [download_identical_protein_groups()] function
+* `cluster_path` is a SNP Cluster List TSV file for the organism of interest (a `PDG_Accession.Version.reference_target.cluster_list.tsv` file), downloaded from the NCBI FTP server
+* `mlst_path` is a FastMLST TSV file that has been processed using the included processing functions for easier analysis (see `vignette("mlst")` for details)
+* `region_path` is a CSV file correlating countries to one (or more) regions. A file correlating to several regional groupings is included in with this package in `extdata` and is accessible using the path above
+
+## Determine Parameters for Cleanup and Processing
+### Strings corresponding to `NA` in the data set
+The following suggestions come from examining nearly 50,000 *Acinetobacter*
+and *Pseudomonas* isolates present in the Pathogen Detection Project databases.
+It is by no means a complete list, but can serve as a starting point for
+cleaning data sets. The list is case-insensitive, uses grepl() and supports the
+associated regex commands, and is combined using "|" when searching.
+
+```{r, eval = FALSE}
+na_strings <-
+  c(
+    "^na$",
+    "n/a",
+    "^missing",
+    "^none",
+    "^unknown",
+    "^unknow",
+    "unspecified",
+    "not known",
+    "not applicable",
+    "not_applicable",
+    "not provided",
+    "not available",
+    "not given",
+    "not determined",
+    "not specified",
+    "not recorded",
+    "no data",
+    "notfound",
+    "^null",
+    "not collected",
+    "not available",
+    "^-$"
+  )
+```
+
+### Manual Country/Territory Name Standardization
+Manually correct country (or territory) names in cases where the INSDC
+controlled vocabulary names don't align well with the name variants used in the
+`countrycode` R package This is optional, but may help to increase the number of
+geographic entities included in later analysis steps.
+
+```{r, eval = FALSE}
+manual_countries <- c(
+  "Ashmore and Cartier Islands" = "Australia",
+  "Baker Island" = "United States Minor Outlying Islands (the)",
+  "Coral Sea Islands" = "Australia",
+  "Europa Island" = "French Southern and Antarctic Lands",
+  "Glorioso Islands" = "French Southern and Antarctic Lands",
+  "Howland Island" = "United States Minor Outlying Islands (the)",
+  "Jan Mayen" = "Svalbard & Jan Mayen",
+  "Jarvis Island" = "United States Minor Outlying Islands (the)",
+  "Johnston Atoll" = "United States Minor Outlying Islands (the)",
+  "Juan de Nova Island" = "French Southern and Antarctic Lands",
+  "Kerguelen Archipelago" = "French Southern and Antarctic Lands",
+  "Kingman Reef" = "United States Minor Outlying Islands (the)",
+  "Micronesia" = "Micronesia (Federated States of)",
+  "Midway Islands" = "United States Minor Outlying Islands (the)",
+  "Navassa Island" = "United States Minor Outlying Islands (the)",
+  "Palmyra Atoll" = "United States Minor Outlying Islands (the)",
+  "Paracel Islands" = "China",
+  "Saint Martin" = "Saint Martin (French Part)",
+  "Tromelin Island" = "French Southern and Antarctic Lands",
+  "Virgin Islands" = "U.S. Virgin Islands",
+  "Wake Island" = "United States Minor Outlying Islands (the)"
+)
+```
+
+## Import Microbial Browser for Identification of Genetic and Genomic Elements (MicroBIGG-E) data
+```{r, eval = FALSE}
+mbe_raw <- import_microbigge_gcp(microbigge_path) %>%
+  na_if_tibble_chr(terms = na_strings) %>%
+  import_ipg(ipg_path) %>%
+  split_location(custom_match = manual_countries) %>%
+  import_regions(path = region_path, custom_match = manual_countries) %>%
+  import_cluster_list(cluster_path) %>%
+  import_mlst(mlst_path) %>%
+  parse_gene_names() %>%
+  parse_mbe_oxa_family() %>%
+  parse_year() %>%
+  dplyr::rename(scientific_name = species) %>%
+  parse_genus_species() %>%
+  parse_intrinsic_acquired(genes = intrinsic_genes, oxa_families = intrinsic_oxa_families) %>%
+  parse_bla_formatting(gene = TRUE)
+```
+
+Optionally, save the processed data set:
+
+```{r, eval = FALSE}
+mbe_raw %>%
+  readr::write_tsv(file = file.path(data_path, "mbe_complete.tsv"))
+```
