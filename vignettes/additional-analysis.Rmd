@@ -40,7 +40,7 @@ pa %>%
   filter(oxa_family != "blaOXA-50") %>%
   count_isolates(region) %>%
   rename(acquired_oxa = isolates) %>%
-  left_join(isolates %>% count_isolates(region), by = "region") %>%
+  left_join(pa %>% count_isolates(region), by = "region") %>%
   mutate(proportion = acquired_oxa / isolates) %>%
   readr::write_tsv(file = file.path(manual_output_path, "pa_acquired_blaOXA_regional.tsv"))
 ```
@@ -135,29 +135,25 @@ carbapenemase_presence_over_time_since_2000 %>%
 # ADCs of Particular Interest
 ```{r, eval = FALSE}
 # blaADC-223 Time Increase MLST
-ab_mbe %>%
-  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+ab %>%
   tidyr::drop_na(period_2000) %>%
   dplyr::filter(allele == "blaADC-223") %>%
   count_isolates(mlst, period_2000)
 
 # blaADC-182 MLST
-ab_mbe %>%
-  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+ab %>%
   tidyr::drop_na(period_2000) %>%
   dplyr::filter(allele == "blaADC-182") %>%
   count_isolates(mlst)
 
 # blaADC-183 MLST
-ab_mbe %>%
-  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+ab %>%
   tidyr::drop_na(period_2000) %>%
   dplyr::filter(allele == "blaADC-183") %>%
   count_isolates(mlst)
 
 # blaADC-235 MLST
-ab_mbe %>%
-  dplyr::left_join(ab %>% distinct(biosample, period, period_2000), by = "biosample") %>%
+ab %>%
   tidyr::drop_na(period_2000) %>%
   dplyr::filter(allele == "blaADC-235") %>%
   count_isolates(mlst)
@@ -269,7 +265,7 @@ pa %>%
   arrange(desc(isolates))
 
 # Counts by sequence type
-pa_mbe %>%
+pa %>%
   filter(year == 2018 | year == 2019) %>%
   filter(subclass == "CARBAPENEM") %>%
   left_join(pa %>% distinct(biosample, bioproject), by = "biosample") %>%
@@ -306,7 +302,7 @@ test_biosamples <- ab %>%
   distinct(biosample) %>%
   pull(biosample)
 
-ab_mbe %>%
+ab %>%
   filter(biosample %in% test_biosamples) %>%
   filter(oxa_family == "OXA-51") %>%
   filter_assigned_bla %>%
@@ -314,7 +310,7 @@ ab_mbe %>%
   nrow()
 
 # Count of ST
-ab_mbe %>%
+ab %>%
   filter(biosample %in% test_biosamples) %>%
   count_isolates(mlst) %>%
   mutate(prop = isolates / sum(isolates)) %>%
@@ -403,7 +399,7 @@ snap_biosamples <- ab %>%
   pull(biosample)
 
 # Sequence types in Overall
-ab_mbe %>%
+ab %>%
   filter(!(biosample %in% snap_biosamples)) %>%
   distinct(biosample, .keep_all = TRUE) %>%
   filter(year %in% 2017:2019) %>%
@@ -412,7 +408,7 @@ ab_mbe %>%
   arrange(desc(n))
 
 # Sequence types in USA
-ab_mbe %>%
+ab %>%
   filter(!(biosample %in% snap_biosamples)) %>%
     distinct(biosample, .keep_all = TRUE) %>%
   filter(year %in% 2017:2019) %>%
@@ -422,7 +418,7 @@ ab_mbe %>%
   arrange(desc(n))
 
 # Sequence types in South America
-ab_mbe %>%
+ab %>%
   filter(!(biosample %in% snap_biosamples)) %>%
   distinct(biosample, .keep_all = TRUE) %>%
   filter(year %in% 2017:2019) %>%
@@ -444,7 +440,7 @@ adc_rgc <- rgc %>%
   dplyr::filter(gene_family == "blaADC") %>%
   dplyr::pull(refseq_protein_accession)
 
-adc_mbe <- ab_mbe %>%
+adc_mbe <- ab %>%
   filter_unassigned_bla() %>%
   dplyr::filter(grepl("blaADC", allele)) %>%
   distinct(ipg_accession, .keep_all = TRUE) %>%
@@ -463,7 +459,7 @@ oxa_51_rgc <- rgc %>%
   dplyr::filter(oxa_family == "OXA-51") %>%
   dplyr::pull(refseq_protein_accession)
 
-oxa_51_mbe <- ab_mbe %>%
+oxa_51_mbe <- ab %>%
   filter_unassigned_bla() %>%
   dplyr::filter(oxa_family == "OXA-51") %>%
   distinct(ipg_accession, .keep_all = TRUE) %>%
@@ -478,7 +474,7 @@ pdc_rgc <- rgc %>%
   dplyr::filter(gene_family == "blaPDC") %>%
   dplyr::pull(refseq_protein_accession)
 
-pdc_mbe <- pa_mbe %>%
+pdc_mbe <- pa %>%
   filter_unassigned_bla() %>%
   dplyr::filter(grepl("blaPDC", allele)) %>%
   distinct(ipg_accession, .keep_all = TRUE) %>%
@@ -497,7 +493,7 @@ oxa_50_rgc <- rgc %>%
   dplyr::filter(oxa_family == "OXA-50") %>%
   dplyr::pull(refseq_protein_accession)
 
-oxa_50_mbe <- pa_mbe %>%
+oxa_50_mbe <- pa %>%
   filter_unassigned_bla() %>%
   dplyr::filter(oxa_family == "OXA-50") %>%
   distinct(ipg_accession, .keep_all = TRUE) %>%
