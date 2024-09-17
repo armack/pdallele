@@ -2674,6 +2674,7 @@ overview_bioproject_list_by_region <- mbe %>%
   count_isolates(region) %>%
   left_join(
     overview_bioproject_list_by_region %>%
+      tidyr::drop_na(bioproject) %>%
       summarize(
         n_bp = n(),
         max_bp_isolates = max(isolates),
