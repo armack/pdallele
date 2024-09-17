@@ -33,7 +33,7 @@ ab %>%
   readr::write_tsv(file = file.path(manual_output_path, "ab_blaOXA23_regional.tsv"))
 ```
 
-# Regional prevalence of (assumed) acquired blaOXA alleels in *P. aeruginosa*
+# Regional prevalence of (assumed) acquired blaOXA allels in *P. aeruginosa*
 ```{r, eval = FALSE}
 pa %>%
   tidyr::drop_na(oxa_family) %>%
@@ -274,6 +274,11 @@ pa %>%
 ```
 # Comparison to TEST Study
 ```{r, eval = FALSE}
+# Overall in data set
+ab %>%
+  filter(bioproject == "PRJEB27899") %>%
+  count_isolates(bioproject)
+
 # Isolates counts (Note that years are not provided in the BioSample metadata for the TEST isolates)
 ab %>%
   summarize(
@@ -304,7 +309,7 @@ test_biosamples <- ab %>%
 
 ab %>%
   filter(biosample %in% test_biosamples) %>%
-  filter(oxa_family == "OXA-51") %>%
+  filter(oxa_family == "blaOXA-51") %>%
   filter_assigned_bla %>%
   distinct(ipg) %>%
   nrow()
@@ -320,26 +325,31 @@ ab %>%
 # Comparison to SNAP Study
 ```{r, eval = FALSE}
 # Isolates counts
-ab %>%
-  summarize(
-    snap_2017 = n_distinct(biosample[year == 2017 & bioproject == "PRJNA906166"]),
-    snap_2018 = n_distinct(biosample[year == 2018 & bioproject == "PRJNA906166"]),
-    snap_2019 = n_distinct(biosample[year == 2019 & bioproject == "PRJNA906166"]),
-    snap_total = n_distinct(biosample[bioproject == "PRJNA906166" & year %in% 2017:2019]),
-    nonsnap_2017 = n_distinct(biosample[year == 2017 & bioproject != "PRJNA906166"]),
-    nonsnap_2018 = n_distinct(biosample[year == 2018 & bioproject != "PRJNA906166"]),
-    nonsnap_2019 = n_distinct(biosample[year == 2019 & bioproject != "PRJNA906166"]),
-    nonsnap_total = n_distinct(biosample[bioproject != "PRJNA906166" & year %in% 2017:2019]),
-    overall_2017 = n_distinct(biosample[year == 2017]),
-    overall_2018 = n_distinct(biosample[year == 2018]),
-    overall_2019 = n_distinct(biosample[year == 2019]),
-    overall_total = n_distinct(biosample[year %in% 2017:2019])
+c(
+    overall_2017 = ab %>% filter(year == 2017) %>% distinct(biosample) %>% nrow(),
+    overall_2018 = ab %>% filter(year == 2018) %>% distinct(biosample) %>% nrow(),
+    overall_2019 = ab %>% filter(year == 2019) %>% distinct(biosample) %>% nrow(),
+    overall_total = ab %>% filter(year %in% 2017:2019) %>% distinct(biosample) %>% nrow(),
+    snap_2017 = ab %>% filter(year == 2017) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    snap_2018 = ab %>% filter(year == 2018) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    snap_2019 = ab %>% filter(year == 2019) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    snap_total = ab %>% filter(year %in% 2017:2019) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    nonsnap_2017 = ab %>% filter(year == 2017) %>% distinct(biosample) %>% nrow() - ab %>% filter(year == 2017) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    nonsnap_2017 = ab %>% filter(year == 2018) %>% distinct(biosample) %>% nrow() - ab %>% filter(year == 2018) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    nonsnap_2017 = ab %>% filter(year == 2019) %>% distinct(biosample) %>% nrow() - ab %>% filter(year == 2019) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow(),
+    nonsnap_total = ab %>% filter(year %in% 2017:2019) %>% distinct(biosample) %>% nrow() - ab %>% filter(year %in% 2017:2019) %>% filter (bioproject == "PRJNA906166") %>% distinct(biosample) %>% nrow()
   )
+
+# SNAP Biosamples
+snap_biosamples <- ab %>%
+  filter(bioproject == "PRJNA906166") %>%
+  distinct(biosample) %>%
+  pull(biosample)
 
 #Acquired carbapenemase allele-containing isolate count
 ab %>%
   filter(year %in% 2017:2019) %>%
-  filter(bioproject != "PRJNA906166") %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
   distinct(biosample, .keep_all = TRUE) %>%
@@ -348,7 +358,7 @@ ab %>%
 #Acquired carbapenemase OXA family counts
 ab %>%
   filter(year %in% 2017:2019) %>%
-  filter(bioproject != "PRJNA906166") %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
   count(oxa_family)
@@ -356,16 +366,16 @@ ab %>%
 #Acquired carbapenemase gene counts
 ab %>%
   filter(year %in% 2017:2019) %>%
-  filter(bioproject != "PRJNA906166") %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
   count(gene, allele)
 
 
-#blaOXA-23 allele-containing isolate coun
+#blaOXA-23 allele-containing isolate count
 ab %>%
   filter(year %in% 2017:2019) %>%
-  filter(bioproject != "PRJNA906166") %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
   filter(allele == "blaOXA-23") %>%
@@ -375,7 +385,7 @@ ab %>%
 #blaOXA-24 allele-containing isolate coun
 ab %>%
   filter(year %in% 2017:2019) %>%
-  filter(bioproject != "PRJNA906166") %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
   filter(allele == "blaOXA-24") %>%
@@ -385,18 +395,12 @@ ab %>%
 #blaOXA-24 family-containing isolate coun
 ab %>%
   filter(year %in% 2017:2019) %>%
-  filter(bioproject != "PRJNA906166") %>%
+  filter(!(biosample %in% snap_biosamples)) %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
   filter(oxa_family == "blaOXA-24") %>%
   distinct(biosample, .keep_all = TRUE) %>%
   nrow()
-
-# Determine SNAP BioProjects
-snap_biosamples <- ab %>%
-  filter(bioproject == "PRJNA906166") %>%
-  distinct(biosample) %>%
-  pull(biosample)
 
 # Sequence types in Overall
 ab %>%
@@ -527,4 +531,3 @@ readr::write_lines(adc33_oxa23_text,
                    file = file.path(manual_output_path, "adc-33_oxa-23.txt"))
 
 ```
-
