@@ -147,7 +147,7 @@ analysis.
 
 ```{r, eval = FALSE}
 min_coverage <- 100L
-min_identity <- 100L
+min_identity <- 90L
 ```
 
 ## Prepare filtered data sets
