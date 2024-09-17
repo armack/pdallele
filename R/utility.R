@@ -138,7 +138,7 @@ parse_mlst_profiles <- function(.calls, .profiles){
     dplyr::mutate(error = dplyr::case_when(
       .data$match ~ NA_character_,
       grepl("~", .data$combined) ~ "new_allele",
-      stringr::str_count(.data$combined, ",") < length(profile_names) - 1 ~ "missing_allele",
+      grepl("-", .data$combined) ~ "missing_allele",
       TRUE ~ "new_st"
     )) %>%
     dplyr::group_by(.data$Genome) %>%
