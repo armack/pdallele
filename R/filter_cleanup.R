@@ -85,9 +85,12 @@ filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, fi
   has_remove <- !missing(remove)
   has_exclude <- !missing(exclude)
 
+  cov <- coverage
+  ident <- identity
+
   .partial <- data %>%
-    dplyr::filter("coverage" >= coverage) %>%
-    dplyr::filter("identity" >= identity) %>%
+    dplyr::filter(coverage >= cov) %>%
+    dplyr::filter(identity >= ident) %>%
     {if(has_species) dplyr::filter(., grepl(paste(.env$species, collapse = "|"), .data$species)) else . } %>%
     {if(has_filter) dplyr::filter(., grepl(paste(filter, collapse = "|"), .data$allele)) else . } %>%
     {if(has_remove) dplyr::filter(., !grepl(paste(remove, collapse = "|"), .data$method)) else .} %>%
