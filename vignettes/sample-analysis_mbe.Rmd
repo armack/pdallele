@@ -1977,6 +1977,8 @@ for (gene_name in genes_of_interest) {
     dplyr::filter(grepl(gene_name, allele)) %>%
     {if(gene_name == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families) else .} %>%
     tidyr::drop_na(ipg) %>%
+    dplyr::group_by(ipg) %>%
+    dplyr::mutate(ipg_accession = head(ipg_accession, n = 1L)) %>%
     {if(gene_name == "blaOXA") count_isolates(., ipg, ipg_accession, gene, oxa_family) 
       else count_isolates(., ipg, gene, ipg_accession)} %>%
     dplyr::arrange(desc(isolates))
