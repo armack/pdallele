@@ -102,8 +102,14 @@ filter_microbigge <- function(data, coverage = 100L, identity = 90L, species, fi
     filter(n >= min_gene_count) %>%
     pull(gene)
 
+  oxas_to_include <- .partial %>%
+    count(oxa_family) %>%
+    filter(n >= min_gene_count) %>%
+    pull(oxa_family)
+
   .complete <- .partial %>%
-    filter(gene %in% genes_to_include)
+    filter(gene %in% genes_to_include) %>%
+    filter(oxa_family %in% oxas_to_include)
 
   return(.complete)
 }
