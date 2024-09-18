@@ -50,7 +50,7 @@ The following variables modify aspects of the analysis and output:
 ```{r, eval = FALSE}
 species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("blaPDC","blaOXA")
-exclude_genes            <- c("blaI", "blaR1")
+exclude_genes            <- c("blaI$", "blaR1$")
 allele_label_base        <- "Allele"
 family_label_base        <- "Family"
 intrinsic_genes          <- c("blaPDC")
