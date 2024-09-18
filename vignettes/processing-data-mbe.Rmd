@@ -30,7 +30,7 @@ Following this guide prepares two data sets:
 Define intrinisic genes and families for labeling purposes
 ```{r, eval = FALSE}
 intrinsic_genes          <- c("blaPDC")
-intrinsic_oxa_families   <- c("blaOXA-51")
+intrinsic_oxa_families   <- c("blaOXA-50")
 ```
 
 ## Data Directory
