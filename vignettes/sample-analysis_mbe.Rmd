@@ -1978,7 +1978,7 @@ for (gene_name in genes_of_interest) {
     {if(gene_name == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families) else .} %>%
     tidyr::drop_na(ipg) %>%
     {if(gene_name == "blaOXA") count_isolates(., ipg, ipg_accession, gene, oxa_family) 
-      else count_isolates(., gene, ipg_accession)} %>%
+      else count_isolates(., ipg, gene, ipg_accession)} %>%
     dplyr::arrange(desc(isolates))
   
   mbe_goi_unassigned_allele_list %>%
