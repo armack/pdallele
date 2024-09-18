@@ -422,12 +422,13 @@ overview_combined_allele_counts_by_gene <- overview_total_allele_counts_by_gene 
   dplyr::left_join(overview_unassigned_allele_counts_by_gene,
                    by = c("gene", "gene_markdown", "oxa_family")) %>%
     dplyr::left_join(overview_distinct_unassigned_allele_counts_by_gene,
-                   by = c("gene", "gene_markdown", "oxa_family"))
+                   by = c("gene", "gene_markdown", "oxa_family")) %>%
+  dplyr::mutate(across(c(total,assigned,distinct_assigned,unassigned,distinct_unassigned), tidyr::replace_na, 0)) %>%
+  dplyr::arrange(desc(total))
 
 overview_combined_allele_counts_by_gene %>%
   dplyr::select(-gene_markdown) %>%
-  readr::write_csv(file.path(table_path, "overview_allele_counts_by_gene.csv"),
-                   na = "0")
+  readr::write_csv(file.path(table_path, "overview_allele_counts_by_gene.csv"))
 
 # Overall Gene Frequency Plot
 overall_gene_frequency_plot <-
