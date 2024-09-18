@@ -51,6 +51,7 @@ The following variables modify aspects of the analysis and output:
 species_of_interest      <- c("Pseudomonas aeruginosa")
 genes_of_interest        <- c("blaPDC","blaOXA")
 exclude_genes            <- c("blaI$", "blaR1$")
+min_gene_include         <- 5L
 allele_label_base        <- "Allele"
 family_label_base        <- "Family"
 intrinsic_genes          <- c("blaPDC")
@@ -163,7 +164,7 @@ mbe <- mbe_raw %>%
                     coverage = min_coverage,
                     identity = min_identity,
                     remove = remove_mbe_allele_types,
-                    min_gene_count = 5L,
+                    min_gene_count = min_gene_include,
                     exclude = exclude_genes,
                     deduplicate = TRUE) %>%
   filter_required_alleles(genes = genes_of_interest, family = intrinsic_oxa_families) %>%
