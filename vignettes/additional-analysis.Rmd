@@ -268,7 +268,6 @@ pa %>%
 pa %>%
   filter(year == 2018 | year == 2019) %>%
   filter(subclass == "CARBAPENEM") %>%
-  left_join(pa %>% distinct(biosample, bioproject), by = "biosample") %>%
   filter(bioproject != "PRJNA824880") %>%
   count_isolates(mlst)
 ```
@@ -465,7 +464,7 @@ oxa_51_rgc <- rgc %>%
 
 oxa_51_mbe <- ab %>%
   filter_unassigned_bla() %>%
-  dplyr::filter(oxa_family == "OXA-51") %>%
+  dplyr::filter(oxa_family == "blaOXA-51") %>%
   distinct(ipg_accession, .keep_all = TRUE) %>%
   dplyr::pull(protein)
 
@@ -499,7 +498,7 @@ oxa_50_rgc <- rgc %>%
 
 oxa_50_mbe <- pa %>%
   filter_unassigned_bla() %>%
-  dplyr::filter(oxa_family == "OXA-50") %>%
+  dplyr::filter(oxa_family == "blaOXA-50") %>%
   distinct(ipg_accession, .keep_all = TRUE) %>%
   dplyr::pull(protein)
 
