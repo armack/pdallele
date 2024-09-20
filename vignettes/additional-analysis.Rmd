@@ -530,3 +530,150 @@ readr::write_lines(adc33_oxa23_text,
                    file = file.path(manual_output_path, "adc-33_oxa-23.txt"))
 
 ```
+
+# MLST and Allele Associations
+```{r, eval = FALSE}
+# AB
+## MLST by Allele AB
+ab %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(mlst) %>%
+  filter(gene == "blaADC") %>%
+  group_by(allele) %>%
+  arrange(mlst) %>%
+  tidyr::drop_na(mlst) %>%
+  dplyr::summarize(count = n_distinct(biosample), adc_st_count = n_distinct(mlst), adc_st_list = paste(unique(mlst), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "AB_mlst_by_adc.csv"))
+
+ab %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(mlst) %>%
+  filter(oxa_family == "blaOXA-51") %>%
+  group_by(allele) %>%
+  arrange(mlst) %>%
+  tidyr::drop_na(mlst) %>%
+  dplyr::summarize(count = n_distinct(biosample), oxa_st_count = n_distinct(mlst), oxa_st_list = paste(unique(mlst), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "AB_mlst_by_oxa.csv"))
+
+## PDS by Allele AB
+ab %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(pds) %>%
+  filter(gene == "blaADC") %>%
+  group_by(allele) %>%
+  arrange(pds) %>%
+  tidyr::drop_na(pds) %>%
+  dplyr::summarize(count = n_distinct(biosample), adc_pds_count = n_distinct(pds), adc_pds_list = paste(unique(pds), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "AB_pds_by_adc.csv"))
+
+ab %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(pds) %>%
+  filter(oxa_family == "blaOXA-51") %>%
+  group_by(allele) %>%
+  arrange(pds) %>%
+  tidyr::drop_na(pds) %>%
+  dplyr::summarize(count = n_distinct(biosample), oxa_pds_count = n_distinct(pds), oxa_pds_list = paste(unique(pds), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "AB_pds_by_oxa.csv"))
+
+## Allele by MLST AB
+allele_by_adc <- ab %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(allele) %>%
+  filter(gene == "blaADC") %>%
+  group_by(mlst) %>%
+  arrange(allele) %>%
+  tidyr::drop_na(allele) %>%
+  dplyr::summarize(adc_isolate_count = n_distinct(biosample), adc_allele_count = n_distinct(allele), adc_alleles = paste(unique(allele), collapse = ", "))
+
+allele_by_oxa <- ab %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(allele) %>%
+  filter(oxa_family == "blaOXA-51") %>%
+  group_by(mlst) %>%
+  arrange(allele) %>%
+  tidyr::drop_na(allele) %>%
+  dplyr::summarize(oxa_isolate_count = n_distinct(biosample), oxa_allele_count = n_distinct(allele), oxa_alleles = paste(unique(allele), collapse = ", "))
+
+allele_by_adc %>%
+  full_join(allele_by_oxa, by = join_by(mlst)) %>%
+  arrange(desc((adc_isolate_count + oxa_isolate_count) / 2)) %>%
+  readr::write_csv(file.path(manual_output_path, "AB_alleles_by_mlst.csv"))
+
+# PA
+## MLST by Allele PA
+pa %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(mlst) %>%
+  filter(gene == "blaPDC") %>%
+  group_by(allele) %>%
+  arrange(mlst) %>%
+  tidyr::drop_na(mlst) %>%
+  dplyr::summarize(count = n_distinct(biosample), adc_st_count = n_distinct(mlst), adc_st_list = paste(unique(mlst), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "PA_mlst_by_adc.csv"))
+
+pa %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(mlst) %>%
+  filter(oxa_family == "blaOXA-50") %>%
+  group_by(allele) %>%
+  arrange(mlst) %>%
+  tidyr::drop_na(mlst) %>%
+  dplyr::summarize(count = n_distinct(biosample), oxa_st_count = n_distinct(mlst), oxa_st_list = paste(unique(mlst), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "PA_mlst_by_oxa.csv"))
+
+## PDS by Allele PA
+pa %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(pds) %>%
+  filter(gene == "blaPDC") %>%
+  group_by(allele) %>%
+  arrange(pds) %>%
+  tidyr::drop_na(pds) %>%
+  dplyr::summarize(count = n_distinct(biosample), adc_pds_count = n_distinct(pds), adc_pds_list = paste(unique(pds), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "PA_pds_by_adc.csv"))
+
+pa %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(pds) %>%
+  filter(oxa_family == "blaOXA-50") %>%
+  group_by(allele) %>%
+  arrange(pds) %>%
+  tidyr::drop_na(pds) %>%
+  dplyr::summarize(count = n_distinct(biosample), oxa_pds_count = n_distinct(pds), oxa_pds_list = paste(unique(pds), collapse = ", ")) %>%
+  arrange(desc(count)) %>%
+  readr::write_csv(file.path(manual_output_path, "PA_pds_by_oxa.csv"))
+
+## Allele by MLST PA
+allele_by_pdc <- pa %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(allele) %>%
+  filter(gene == "blaPDC") %>%
+  group_by(mlst) %>%
+  arrange(allele) %>%
+  tidyr::drop_na(allele) %>%
+  dplyr::summarize(pdc_isolate_count = n_distinct(biosample), adc_allele_count = n_distinct(allele), adc_alleles = paste(unique(allele), collapse = ", "))
+
+allele_by_oxa <- pa %>%
+  filter_assigned_bla() %>%
+  relevel_numeric(allele) %>%
+  filter(oxa_family == "blaOXA-50") %>%
+  group_by(mlst) %>%
+  arrange(allele) %>%
+  tidyr::drop_na(allele) %>%
+  dplyr::summarize(oxa_isolate_count = n_distinct(biosample), oxa_allele_count = n_distinct(allele), oxa_alleles = paste(unique(allele), collapse = ", "))
+
+allele_by_pdc %>%
+  full_join(allele_by_oxa, by = join_by(mlst)) %>%
+  arrange(desc((pdc_isolate_count + oxa_isolate_count) / 2)) %>%
+  readr::write_csv(file.path(manual_output_path, "PA_alleles_by_mlst.csv"))
+
+```
+
