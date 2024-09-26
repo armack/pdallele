@@ -61,7 +61,7 @@ carbapenemase_allele_counts %>%
 carbapenemase_gene_counts <- ab %>%
   filter(subclass == "CARBAPENEM") %>%
   filter(!grepl("blaOXA-51", oxa_family)) %>%
-  count_isolates(gene)
+  count_isolates(gene, oxa_family)
 
 carbapenemase_gene_counts %>%
   readr::write_csv(file.path(manual_output_path, "ab_carbapenemase_gene_counts_without_blaOXA-51_family.csv"))
