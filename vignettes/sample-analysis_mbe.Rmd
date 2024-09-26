@@ -402,7 +402,8 @@ overview_assigned_allele_counts_by_gene <- mbe %>%
   count_alleles(gene, gene_markdown, oxa_family, name = "assigned")
 
 overview_unassigned_allele_counts_by_gene <- mbe %>%
-  remove_assigned_bla() %>%
+  filter_unassigned_bla() %>%
+  tidyr::drop_na(ipg) %>%
   count_alleles(gene, gene_markdown, oxa_family, name = "unassigned")
 
 overview_distinct_assigned_allele_counts_by_gene <- mbe %>%
