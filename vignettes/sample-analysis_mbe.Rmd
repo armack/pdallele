@@ -2019,9 +2019,10 @@ for (gene_name in genes_of_interest) {
   )
   
 
-  # <gene_name> Allele Counts by PDS Cluster
+  # <gene_name> Allele Lists and Counts by PDS Cluster
   gene_filter_alleles_by_pds <- mbe %>%
     filter_assigned_bla() %>%
+    tidyr::drop_na(pds) %>%
     relevel_numeric(allele) %>%
     {if(gene_name == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families)
       else filter_attribute(., allele, gene_name)} %>%
@@ -2029,22 +2030,16 @@ for (gene_name in genes_of_interest) {
   
   gene_filter_alleles_by_pds %>%
     arrange(allele) %>%
-    dplyr::summarize(count = n_distinct(biosample), alleles = paste(unique(allele), collapse = ", ")) %>%
-    arrange(desc(count)) %>%
+    dplyr::summarize(isolates = n_distinct(biosample), alleles = n_distinct(allele), allele_list = paste(unique(allele), collapse = ", ")) %>%
+    arrange(desc(alleles)) %>%
     readr::write_csv(file.path(
       table_path, paste0(gene_name, "_intrinsic_allele_list_by_pds.csv")
     ))
-  
-  gene_filter_alleles_by_pds %>%
-    summarize(alleles = n_distinct(allele)) %>%
-    arrange(desc(alleles)) %>%
-    readr::write_csv(file.path(
-      table_path, paste0(gene_name, "_intrinsic_allele_counts_by_pds.csv")
-    ))
-  
+
   # <gene_name> Allele Lists and Counts by MLST
   gene_filter_alleles_by_mlst <- mbe %>%
     filter_assigned_bla() %>%
+    tidyr::drop_na(mlst) %>%
     relevel_numeric(allele) %>%
     {if(gene_name == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families)
       else filter_attribute(., allele, gene_name)} %>%
@@ -2052,21 +2047,15 @@ for (gene_name in genes_of_interest) {
   
   gene_filter_alleles_by_mlst %>%
     arrange(allele) %>%
-    dplyr::summarize(count = n_distinct(biosample), alleles = paste(unique(allele), collapse = ", ")) %>%
-    arrange(desc(count)) %>%
+    dplyr::summarize(isolates = n_distinct(biosample), alleles = n_distinct(allele), alleles_list = paste(unique(allele), collapse = ", ")) %>%
+    arrange(desc(alleles)) %>%
     readr::write_csv(file.path(
       table_path, paste0(gene_name, "_intrinsic_allele_list_by_mlst.csv")
     ))
 
-  gene_filter_alleles_by_mlst %>%
-    summarize(alleles = n_distinct(allele)) %>%
-    arrange(desc(alleles)) %>%
-    readr::write_csv(file.path(
-      table_path, paste0(gene_name, "_intrinsic_allele_counts_by_mlst.csv")
-    ))
-
     # <gene_name> MLST Lists and Counts by Allele
   gene_filter_mlst_by_allele <- mbe %>%
+    tidyr::drop_na(mlst) %>%
     filter_assigned_bla() %>%
     relevel_numeric(mlst) %>%
     {if(gene_name == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families)
@@ -2076,22 +2065,15 @@ for (gene_name in genes_of_interest) {
   
   gene_filter_mlst_by_allele %>%
     arrange(mlst) %>%
-    tidyr::drop_na(mlst) %>%
-    dplyr::summarize(count = n_distinct(biosample), alleles = paste(unique(mlst), collapse = ", ")) %>%
-    arrange(desc(count)) %>%
+    dplyr::summarize(isolates = n_distinct(biosample), sts = n_distinct(mlst), alleles = paste(unique(mlst), collapse = ", ")) %>%
+    arrange(desc(sts)) %>%
     readr::write_csv(file.path(
       table_path, paste0(gene_name, "_mlst_list_by_intrinsic_allele.csv")
     ))
-  
-  gene_filter_mlst_by_allele %>%
-    summarize(sequence_types = n_distinct(mlst)) %>%
-    arrange(desc(sequence_types)) %>%
-    readr::write_csv(file.path(
-      table_path, paste0(gene_name, "_mlst_counts_by_intrinsic_allele.csv")
-    ))  
-  
+
       # <gene_name> PDS Lists and Counts by Allele
   gene_filter_pds_by_allele <- mbe %>%
+    tidyr::drop_na(pds) %>%
     filter_assigned_bla() %>%
     relevel_numeric(pds) %>%
     {if(gene_name == "blaOXA") dplyr::filter(., oxa_family %in% intrinsic_oxa_families)
@@ -2101,19 +2083,11 @@ for (gene_name in genes_of_interest) {
   
   gene_filter_pds_by_allele %>%
     arrange(pds) %>%
-    tidyr::drop_na(pds) %>%
-    dplyr::summarize(count = n_distinct(biosample), alleles = paste(unique(pds), collapse = ", ")) %>%
-    arrange(desc(count)) %>%
+    dplyr::summarize(count = n_distinct(biosample), clusters = n_distinct(pds), alleles = paste(unique(pds), collapse = ", ")) %>%
+    arrange(desc(clusters)) %>%
     readr::write_csv(file.path(
       table_path, paste0(gene_name, "_pds_list_by_intrinsic_allele.csv")
     ))
-  
-  gene_filter_pds_by_allele %>%
-    summarize(sequence_types = n_distinct(pds)) %>%
-    arrange(desc(sequence_types)) %>%
-    readr::write_csv(file.path(
-      table_path, paste0(gene_name, "_pds_counts_by_intrinsic_allele.csv")
-    )) 
 }
 ```
 
