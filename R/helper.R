@@ -88,9 +88,9 @@ count_alleles <- function(data, ..., sort = TRUE, name = "alleles", na_last = TR
 #' Count isolates by columns
 #' @rdname count_by_column
 #' @export
-count_isolates <- function(data, ..., sort = TRUE, na_last = TRUE){
+count_isolates <- function(data, ..., sort = TRUE, name = "isolates", na_last = TRUE){
   .complete <- count_by_column(data = data, ..., sort = sort, isolates = TRUE,
-                  name = "isolates", na_last = na_last)
+                  name = name, na_last = na_last)
     return(.complete)
 }
 
