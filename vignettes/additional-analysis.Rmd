@@ -674,3 +674,11 @@ allele_by_pdc %>%
 
 ```
 
+```{r, eval= FALSE}
+# MBL in PA
+pa %>%
+  filter(stringr::str_detect(gene, "blaVIM|blaIMP|blaNDM|blaAFM|blaDIM|blaSPM|blaBIM|blaFIM|blaSIM|blaCAM")) %>%
+  filter(subclass == "CARBAPENEM") %>%
+  count_isolates()
+
+```
