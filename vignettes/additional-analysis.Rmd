@@ -39,6 +39,10 @@ pa %>%
   count_isolates(gene, region) %>%
   left_join(pa %>% count_isolates(region, name = "total"), by = "region") %>%
   mutate(proportion = isolates / total) %>%
+  group_by(gene) %>%
+  mutate(gene_total = sum(isolates)) %>%
+  arrange(desc(gene_total), region) %>%
+  select(-gene_total) %>%
   readr::write_tsv(file = file.path(manual_output_path, "pa_acquired_genes_regional.tsv"))
 ```
 
