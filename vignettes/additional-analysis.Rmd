@@ -32,17 +32,14 @@ ab %>%
   mutate(proportion = oxa23fam_containing / isolates) %>%
   readr::write_tsv(file = file.path(manual_output_path, "ab_blaOXA23_regional.tsv"))
 ```
-
-# Regional prevalence of (assumed) acquired blaOXA allels in *P. aeruginosa*
+# Regional prevalence of acquired alleles in *P. aeruginosa*
 ```{r, eval = FALSE}
 pa %>%
-  tidyr::drop_na(oxa_family) %>%
-  filter(oxa_family != "blaOXA-50") %>%
-  count_isolates(region) %>%
-  rename(acquired_oxa = isolates) %>%
-  left_join(pa %>% count_isolates(region), by = "region") %>%
-  mutate(proportion = acquired_oxa / isolates) %>%
-  readr::write_tsv(file = file.path(manual_output_path, "pa_acquired_blaOXA_regional.tsv"))
+  dplyr::filter(gene_type == "Acquired") %>%
+  count_isolates(gene, region) %>%
+  left_join(pa %>% count_isolates(region, name = "total"), by = "region") %>%
+  mutate(proportion = isolates / total) %>%
+  readr::write_tsv(file = file.path(manual_output_path, "pa_acquired_genes_regional.tsv"))
 ```
 
 # Carbapenemases in *A. baumannii* excluding blaOXA-51 family alleles
