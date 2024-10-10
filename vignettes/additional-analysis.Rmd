@@ -36,14 +36,14 @@ ab %>%
 ```{r, eval = FALSE}
 pa %>%
   dplyr::filter(gene_type == "Acquired") %>%
-  count_isolates(gene, region) %>%
+  count_isolates(gene, oxa_family, region) %>%
   left_join(pa %>% count_isolates(region, name = "total"), by = "region") %>%
   mutate(proportion = isolates / total) %>%
-  group_by(gene) %>%
+  group_by(gene, oxa_family) %>%
   mutate(gene_total = sum(isolates)) %>%
   arrange(desc(gene_total), region) %>%
   select(-gene_total) %>%
-  readr::write_tsv(file = file.path(manual_output_path, "pa_acquired_genes_regional.tsv"))
+  readr::write_csv(file = file.path(manual_output_path, "pa_acquired_genes_regional.csv"))
 ```
 
 # Carbapenemases in *A. baumannii* excluding blaOXA-51 family alleles
